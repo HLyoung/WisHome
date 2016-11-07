@@ -1,0 +1,9 @@
+
+SRC=./src/tThread.cpp
+SRC+=./src/TimerThread.cpp
+SRC+=./main.cpp
+
+OBJ=./main
+OBJ:$(SRC)
+	@echo "make main"
+	g++ -o $(OBJ) $(SRC) -I ../include -I ./include --std=c++11 -lpthread

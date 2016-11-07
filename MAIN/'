@@ -1,0 +1,41 @@
+SRC=$(shell find ./src/ -name "*.cpp")
+SRC+=$(shell find ../business/src -name "*.cpp")
+SRC+=$(shell find ../APNS/src -name "*.cpp")
+#SRC+=$(shell find ../JPush/src -name "*.cpp")
+
+INCLUDE_PATH=-I./
+INCLUDE_PATH+= -I./include/
+INCLUDE_PATH+= -I../include/
+INCLUDE_PATH+= -I../include/XML/
+INCLUDE_PATH+= -I../business/include/
+INCLUDE_PATH+= -I../APNS/include/
+INCLUDE_PATH+= -I../JPush/include/
+INCLUDE_PATH+= -I /usr/local/curl/include/
+INCLUDE_PATH+= -I ../mail/include/
+
+LIB_PATH=-L ./
+LIB_PATH+=-L ../lib
+LIB_PATH+=-L /usr/lib/capn/
+LIB_PATH+=-L /usr/local/curl/lib
+
+LIB=-lmydevice
+LIB+=-lmyparser
+LIB+=-ltcpModule
+LIB+=-lmyEvent
+LIB+=-lmysql
+LIB+=-llog4cxx
+LIB+=-lmyLog
+LIB+=-lmyXML
+LIB+=-lcapn
+LIB+=-ltimer
+LIB+=-lquickmail
+LIB+=-lcrypto
+#LIB+=-ljson_linux-gcc-5.4.0_libmt
+#LIB+=-lcurl
+DEFINE=DEBUG
+OBJ=../bin/mServer
+OBJ:$(SRC)
+	@echo "make mServer"
+	g++ -g -o $(OBJ)  $(SRC) $(INCLUDE_PATH)  $(LIB_PATH) $(LIB) -D $(DEFINE) -std=c++11
+	cp ../bin/mServer ../test/
+	
