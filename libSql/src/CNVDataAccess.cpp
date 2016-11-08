@@ -58,7 +58,6 @@ void CNVDataAccess::Disconnect()
 //执行没有结果集返回的语句，eg:update,insert,delete
 int CNVDataAccess::ExecuteNonQuery(const char *pcCmdText)
 {
-	TRACE_IN();
 	if(!IsInited())
 	{
 		LOG_ERROR("sql is not inited");
@@ -69,13 +68,11 @@ int CNVDataAccess::ExecuteNonQuery(const char *pcCmdText)
 		LOG_ERROR("query(cmd=%s) failed,error = %s ",pcCmdText,mysql_error(&mysql));
 		return -1;
 	}
-	TRACE_OUT();
-	return mysql_affected_rows(&mysql);
+	return 0;
 
 }
 void CNVDataAccess::ExecuteDataSet(const char *pcCmdText)
 {
-	TRACE_IN();
 	
 	if(!IsInited())
 	{
@@ -86,7 +83,6 @@ void CNVDataAccess::ExecuteDataSet(const char *pcCmdText)
 		LOG_ERROR("query cmd failed cmd=%s",pcCmdText);
 	}
 	
-	TRACE_OUT();
 }
 
 
@@ -130,7 +126,6 @@ string &CNVDataAccess::SetOption(const char *pcOptionName)
 //执行有结果集返回的sql语句 eg:select
 int CNVDataAccess::ExecuteNoThrow(const char *pcCmdText)
 {
-	TRACE_IN();
 	if(mysql_real_query(&mysql,pcCmdText,strlen(pcCmdText)))
 	{
 		return -1;
@@ -139,8 +134,7 @@ int CNVDataAccess::ExecuteNoThrow(const char *pcCmdText)
 	{
 		return -1;
 	}
-	TRACE_OUT();
-	return 0;
+	return mysql_affected_rows(&mysql);
 }
 
 bool CNVDataAccess::IsResultSet()

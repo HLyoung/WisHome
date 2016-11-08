@@ -60,6 +60,13 @@ bool CUniteDataModule::StartModule()
 		std::cout<<"init log module failed."<<std::endl;
 		Result = false;
 	}
+
+	if(!StartTimerModule())
+	{
+		std::cout<<"init timer module failed"<<std::endl;
+		Result = false;
+	}
+
 	m_bStarted = true;
       
 	return Result;
@@ -76,6 +83,13 @@ bool CUniteDataModule::StartTcpServer(int nPort)
 {
 	//启动TCP服务器
 	return CDeviceManager::GetInstance()->StartTcpServer(nPort);
+}
+
+bool CUniteDataModule::StartTimerModule()
+{
+	if(!TIMERMANAGER->get_instance()->start())
+		return false;
+	return true;
 }
 
 

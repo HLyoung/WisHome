@@ -62,9 +62,9 @@ class Reporter : public IAutoReportToInterface
 			case WIS_CMD_HEART_BEAT:
 				WisHeartBeatHandler::handleDeviceHeartBeat(DeviceInfo.bus_address);
 				break;
-			case WIS_CMD_USER_HEART_BEAT:
-				WisHeartBeatHandler::handleUserHeartBeat(DeviceInfo.bus_address);
-				break;
+		//	case WIS_CMD_USER_HEART_BEAT:
+		//		WisHeartBeatHandler::handleUserHeartBeat(DeviceInfo.bus_address);
+		//		break;
 			case WIS_CMD_TO_USER:
 				WisToUserHandler::handleToUser(DeviceInfo.bus_address,DeviceInfo.uuid.c_str(),nDataLen,pData);
 				break;
@@ -106,6 +106,10 @@ int main()
 	while(1)
 	{
 		//JPush::push_ALL_ALL_Alert("alert","title",100);
+		
+		//std::set<string> testSet;
+		//testSet.insert("1517bfd3f7c928960c6");
+		//JPush::push_SpecifiedIDs("alert","title",1,testSet);
 		sleep(5);
 	}
 	iModuel->StopModule();

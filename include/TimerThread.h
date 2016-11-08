@@ -44,11 +44,11 @@ public:
 	static TimerThread *get_instance();
 	virtual void *run(void);
 	virtual ~TimerThread();
-	void Register(Timer _timer);
-	void unRegister(Timer _timer);
+	void Register(Timer* _timer);
+	void unRegister(Timer* _timer);
 private:
 	TimerThread();
-	std::list<Timer> _timer_list;
+	std::list<Timer*> _timer_list;
 	std::mutex _time_list_mutex;
 };
 

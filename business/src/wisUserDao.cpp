@@ -4,6 +4,7 @@
 #include <sys/socket.h>
 #include <string.h>
 #include <unistd.h>
+#include <fcntl.h>
 
 
 
@@ -85,9 +86,10 @@ bool WisUserDao::login(const std::string &user,const std::string& passwd)
 
 	
 	char sql[200] = {0};
-	snprintf(sql,sizeof(sql),"select * from wis_user_tbl where `name`='%s' and `status`=1",user.c_str());
-	if(access->ExecuteNonQuery(sql) >= 1)
+	snprintf(sql,sizeof(sql),"select * from wis_user_tbl where `name`='%s' and `password`='%s'",user.c_str(),passwd.c_str());
+	if(access->ExecuteNoThrow(sql) < 1)
 	{
+		LOG_ERROR("excute sql(%s) query failed. ",sql);
 		return false;
 	}
 	if(access->IsResultSet())
@@ -100,6 +102,7 @@ bool WisUserDao::login(const std::string &user,const std::string& passwd)
 	
 	if(-1 == access->ExecuteNonQuery(sql))
 	{
+		LOG_ERROR("excute sql(%s) query failed. ",sql);
 		DbaModule_ReleaseNVDataAccess(access);
 		return false;
 	}
@@ -229,7 +232,7 @@ void WisUserDao::handleUserRegist(BUS_ADDRESS & busAddress,const char * pdata)
 		
 	char sql[200] = {0};
 	snprintf(sql,sizeof(sql),"insert into wis_user_tbl(`name`,`password`,`type`,`permission`,\
-	`reg_time`,`login_cnt`,`bind_status`) values('%s','%s', 0, 0, CURRENT_TIMESTAMP,0,0)",string((const char *)(registInfo->uuid),UUID_LEN).c_str(), string((const char *)(registInfo->password),PASSWORD_LEN).c_str());
+	`reg_time`,`login_cnt`,`bind_status`) values('%s','%s', 0, 0, CURRENT_TIMESTAMP,0,0)",std::string(registInfo->uuid,UUID_LEN).c_str(), std::string(registInfo->password,PASSWORD_LEN).c_str());
 		
 	CNVDataAccess *access = (CNVDataAccess *)DbaModule_GetNVDataAccess();
 	if(NULL == access)
@@ -355,11 +358,13 @@ bool WisUserDao::checkMail(const std::string &mail)
     sin.sin_port = htons(25);    //port of SMTP 
     memcpy(&sin.sin_addr, (in_addr*)ph->h_addr_list[0], ph->h_length);
    
-    int s = socket(PF_INET, SOCK_STREAM, 0);
+	unsigned long ul = 1;  
+	int s = socket(PF_INET, SOCK_STREAM, 0);
+	//fcntl(s, F_SETFL, O_NONBLOCK);
     if(connect(s, (sockaddr*)&sin, sizeof(sin)) ) 
        return false;
 	close(s);
-	SafeFree(ph);
+	//SafeFree(ph);
    	return true;
 }
 

@@ -45,26 +45,6 @@ bool CProtocolParser::ParseSocketProtocol(const char *recvbuf,UINT32 recvlen)
 			break;
 		
 	}
-
-	/*int levelLen = recvlen;
-	int heardIndex = 0;
-	while(levelLen >= 12 && *((int *)(recvbuf + heardIndex + 8)) <= levelLen - 12)
-	{
-		int packLen = 12 +  *((int *)(recvbuf + heardIndex + 8));
-		if(!CheckCheckSum(recvbuf + heardIndex , packLen ))
-		{
-			LOG_ERROR("checksum uncorrect");
-            heardIndex += packLen;
-            levelLen = recvlen - heardIndex;
-			continue;
-		}
-		
-		UINT32 wEvent = *((UINT32*)(recvbuf + heardIndex + 4));
-		m_tParserCallBack.pParserCallback(wEvent,0,packLen - 12,(char *)(recvbuf + heardIndex + 12),m_tParserCallBack.pOwner);
-
-		heardIndex += packLen;
-		levelLen = recvlen - heardIndex;
-	}*/
 	TRACE_OUT();
 }
 

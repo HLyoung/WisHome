@@ -19,7 +19,7 @@ class CDevice
 {
 public:
 	CDevice();
-	CDevice(CDeviceManager *pOwner,BUS_ADDRESS address);
+	CDevice(CDeviceManager *pOwner,BUS_ADDRESS_POINTER   address);
 	virtual ~CDevice();
 	
 	bool Receive(UINT32 length,void *data);

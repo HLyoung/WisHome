@@ -81,7 +81,8 @@ void *ClientSocket::startClientThread(void *p)
 
 	struct event_base *base = event_base_new();
 	struct bufferevent * bev = bufferevent_socket_new(base,iSockFd,BEV_OPT_CLOSE_ON_FREE);
-	
+
+	pSock->_bev = bev;
 	BUS_ADDRESS_POINTER pBus_address = new BUS_ADDRESS;
 	pBus_address->size = sizeof(BUS_ADDRESS);
 	pBus_address->model_type = TCP_CLIENT_MODE;
@@ -100,8 +101,10 @@ void *ClientSocket::startClientThread(void *p)
 		SafeDelete(pSock);
 		pthread_exit(0);			
 	}
-
+    
 	event_base_dispatch(base);
+	SafeDelete(pSock);
+	SafeDelete(pBus_address);
 	TRACE_OUT();
 }
 
@@ -150,4 +153,9 @@ void ClientSocket::event_cb(struct bufferevent * bev,short events,void * ctx)
 	else
 		LOG_INFO("something unknow happens(event = %d ,fd = %d)",(int)events,(int)fd);	
 	TRACE_OUT();
+}
+
+void ClientSocket::closeClient()
+{
+	bufferevent_free(_bev);
 }

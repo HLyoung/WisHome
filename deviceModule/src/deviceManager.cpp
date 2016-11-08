@@ -87,7 +87,7 @@ int CDeviceManager::GetTcpServicePort()
 bool CDeviceManager::StopTcpServer(BUS_ADDRESS_POINTER pBusAddress)
 {
 	
-	std::lock_guard<std::mutex> lg(m_Device_mutex);
+	m_Device_mutex.lock();
 	std::map<string,CDevice*>::iterator iter;
 	BUS_ADDRESS busAddr;
 	for(iter = m_mapDevice.begin();iter != m_mapDevice.end();iter ++)
@@ -99,6 +99,7 @@ bool CDeviceManager::StopTcpServer(BUS_ADDRESS_POINTER pBusAddress)
 					break;
 				}
 		}
+	m_Device_mutex.unlock();
 	return GetTCPServiceModuleInstance()->StopService(pBusAddress);
 }
 
@@ -179,11 +180,12 @@ void CDeviceManager::OnConnect( UINT32 size, void* data )
     if (!pGatewayDevice)
 	{
 		LOG_INFO("client(key = %s) connect is not exist and will create it",addresskey.c_str());
-		pGatewayDevice = new CDevice(this,*bus_address);
+		pGatewayDevice = new CDevice(this,bus_address);
 
 		
-		std::lock_guard<std::mutex> lk(m_Device_mutex);
+		m_Device_mutex.lock();
 		m_mapDevice.insert(pair<string,CDevice*>(addresskey,pGatewayDevice));
+		m_Device_mutex.unlock();
 	}
     else
     {
@@ -218,7 +220,8 @@ string CDeviceManager::GetAddressKey(BUS_ADDRESS& address)
 CDevice* CDeviceManager::GetDeviceClient(BUS_ADDRESS& address)
 {
 	TRACE_IN();
-	
+
+	LOG_INFO("%s-%d",address.host_address.ip, address.host_address.port);
 	string address_key = GetAddressKey(address);
 
 	std::lock_guard<std::mutex> lg(m_Device_mutex);	
@@ -266,7 +269,7 @@ void CDeviceManager::OnDisconnect(UINT32 size, void* data )
 	string addresskey = GetAddressKey(*bus_address);
 	if (addresskey.length() == 0)
 	{
-		LOG_INFO("address key is empty");
+		LOG_ERROR("address key is empty");
 		return;
 	}
 	
@@ -284,17 +287,19 @@ void CDeviceManager::OnDisconnect(UINT32 size, void* data )
 			loginType = pGatewayDevice->GetLoginType();
 
 			SafeDelete(ite->second);
-			ite->second = NULL;
 			m_mapDevice.erase(ite->first);			
 		}
-	}	
+	}
+	else 
+		LOG_INFO("the link(key = %s) about to delete is not found",addresskey.c_str());
+	
 	for(ite = m_mapDevice.begin();ite != m_mapDevice.end();ite ++){  //当一个设备有多个连接的时候，某一个连接断了并不将设备置为离线。
 		if(ite->second->GetUuid() == uuid){
 			m_Device_mutex.unlock();
 			return;
 		}
 	}
-   m_Device_mutex.unlock();
+    m_Device_mutex.unlock();
 		
     CUniteDataModule::GetInstance()->ShowClientDisConnect(*bus_address,uuid,loginType);
 	TRACE_OUT();
@@ -355,15 +360,6 @@ bool CDeviceManager::SendData(std::string uuid,int nRole,int nDataType,char *pDa
 		}
 
 	}
-
-	/*CDevice* pGatewayDevice = GetDeviceClient(uuid);
-	if(NULL != pGatewayDevice)
-	{
-		if(!pGatewayDevice->GetExpire())
-		{
-			return pGatewayDevice->Send(nDataType,pData,nDataSize);
-		}
-	}*/
 	LOG_INFO("WOWWOWWOW  device(uuid = %s) has %d connects",uuid.c_str(),count);
 	TRACE_OUT();
 	return res;

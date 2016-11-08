@@ -14,9 +14,9 @@
 #include <macro.h>
 #define MAX_WIS_DATA_LEN (1048576)
 #define UUID_LEN 32
+#define TOKEN_LEN 64
 #define PASSWORD_LEN 24
-#define TOKEN_LEN 128
-#define NAME_LEN 32
+#define DEVICE_NAME_LEN 32
 
 
 // 0x8000 - 0x81ff is reserved for wis_server
@@ -109,6 +109,7 @@ struct WisDeviceLoginInfo {
 
 struct WisUserLoginInfo {
     char uuid[UUID_LEN];
+	char password[PASSWORD_LEN];
     char token[TOKEN_LEN];
 };
 

@@ -27,13 +27,16 @@ void Caudience::toJson(Json::Value &jsonValue){
 		jsonValue["audience"] = "all";
 		return;
 	}
-	
+
+	int i = 0;
 	Json::Value value;
 	for(std::string str:values_)
 	{
-		Json::Value strValue;
-		strValue[str.c_str()] = "";
-		value.append(strValue);
+		//Json::Value strValue;
+		//strValue[str.c_str()] = "";
+		//value.append(strValue);
+		value[i] = str;
+		i++;
 	}
 	
 	Json::Value typeValue;
@@ -125,7 +128,10 @@ void Csms::toJson(Json::Value &jsonValue){
 
 void  Coptions::toJson(Json::Value &jsonValue){
 	Json::Value allValue;
-	allValue["apns_production"] = isProduction_;
+	if(isProduction_)
+		allValue["apns_production"] = "True";
+	else
+		allValue["apns_production"] = "False";
 	
 	jsonValue["options"] = allValue;
 }
@@ -190,16 +196,20 @@ CURLcode JPush::push_SpecifiedIDs(std::string alert,std::string title,int build_
 	
 	Json::Value test;
 	Cplatform platform(all);
+	Coptions options(false);
 	Caudience audience(REGISTRATION_ID,ids);	
 	Cnotification notification(alert,title,build_id,test);
 	
 	payload.setPlatform(&platform);
 	payload.setAudience(&audience);
 	payload.setNotification(&notification);
+	payload.setOptions(&options);
 
 	CcurlHandle *curlHandle  = CcurlModule::curlGetHandle();
 	Json::FastWriter writer;
 	std::string tmp3 = writer.write(payload.toJson());
+	std::cout<<tmp3<<std::endl;
+	
 	std::string targetFileds = std::string(tmp3.c_str(),tmp3.length()-1);  //json对象转成字符串之后最后总有一个换行，-1删掉它
 	curlHandle->setOption(CURLOPT_POSTFIELDS,targetFileds.c_str());
 

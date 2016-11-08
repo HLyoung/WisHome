@@ -51,14 +51,18 @@ public:
 		owner = serv_owner;
 	}
 
+	void closeClient();
 	static void read_cb(struct bufferevent *bev,void *ptr);
 
 	static void event_cb(struct bufferevent *bev,short events,void *ptr);
+
+	struct bufferevent* _bev;
 	
 private:
 	CADDRINFO m_RemoteAddr;
 	static CISocketOwner *owner;
 	CommonTCPManager *manager_;
+	
 };
 
 

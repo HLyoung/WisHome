@@ -44,10 +44,11 @@ private:
 	void SaveLinkAndCallBack(BUS_ADDRESS_POINTER pBus_address,CTCPService *pTcpService,void *handle);
 	void DeleteLinkAndCallBack(BUS_ADDRESS_POINTER pBus_address,CTCPService* pTcpService, void*handle);
 	void Release();
+	std::string tcpGetAddressKey(BUS_ADDRESS_POINTER pAddress);
 	
 private:
 	static CTCPServiceManage *m_instance;
-	std::map<BUS_ADDRESS_POINTER,CTCPService*> m_mapTcpLink;
+	std::map<string,CTCPService*> m_mapTcpLink;
 	std::mutex m_tcpLinkMutex;
 };
 

@@ -152,25 +152,30 @@ void *ServrSocket::handle_signel_connct(void *p)
 	evutil_make_socket_nonblocking(param->fd);
 	struct event_base *base = event_base_new();
 	struct bufferevent *bev = bufferevent_socket_new(base,param->fd,BEV_OPT_CLOSE_ON_FREE);   //will close the socket when free bufferevent.
-
-
+	
 	BUS_ADDRESS_POINTER pBus_address = new BUS_ADDRESS;
 	pBus_address->size = sizeof(BUS_ADDRESS);
 	pBus_address->model_type = TCP_SERVER_MODE;
-	pBus_address->bus_address_type = BUS_ADDRESS_TYPE_TCP;
+	pBus_address->  bus_address_type = BUS_ADDRESS_TYPE_TCP;
 	pBus_address->host_address.size = sizeof(HOST_ADDRESS);
 	pBus_address->host_address.port =ntohs(((sockaddr_in*)(param->address))->sin_port);
+	param->address = pBus_address;
+	
 
 	memcpy(pBus_address->host_address.ip,inet_ntoa(((sockaddr_in*)(param->address))->sin_addr),HOST_NAME_LENGTH);
 
 	bufferevent_setwatermark(bev,EV_READ,0,0);
     bufferevent_setwatermark(bev,EV_WRITE,0,0);
-	bufferevent_setcb(bev,pSock->read_cb,pSock->write_cb,pSock->event_cb,pBus_address);
+	bufferevent_setcb(bev,pSock->read_cb,pSock->write_cb,pSock->event_cb,param);
 	bufferevent_enable(bev,EV_READ|EV_WRITE);
 
-	pSock->owner->OnAccept((void*)bev,pBus_address);	
+	pSock->bufMapAddBuf(bev,pBus_address);
+	pSock->owner->OnAccept((void*)bev,pBus_address);			
+	event_base_dispatch(base); 
+
 	
-	event_base_dispatch(base);   
+	SafeDelete(pBus_address);
+	SafeDelete(param);
 	TRACE_OUT();
 	
 }
@@ -181,7 +186,8 @@ void ServrSocket::read_cb(struct bufferevent * bev,void * ctx)
 	TRACE_IN();
 	struct evbuffer* readbuffer = bufferevent_get_input(bev);
 	int len = evbuffer_get_length(readbuffer);
-    owner->OnCmdCome((void*)bev,(const char *)evbuffer_pullup(readbuffer,-1),len,(BUS_ADDRESS_POINTER)ctx);
+	BUS_ADDRESS_POINTER pBus_address = (BUS_ADDRESS_POINTER)(((pSignel_connect_param)ctx)->address);
+    owner->OnCmdCome((void*)bev,(const char *)evbuffer_pullup(readbuffer,-1),len,pBus_address);
 	evbuffer_drain(readbuffer,len);
 	TRACE_OUT();
 }
@@ -205,24 +211,44 @@ void ServrSocket::event_cb(struct bufferevent * bev,short events,void * ctx)
 {
 	TRACE_IN();
 	evutil_socket_t fd = bufferevent_getfd(bev);
+	BUS_ADDRESS_POINTER pBus_address = (BUS_ADDRESS_POINTER)(((pSignel_connect_param)ctx)->address);
+	ServrSocket *pSock  = (ServrSocket*)(((pSignel_connect_param)ctx)->pSock);
+	
 	if(events & (BEV_EVENT_ERROR))
 		{				 
             int errorcode =  evutil_socket_geterror(fd);
             LOG_ERROR("error(event = %d) happens on socket(fd = %d), error message: %s",(int)events,(int)fd,evutil_socket_error_to_string(errorcode));
-            owner->OnClose((void*)bev,(BUS_ADDRESS_POINTER)ctx);
-			bufferevent_free(bev);
+            owner->OnClose((void*)bev,pBus_address);
+			pSock->bufMapDeleteBuf(bev);
 		}
 	else if(events & (BEV_EVENT_EOF))
 		{		
 			LOG_INFO("EOF readed on socket(fd = %d)",(int)fd);
-			owner->OnClose((void*)bev,(BUS_ADDRESS_POINTER)ctx);
-			bufferevent_free(bev);
+			owner->OnClose((void*)bev,pBus_address);
+			pSock->bufMapDeleteBuf(bev);
 		}
 	else
 		LOG_INFO("something unknow happens(event = %d ,fd = %d)",(int)events,(int)fd);	
 	TRACE_OUT();
 }
 
+void ServrSocket::bufMapAddBuf(struct bufferevent *bev,BUS_ADDRESS_POINTER pBusAddress)
+{
+	std::lock_guard<std::mutex> lg(bufMapMutex);
+	bufMap.insert(pair<struct bufferevent*,BUS_ADDRESS_POINTER>(bev,pBusAddress));
+}
 
+bool ServrSocket::bufMapDeleteBuf(struct bufferevent * bev)
+{
+	std::lock_guard<std::mutex> lg(bufMapMutex);
+	std::map<struct bufferevent*,BUS_ADDRESS_POINTER>::iterator ite = bufMap.find(bev);
+	if(ite != bufMap.end())
+	{
+		bufMap.erase(bev);
+		bufferevent_free(bev);
+		return true;
+	}
+	return false;
+}
 
 

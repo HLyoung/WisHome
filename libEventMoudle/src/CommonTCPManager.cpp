@@ -52,8 +52,24 @@ int CommonTCPManager::Send(void * handle,const char * pData,int nProLen)
 
 int CommonTCPManager::CloseConnection(void * dwHandle)
 {
-	
+	std::list<ClientSocket*>::iterator ite = ClientSocketList.begin();
+	for(; ite != ClientSocketList.end();ite++){
+		if((*ite)->_bev == (struct bufferevent *)dwHandle){
+			(*ite)->closeClient();
+			return 0;
+		}
+	}
+	std::list<ServrSocket*>::iterator sIte = ServrSocketList.begin();
+	for(; sIte != ServrSocketList.end();sIte++){
+		if((*sIte)->bufMap.find((struct bufferevent *)dwHandle) != (*sIte)->bufMap.end()){
+			(*sIte)->bufMapDeleteBuf((struct bufferevent *)dwHandle);
+			return 0;
+		}
+	}
+
+	return -1;
 }
+
 
 CICommonTCPManager *GetCommonTCPManager()
 {

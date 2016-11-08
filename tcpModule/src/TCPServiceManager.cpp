@@ -95,9 +95,10 @@ void CTCPServiceManage::SaveLinkAndCallBack(BUS_ADDRESS_POINTER pBus_address,CTC
 		LOG_INFO("tcp service manager call the callback funciton to notify connection fd = %ld",(long)handle);
 		pTcpService->message_callback_(pTcpService->GetOwnerHandle(),MESSAGE_Connect,sizeof(BUS_ADDRESS),pBus_address);
 	}
-	
+
+	std::string key = tcpGetAddressKey(pBus_address);
 	std::lock_guard<std::mutex> lg(m_tcpLinkMutex);
-	m_mapTcpLink.insert(pair<BUS_ADDRESS_POINTER,CTCPService *>(pBus_address,pTcpService));
+	m_mapTcpLink.insert(pair<std::string,CTCPService *>(key,pTcpService));
 
 	TRACE_OUT();
 }
@@ -122,12 +123,13 @@ void CTCPServiceManage::DeleteLinkAndCallBack(BUS_ADDRESS_POINTER pBus_address,C
 	string key_string = CHostAddress::GetKey((const char*)pBus_address->host_address.ip,pBus_address->host_address.port);
 	CHostAddressMap::RemoveHostAddress(key_string,false);
 
+	std::string key = tcpGetAddressKey(pBus_address);
 	std::lock_guard<std::mutex> lg(m_tcpLinkMutex);
-	std::map<BUS_ADDRESS_POINTER,CTCPService *>::iterator iter = m_mapTcpLink.find(pBus_address);
+	std::map<std::string,CTCPService *>::iterator iter = m_mapTcpLink.find(key);
 	if(iter != m_mapTcpLink.end())
 	{
 		SafeDelete(iter->second);
-		m_mapTcpLink.erase(pBus_address);
+		m_mapTcpLink.erase(key);
 	}
 	TRACE_OUT();
 }
@@ -186,15 +188,38 @@ void CTCPServiceManage::RemoveTcpService(BUS_ADDRESS_POINTER pBus_address)
 	TRACE_IN();
 	CHostAddressMap::RemoveHostAddress(pBus_address->host_address);
 
+	std::string key = tcpGetAddressKey(pBus_address);
 	std::lock_guard<std::mutex> lg(m_tcpLinkMutex);
-	std::map<BUS_ADDRESS_POINTER,CTCPService *>::iterator ite = m_mapTcpLink.find(pBus_address);
+	std::map<std::string,CTCPService *>::iterator ite = m_mapTcpLink.find(key);
 	if(ite == m_mapTcpLink.end()){
 		LOG_ERROR("the link(ip = %s,port = %d about to delete not found",pBus_address->host_address.ip,pBus_address->host_address.port);
 		return;
 	}
 	SafeDelete(ite->second);
-	m_mapTcpLink.erase(pBus_address);
+	m_mapTcpLink.erase(key);
 		
 	TRACE_OUT();
 }  
+
+
+string CTCPServiceManage::tcpGetAddressKey(BUS_ADDRESS_POINTER pAddress)
+{
+	char tmp[128];
+	memset(tmp,0,128);
+
+	switch( pAddress->bus_address_type )
+	{
+	case BUS_ADDRESS_TYPE_TCP:
+	case BUS_ADDRESS_TYPE_UDP:
+		{	
+			sprintf(tmp,"%s-%u",pAddress->host_address.ip, pAddress->host_address.port);
+		}
+		break;
+	default:
+		break;
+	}
+    string key = string(tmp);
+	return key;
+}
+
 

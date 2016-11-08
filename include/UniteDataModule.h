@@ -13,6 +13,7 @@
 #include "IUniteDataModule.h"
 #include "tinystr.h"
 #include "tinyxml.h"
+#include "TimerThread.h"
 
 #include <unistd.h>
 #include <iostream>
@@ -22,6 +23,7 @@ class CUniteDataModule : public ICUniteDataModule
 public:
 	static CUniteDataModule *GetInstance();
 	virtual bool StartModule();
+	virtual bool StartTimerModule();
 	virtual bool StartTcpServer(int nPort);
 	virtual bool StopModule();
 	virtual bool RegistInterfacRecObject(IAutoReportToInterface* pInterfaceObj);

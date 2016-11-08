@@ -23,20 +23,19 @@ void *TimerThread::run(void)
 	{
 		long int start_clock = get_systime_clock();
 		this->_timer_list.sort();
-		list<Timer>::iterator ite;
+		list<Timer*>::iterator ite;
 
-		std::unique_lock<std::mutex> ul(_time_list_mutex,std::defer_lock);
-		ul.lock();
+		_time_list_mutex.lock();
 		for(ite = this->_timer_list.begin();ite != this->_timer_list.end();ite++)
 		{
-			ite->leftsecs --;
-			if(ite->leftsecs == 0)
+			(*ite)->leftsecs --;
+			if((*ite)->leftsecs == 0)
 			{
-				ite->_callback(ite->_args);
-				ite->leftsecs = ite->_interval;
+				(*ite)->_callback((*ite)->_args);
+				(*ite)->leftsecs = (*ite)->_interval;
 			}
 		}
-		ul.unlock();
+		_time_list_mutex.unlock();
 		
 		long int  end_clock = get_systime_clock();
 		
@@ -46,7 +45,7 @@ void *TimerThread::run(void)
 	return (void *)0;
 }
 
-void TimerThread::Register(Timer _timer)
+void TimerThread::Register(Timer* _timer)
 {	
 
 	std::lock_guard<std::mutex> lg(_time_list_mutex);
@@ -54,7 +53,7 @@ void TimerThread::Register(Timer _timer)
 
 }
 
-void TimerThread::unRegister(Timer _timer)
+void TimerThread::unRegister(Timer* _timer)
 {
 	std::lock_guard<std::mutex> lg(_time_list_mutex);
 	_timer_list.remove(_timer);

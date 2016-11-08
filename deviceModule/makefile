@@ -17,5 +17,5 @@ DEFINE=DEBUG
 OBJ=../lib/libmydevice.so
 OBJ:$(SRC)
 	@echo "make libmydevice.so"
-	g++ -o -g  $(OBJ)  -fPIC -shared $(SRC) $(INCLUDE_PATH)  $(LIB_PATH) $(LIB) -D $(DEFINE) -std=c++11
+	g++ -o  $(OBJ) -g  -fPIC -shared $(SRC) $(INCLUDE_PATH)  $(LIB_PATH) $(LIB) -D $(DEFINE) -std=c++11
 	cp ../lib/libmydevice.so ../test/

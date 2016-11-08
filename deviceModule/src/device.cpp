@@ -6,11 +6,11 @@ CDevice::CDevice()
 {
 	m_isLogined = false;	
 }
-CDevice::CDevice(CDeviceManager *pOwner,BUS_ADDRESS address):m_pManageOwner(pOwner),m_isLogined(false),m_loginType(0)
+CDevice::CDevice(CDeviceManager *pOwner,BUS_ADDRESS_POINTER address):m_pManageOwner(pOwner),m_isLogined(false),m_loginType(0)
 {
 	m_bExpire = false;	
 	memset((char *)&m_DeviceAddress,0,sizeof(BUS_ADDRESS));
-	memcpy((char *)&m_DeviceAddress,(char *)&address,sizeof(BUS_ADDRESS));
+	memcpy((char *)&m_DeviceAddress,(char *)address,sizeof(BUS_ADDRESS));
 	
 	TParserCallBack tParserCallBack = {0};
 	tParserCallBack.pOwner = this;
@@ -23,6 +23,7 @@ CDevice::CDevice(CDeviceManager *pOwner,BUS_ADDRESS address):m_pManageOwner(pOwn
 
 CDevice::~CDevice()
 {
+	StopHeartBeat();
 	GetParseProtocolModuleInstance()->FreeCallBack(m_pProtocolPaser);
 }
 
@@ -98,7 +99,7 @@ void CDevice::ParserCallback(UINT32 wEvent, UINT32 wResultCode, UINT32 wDataLen,
 	}
     
 	if(WIS_CMD_LOGIN != wEvent && WIS_CMD_USER_AUTO_LOGIN != wEvent && WIS_CMD_HEART_BEAT != wEvent 
-	   && WIS_CMD_USER_REGIST != wEvent && WIS_CMD_USER_RESET_PASSWORD != wEvent)
+	   && WIS_CMD_USER_REGIST != wEvent && WIS_CMD_USER_RESET_PASSWORD != wEvent && WIS_CMD_USER_HEART_BEAT != wEvent)
 	{
 		if(!pDevice->IsLogined())
 		{
@@ -108,7 +109,7 @@ void CDevice::ParserCallback(UINT32 wEvent, UINT32 wResultCode, UINT32 wDataLen,
 	}
 
 	//直接在设备层处理心跳。
-	if(WIS_CMD_HEART_BEAT == wEvent)
+	if(WIS_CMD_HEART_BEAT == wEvent || WIS_CMD_USER_HEART_BEAT == wEvent)
 	{
 
 		LOG_INFO("heat beat response recvived");		
@@ -118,8 +119,8 @@ void CDevice::ParserCallback(UINT32 wEvent, UINT32 wResultCode, UINT32 wDataLen,
 	}
 	
 	DEVICE_INFO devInfo;  
-	memcpy((char *)&devInfo.bus_address,(const char *)(&pDevice->m_DeviceAddress),sizeof(BUS_ADDRESS));
-	
+	memcpy((char *)&devInfo.bus_address,(const char *)(&(pDevice->m_DeviceAddress)),sizeof(BUS_ADDRESS));
+
 	devInfo.is_logined = pDevice->IsLogined(); 
 	devInfo.login_type = pDevice->GetLoginType();
 	devInfo.uuid = pDevice->GetUuid();
@@ -153,8 +154,11 @@ bool CDevice::IsLogined(void)
 int CDevice::HeartBeratTimerHandler(void *device)
 {
 	TRACE_IN();
-	CDevice *pDevice  = (CDevice *)device;
 	
+	if(NULL == device)
+		return -1;
+	CDevice *pDevice  = (CDevice *)device;
+
 	if(!pDevice->m_isGetHeartBeatResponse)
 		pDevice->m_loseHeartBeatTimes++;
 	if(pDevice->m_loseHeartBeatTimes >= 3)
@@ -165,7 +169,6 @@ int CDevice::HeartBeratTimerHandler(void *device)
 					pDevice->m_DeviceAddress.host_address.port);
 		return -1;
 	}
-
     int heartBeatCmd = 0;
 	if(pDevice->m_loginType == TYPE_DEVICE)
 		heartBeatCmd = WIS_CMD_HEART_BEAT;
@@ -185,17 +188,20 @@ void CDevice::StartHeartBeat()
 {
 	TRACE_IN();
 	if(this->m_DeviceAddress.model_type != TCP_SERVER_MODE)
+	{
+		LOG_INFO("only heart beat in server mode");
 		return;
+	}
 	m_isGetHeartBeatResponse = false;
 	m_loseHeartBeatTimes = 0;
-	m_heartBeartTiemr.open(10,HeartBeratTimerHandler,this);
+	m_heartBeartTiemr.open(30,HeartBeratTimerHandler,this);
 
-	TIMERMANAGER->Register(m_heartBeartTiemr);
-	TIMERMANAGER->start();
+	TIMERMANAGER->Register(&m_heartBeartTiemr);
+	
 	TRACE_OUT();
 }
 
 void CDevice::StopHeartBeat()
 {
-	TIMERMANAGER->unRegister(m_heartBeartTiemr);
+	TIMERMANAGER->unRegister(&m_heartBeartTiemr);
 }
