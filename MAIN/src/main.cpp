@@ -102,7 +102,7 @@ int main()
 	Reporter report;
 	iModuel->RegistInterfacRecObject(&report);
 	
-	iModuel->StartTcpServer(8888);	
+	iModuel->StartTcpServer(7788);	
 	while(1)
 	{
 		//JPush::push_ALL_ALL_Alert("alert","title",100);

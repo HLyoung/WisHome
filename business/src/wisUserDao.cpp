@@ -291,7 +291,7 @@ void WisUserDao::handleUserResetPassword(BUS_ADDRESS &busAddress,const char *pda
 
 	WisUserResetPassword*resetInfo = (WisUserResetPassword*)pdata;	
     if(!checkUser(string(resetInfo->uuid,UUID_LEN))){
-		LOG_INFO("user(uuid = %s) want to reset his password,but he is not registed yet",string(resetInfo->uuid,UUID_LEN));
+		LOG_INFO("user(uuid = %s) want to reset his password,but he is not registed yet",string(resetInfo->uuid,UUID_LEN).c_str());
 		sendUserResponse(busAddress,WIS_CMD_USER_RESET_PASSWORD,-2);
 		return;
     }	
