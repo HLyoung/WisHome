@@ -41,7 +41,7 @@ void WisLoginHandler::handleUserLogin(BUS_ADDRESS &busAddress,int datalen,char *
     WisUserLoginInfo* loginInfo = (WisUserLoginInfo*)(pdata);		
     bool deviceExists = WisUserDao::login(std::string(loginInfo->uuid,UUID_LEN), std::string(loginInfo->password,PASSWORD_LEN));
     if( !deviceExists ) {
-        LOG_INFO("user(uuid = %s) login failed",loginInfo->uuid);
+        LOG_INFO("user(uuid = %s) login failed",std::string(loginInfo->uuid,UUID_LEN).c_str());
         sendLoginResponse( busAddress, loginInfo->uuid,1,TYPE_USER);
         return;
     } 
@@ -58,7 +58,7 @@ void WisLoginHandler::handleUserLogin(BUS_ADDRESS &busAddress,int datalen,char *
         if( !token.empty() && token.length() == 64 ) {
             WisIOSTokenDao::save( loginInfo->uuid, token );
         } else {
-            LOG_ERROR("user(uuid = %s) token(token = %s) is illegal",std::string(loginInfo->uuid,UUID_LEN).c_str(),std::string(loginInfo->token,TOKEN_LEN));
+            LOG_ERROR("user(uuid = %s) token(token = %s) is illegal",std::string(loginInfo->uuid,UUID_LEN).c_str(),std::string(loginInfo->token,TOKEN_LEN).c_str());
         }
     }
     sendLoginResponse( busAddress, loginInfo->uuid,0,TYPE_USER );
