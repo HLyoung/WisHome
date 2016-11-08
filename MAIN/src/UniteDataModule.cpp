@@ -87,7 +87,7 @@ bool CUniteDataModule::StartTcpServer(int nPort)
 
 bool CUniteDataModule::StartTimerModule()
 {
-	if(!TIMERMANAGER->get_instance()->start())
+	if(TIMERMANAGER->get_instance()->start())
 		return false;
 	return true;
 }
