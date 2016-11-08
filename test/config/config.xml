@@ -1,0 +1,9 @@
+<Doc>
+	<Node Name="wisServer" version="1.0" language="0" />
+	<DBAccess HostName="127.0.0.1" dbName="db_wis_user" username="root" pwd="123456" />
+	<LogConfig configfile="log.properties" logger="fa" />
+	<Server port="7788" />
+	<Certificate cert_file="cert.pem" passwd="123456" key="cert.pem" />
+	<JPush1 appKey="382f3c974ca4219f84efd827" masterSecret="f24ef2ca44325055e779c12f" />
+	<JPush appKey="f14be8e3e2fab421c62fd0e7" masterSecret="74dafc183575cd01a532aef3" />
+</Doc>
