@@ -28,7 +28,7 @@ bool WisUserDao::checkUser(const std::string &user)
 	
 	char sql[200] = {0};
 	snprintf(sql,sizeof(sql),"select * from wis_user_tbl where `name`='%s'",user.c_str());
-	if(0 != access->ExecuteNoThrow(sql))
+	if(access->ExecuteNoThrow(sql) < 1)
 	{
 		LOG_INFO("excute sql(%s) query failed. ",sql);
 		DbaModule_ReleaseNVDataAccess(access);
@@ -56,7 +56,7 @@ bool WisUserDao::checkUserAndPassword(const std::string &user,const std::string 
 	
 	char sql[200] = {0};
 	snprintf(sql,sizeof(sql),"select * from wis_user_tbl where `name`='%s' and `password`='%s'",user.c_str(),password.c_str());
-	if(0 != access->ExecuteNoThrow(sql))
+	if(access->ExecuteNoThrow(sql) < 1)
 	{
 		LOG_INFO("excute sql(%s) query failed. ",sql);
 		DbaModule_ReleaseNVDataAccess(access);

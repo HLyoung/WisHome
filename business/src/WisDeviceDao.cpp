@@ -15,7 +15,7 @@ bool WisDeviceDao::check(const std::string& uuid )
 		DbaModule_ReleaseNVDataAccess(access);
 		return false;
 	}
-	if(0 != access->ExecuteNoThrow(sql))
+	if(access->ExecuteNoThrow(sql) < 1)
 	{
 		LOG_ERROR("execute sql(%s) query failed",sql);
 	    DbaModule_ReleaseNVDataAccess(access);
@@ -160,7 +160,7 @@ bool WisDeviceDao::getDevice( const std::string& uuid, WisDeviceInfo& info )
 		return false;
 	}
 	
-	if(0 != access->ExecuteNoThrow(SQL.c_str()))
+	if(access->ExecuteNoThrow(SQL.c_str()) < 1)
 	{
 		LOG_ERROR("execute sql(%s) query failed",SQL.c_str());
 		DbaModule_ReleaseNVDataAccess(access);

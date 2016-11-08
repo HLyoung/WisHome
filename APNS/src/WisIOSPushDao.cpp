@@ -17,7 +17,7 @@ bool WisIOSPushDao::save(const std::string& device, int flag, int len, const cha
 		return false;
 	}
 	
-	if(0 != access->ExecuteNoThrow(sql))
+	if(access->ExecuteNoThrow(sql) < 1)
 	{
 		LOG_ERROR("execute sql(%s) query failed",sql);
 		DbaModule_ReleaseNVDataAccess(access);

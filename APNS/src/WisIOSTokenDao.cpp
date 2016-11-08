@@ -47,7 +47,7 @@ std::string WisIOSTokenDao::getToken(const std::string& uuid )
 		LOG_ERROR("get database access failed");
 		return "";
 	}
-	if(0 != access->ExecuteNoThrow(sql))
+	if(access->ExecuteNoThrow(sql) < 1)
 	{
 		LOG_ERROR("get token failed uuid = %s",uuid.c_str());
 		DbaModule_ReleaseNVDataAccess(access);
@@ -91,7 +91,7 @@ int WisIOSTokenDao::getTokens(std::vector<std::string>& uuids, std::set<std::str
 		LOG_ERROR("get database access failed");
 		return 0;
 	}
-	if(0 != access->ExecuteNoThrow(selectSQL.c_str()))
+	if(access->ExecuteNoThrow(selectSQL.c_str()) <1)
 	{
 		LOG_ERROR("get tokens failed");
 		DbaModule_ReleaseNVDataAccess(access);
