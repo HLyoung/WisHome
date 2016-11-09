@@ -30,7 +30,7 @@ bool WisUserDao::checkUser(const std::string &user)
 	snprintf(sql,sizeof(sql),"select * from wis_user_tbl where `name`='%s'",user.c_str());
 	if(access->ExecuteNoThrow(sql) < 1)
 	{
-		LOG_INFO("excute sql(%s) query failed. ",sql);
+		LOG_INFO("user(uuid = %s) does`t exist ",user.c_str());
 		DbaModule_ReleaseNVDataAccess(access);
 		return false;
 	}

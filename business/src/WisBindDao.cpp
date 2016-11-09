@@ -20,21 +20,13 @@ bool WisBindDao::addBind(const std::string& userUUID, const std::string& deviceU
   
 	char sql[200] = {0};
 	snprintf(sql,sizeof(sql),"SELECT * FROM wis_device_bind_tbl WHERE `dev_id`='%s' AND `user_id`='%s'",deviceUUID.c_str(),userUUID.c_str());
-	if(access->ExecuteNoThrow(sql) < 1)
-	{
-		LOG_INFO("bind device(uuid = %s) and user(uuid = %s) faild. sql = %s",userUUID.c_str(),deviceUUID.c_str(),sql);
-		DbaModule_ReleaseNVDataAccess((void*)access);
-		sendBindResponse(userUUID,WIS_CMD_USER_BIND,1);
-		return false;
-	}
-	if(access->RowsAffected() >= 1)
+	if(access->ExecuteNoThrow(sql) > 0)
 	{
 		LOG_INFO("device(uuid = %s) and usre(uuid = %s) is already binded.",deviceUUID.c_str(),userUUID.c_str());
 		DbaModule_ReleaseNVDataAccess((void*)access);
 		sendBindResponse(userUUID,WIS_CMD_USER_BIND,0);
 		return true;
 	}
-	
 	memset(sql,0,sizeof(sql));
 	snprintf(sql,sizeof(sql),"INSERT INTO wis_device_bind_tbl(`dev_id`,`user_id`,`bind_time`) VALUES('%s','%s',CURRENT_TIMESTAMP)",\
 			deviceUUID.c_str(),userUUID.c_str());
@@ -83,7 +75,7 @@ int  WisBindDao::getBindedDevices(const std::string& userUUID, std::map<std::str
     CNVDataAccess *access = (CNVDataAccess *)DbaModule_GetNVDataAccess();
 	if(access->ExecuteNoThrow(sql) < 1)
 	{
-		LOG_INFO("get binded device failed(userUUID = %s ,sql = %s)",userUUID.c_str(),sql);
+		LOG_INFO("user(userUUID = %s) bind no device",userUUID.c_str());
 		DbaModule_ReleaseNVDataAccess(access);
 		return 0;
 	}
