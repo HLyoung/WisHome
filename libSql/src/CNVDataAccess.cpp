@@ -154,7 +154,6 @@ long CNVDataAccess::RowsAffected()
 
 bool CNVDataAccess::FetchFirst()
 {
-	TRACE_IN();
 	if(NULL == this->pRes_)
 	{
 		return false;
@@ -165,26 +164,22 @@ bool CNVDataAccess::FetchFirst()
 	{
 		return false;
 	}
-	TRACE_OUT();
 	return true;
 }
 
 bool CNVDataAccess::FetchNext()
 {
-	TRACE_IN();
 	row_ = mysql_fetch_row(pRes_);
 	if(NULL == row_)
 	{
 		mysql_free_result(pRes_);
 		return false;
 	}
-	TRACE_OUT();
 	return true;
 }
 
 bool CNVDataAccess::FetchNewRow()
 {
-	TRACE_IN();
 	if(pRes_ == NULL)
 	{
 		return false;
@@ -197,7 +192,6 @@ bool CNVDataAccess::FetchNewRow()
 		pRes_ = NULL;
 		return false;
 	}
-	TRACE_OUT();
 	return true;
 }
 
@@ -208,7 +202,6 @@ bool CNVDataAccess::NextResultSet()
 
 int CNVDataAccess::GetFieldCount()
 {
-	TRACE_IN();
 	return mysql_num_fields(pRes_);
 }
 
@@ -225,7 +218,6 @@ MYSQL_FIELD * CNVDataAccess::Field(int nField)
 		return NULL;
 	}
 	
-	TRACE_OUT();
 	return filed;
 }
 

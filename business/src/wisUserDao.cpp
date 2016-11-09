@@ -58,18 +58,13 @@ bool WisUserDao::checkUserAndPassword(const std::string &user,const std::string 
 	snprintf(sql,sizeof(sql),"select * from wis_user_tbl where `name`='%s' and `password`='%s'",user.c_str(),password.c_str());
 	if(access->ExecuteNoThrow(sql) < 1)
 	{
-		LOG_INFO("excute sql(%s) query failed. ",sql);
+		LOG_INFO("password(passwd = %s) of user(uuid = %s) is incorrect",password.c_str(),user.c_str());
 		DbaModule_ReleaseNVDataAccess(access);
 		return false;
 	}
-	if(access->RowsAffected() >0)
-	{	
-		DbaModule_ReleaseNVDataAccess(access);
-		return true;
-	}
 	DbaModule_ReleaseNVDataAccess(access);
 	TRACE_OUT();
-	return false;	
+	return true;	
 }
 
 bool WisUserDao::login(const std::string &user,const std::string& passwd)
@@ -89,7 +84,7 @@ bool WisUserDao::login(const std::string &user,const std::string& passwd)
 	snprintf(sql,sizeof(sql),"select * from wis_user_tbl where `name`='%s' and `password`='%s'",user.c_str(),passwd.c_str());
 	if(access->ExecuteNoThrow(sql) < 1)
 	{
-		LOG_ERROR("excute sql(%s) query failed. ",sql);
+		LOG_ERROR("use(uuid = %s ,password = %s) try to login but it doesn`t exist! ",user.c_str(),passwd.c_str());
 		return false;
 	}
 	if(access->IsResultSet())
@@ -232,7 +227,7 @@ void WisUserDao::handleUserRegist(BUS_ADDRESS & busAddress,const char * pdata)
 		
 	char sql[200] = {0};
 	snprintf(sql,sizeof(sql),"insert into wis_user_tbl(`name`,`password`,`type`,`permission`,\
-	`reg_time`,`login_cnt`,`bind_status`) values('%s','%s', 0, 0, CURRENT_TIMESTAMP,0,0)",std::string(registInfo->uuid,UUID_LEN).c_str(), std::string(registInfo->password,PASSWORD_LEN).c_str());
+	`reg_time`,`login_cnt`) values('%s','%s', 0, 0, CURRENT_TIMESTAMP,0)",std::string(registInfo->uuid,UUID_LEN).c_str(), std::string(registInfo->password,PASSWORD_LEN).c_str());
 		
 	CNVDataAccess *access = (CNVDataAccess *)DbaModule_GetNVDataAccess();
 	if(NULL == access)
