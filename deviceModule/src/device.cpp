@@ -17,7 +17,7 @@ CDevice::CDevice(CDeviceManager *pOwner,BUS_ADDRESS_POINTER address):m_pManageOw
 	tParserCallBack.pParserCallback = ParserCallback;
 	m_pProtocolPaser = GetParseProtocolModuleInstance()->RegisteCallBack(tParserCallBack);
 	
-//	StartHeartBeat();
+	StartHeartBeat();
 }
 
 
@@ -46,11 +46,8 @@ bool CDevice::Send(INT32 nCmd, void* data, INT32 nDataSize)
 		logResult *result = (logResult *)data;
 		if(WIS_CMD_LOGIN == nCmd && result->result == 1)
 		{
-			LOG_INFO("device(uuid = %s) logined.",result->uuid);
 			SetLogined(true);
-			SetLoginType(TYPE_DEVICE);
-			m_uuid = std::string(result->uuid);
-			
+			SetLoginType(TYPE_DEVICE);			
 			nDataSize = sizeof(int);
 			
 		}
@@ -58,9 +55,7 @@ bool CDevice::Send(INT32 nCmd, void* data, INT32 nDataSize)
 		{
 			LOG_INFO("user(uuid = %s) logined.",result->uuid);
 			SetLogined(true);
-			SetLoginType(TYPE_USER);
-			m_uuid = std::string(result->uuid);
-			
+			SetLoginType(TYPE_USER);					
 			nDataSize = sizeof(int);
 		}
 	}
@@ -70,20 +65,16 @@ bool CDevice::Send(INT32 nCmd, void* data, INT32 nDataSize)
 	memset(pOutBuffer,0,nDataSize + 12);
 
 	GetParseProtocolModuleInstance()->MakeProtocolForSocket(m_pProtocolPaser,\
-	nCmd,(char *)data,nDataSize,pOutBuffer,&nOutBufferLen);
-	
-	bool bRet = false;
+	nCmd,(char *)data,nDataSize,pOutBuffer,&nOutBufferLen);	
 	if(nOutBufferLen == 0 || NULL == pOutBuffer)
 	{
 		LOG_INFO("Parameter illegal!");
-		return bRet;
+		return false;
 	}
-
-	bRet = GetTCPServiceModuleInstance()->SendData(m_pManageOwner,(UINT8*)pOutBuffer,nOutBufferLen,&m_DeviceAddress);
+	bool bRet = GetTCPServiceModuleInstance()->SendData(m_pManageOwner,(UINT8*)pOutBuffer,nOutBufferLen,&m_DeviceAddress);
+	
 	SafeDeleteArray(pOutBuffer);
-	
 	TRACE_OUT();
-	
 	return bRet;
 }
 
@@ -91,13 +82,9 @@ void CDevice::ParserCallback(UINT32 wEvent, UINT32 wResultCode, UINT32 wDataLen,
 {
 
 	TRACE_IN();
+	if(NULL == pOwner || NULL == pData) return;
 	
 	CDevice* pDevice = (CDevice*)pOwner;
-	if (NULL == pDevice)
-	{
-		return;
-	}
-    
 	if(WIS_CMD_LOGIN != wEvent && WIS_CMD_USER_AUTO_LOGIN != wEvent && WIS_CMD_HEART_BEAT != wEvent 
 	   && WIS_CMD_USER_REGIST != wEvent && WIS_CMD_USER_RESET_PASSWORD != wEvent && WIS_CMD_USER_HEART_BEAT != wEvent)
 	{
@@ -111,8 +98,6 @@ void CDevice::ParserCallback(UINT32 wEvent, UINT32 wResultCode, UINT32 wDataLen,
 	//直接在设备层处理心跳。
 	if(WIS_CMD_HEART_BEAT == wEvent || WIS_CMD_USER_HEART_BEAT == wEvent)
 	{
-
-		LOG_INFO("heat beat response recvived");		
 		pDevice->m_isGetHeartBeatResponse = true;
 		pDevice->m_loseHeartBeatTimes = 0;
 		return;
@@ -126,7 +111,6 @@ void CDevice::ParserCallback(UINT32 wEvent, UINT32 wResultCode, UINT32 wDataLen,
 	devInfo.uuid = pDevice->GetUuid();
 	
 	CUniteDataModule::GetInstance()->ShowNetDataToInterface(devInfo, wEvent,wResultCode, wDataLen, pData);
-
 	TRACE_OUT();
 }
 
@@ -165,7 +149,7 @@ int CDevice::HeartBeratTimerHandler(void *device)
 	{
 		pDevice->m_pManageOwner->StopTcpServer(&(pDevice->m_DeviceAddress));
 		pDevice->StopHeartBeat();
-		LOG_INFO("lose heart beat response 10 times,delete the link(ip = %s,port = %d)",pDevice->m_DeviceAddress.host_address.ip,\
+		LOG_INFO("lose heart beat response 3 times,delete the link(ip = %s,port = %d)",pDevice->m_DeviceAddress.host_address.ip,\
 					pDevice->m_DeviceAddress.host_address.port);
 		return -1;
 	}
@@ -189,7 +173,7 @@ void CDevice::StartHeartBeat()
 	TRACE_IN();
 	if(this->m_DeviceAddress.model_type != TCP_SERVER_MODE)
 	{
-		LOG_INFO("only heart beat in server mode");
+		LOG_INFO("heart beat sended only in server mode");
 		return;
 	}
 	m_isGetHeartBeatResponse = false;

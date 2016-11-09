@@ -21,10 +21,7 @@ void *TimerThread::run(void)
 {
 	while(true)
 	{
-		long int start_clock = get_systime_clock();
-		this->_timer_list.sort();
 		list<Timer*>::iterator ite;
-
 		_time_list_mutex.lock();
 		for(ite = this->_timer_list.begin();ite != this->_timer_list.end();ite++)
 		{
@@ -35,10 +32,7 @@ void *TimerThread::run(void)
 				(*ite)->leftsecs = (*ite)->_interval;
 			}
 		}
-		_time_list_mutex.unlock();
-		
-		long int  end_clock = get_systime_clock();
-		
+		_time_list_mutex.unlock();				
 		sleep(1);
 	}
 	

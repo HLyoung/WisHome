@@ -44,44 +44,12 @@ bool CDeviceManager::StartTcpServer(int nPort)
 
 bool CDeviceManager::ScanAllDevice()
 {
-	/*char sendbuffer[32] = "BSB";
-
-	if (!m_bInitScan)
-	{
-		CData strIp, strPort;
-		GetMulticastPara(strIp, strPort);
-		if (strIp.empty() || strPort.empty())
-		{
-			return false;
-		}
-
-		m_bInitScan = GetTCPServiceModuleInstance()->InitMulticast(this, strIp.c_str(), strPort.convertInt(), MulticastMessageCallback);
-	}
-
-	if (m_bInitScan)
-	{
-		GetTCPServiceModuleInstance()->StartMulticastScan(strlen(sendbuffer) + 1, sendbuffer);
-	}
-
-	return true;*/
+	
 }
 
 
 int CDeviceManager::GetTcpServicePort()
 {
-/*	CXmlDocument ConfigXml;
-	CUniteDataModule::GetInstance()->GetConfigXml(ConfigXml);
-
-	CXmlElement *pDocElement = ConfigXml.RootElement();
-	if (NULL == pDocElement)
-	{
-		return 0;
-	}
-
-	CXmlElement *pMulticastElement = pDocElement->FirstChildElement("Server");
-
-	CData strPort = pMulticastElement->Attribute("port");
-	return strPort.convertInt();*/
 }
 
 bool CDeviceManager::StopTcpServer(BUS_ADDRESS_POINTER pBusAddress)
@@ -100,6 +68,8 @@ bool CDeviceManager::StopTcpServer(BUS_ADDRESS_POINTER pBusAddress)
 				}
 		}
 	m_Device_mutex.unlock();
+	
+	OnDisconnect(sizeof(BUS_ADDRESS),pBusAddress);
 	return GetTCPServiceModuleInstance()->StopService(pBusAddress);
 }
 
