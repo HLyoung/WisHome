@@ -53,22 +53,7 @@ int CDeviceManager::GetTcpServicePort()
 }
 
 bool CDeviceManager::StopTcpServer(BUS_ADDRESS_POINTER pBusAddress)
-{
-	
-	m_Device_mutex.lock();
-	std::map<string,CDevice*>::iterator iter;
-	BUS_ADDRESS busAddr;
-	for(iter = m_mapDevice.begin();iter != m_mapDevice.end();iter ++)
-		{
-			iter->second->GetBusAddress(busAddr);
-			if(busAddr.host_address == pBusAddress->host_address)
-				{
-					m_mapDevice.erase(iter->first);
-					break;
-				}
-		}
-	m_Device_mutex.unlock();
-	
+{	
 	OnDisconnect(sizeof(BUS_ADDRESS),pBusAddress);
 	return GetTCPServiceModuleInstance()->StopService(pBusAddress);
 }
