@@ -211,14 +211,7 @@ void WisUserDao::handleUserRegist(BUS_ADDRESS & busAddress,const char * pdata)
 		return;
 	}	
 	
-	WisUserRegistInfo *registInfo = (WisUserRegistInfo*)pdata;
-	
-	//if(!checkMail(string(registInfo->uuid,UUID_LEN))){
-	//	LOG_ERROR("%s attempt to regist with a illegal mail address",string(registInfo->uuid,UUID_LEN).c_str());
-	//	sendUserResponse(busAddress,WIS_CMD_USER_REGIST,-3);
-	//	return;
-	//}
-	
+	WisUserRegistInfo *registInfo = (WisUserRegistInfo*)pdata;	
     if(checkUser(string(registInfo->uuid,UUID_LEN))){
 		LOG_INFO("%s is already registed",string(registInfo->uuid,UUID_LEN).c_str());
 		sendUserResponse(busAddress,WIS_CMD_USER_REGIST,-2);

@@ -47,7 +47,8 @@ bool CDevice::Send(INT32 nCmd, void* data, INT32 nDataSize)
 		if(WIS_CMD_LOGIN == nCmd && result->result == 1)
 		{
 			SetLogined(true);
-			SetLoginType(TYPE_DEVICE);			
+			SetLoginType(TYPE_DEVICE);
+			m_uuid = string::(result->uuid);
 			nDataSize = sizeof(int);
 			
 		}
@@ -55,7 +56,8 @@ bool CDevice::Send(INT32 nCmd, void* data, INT32 nDataSize)
 		{
 			LOG_INFO("user(uuid = %s) logined.",result->uuid);
 			SetLogined(true);
-			SetLoginType(TYPE_USER);					
+			SetLoginType(TYPE_USER);	
+			m_uuid = string::(result->uuid);
 			nDataSize = sizeof(int);
 		}
 	}
