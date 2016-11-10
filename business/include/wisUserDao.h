@@ -27,7 +27,7 @@ public:
 	static bool logout(const std::string &user,const std::string &passwd="");
 	static bool regist(const std::string &user,const std::string &passwd=defaultPassword);
 	static bool logoutAll();
-	static bool userGetDevice(const char *uuid);
+	static bool userGetDevice(BUS_ADDRESS &busAddress,const char *uuid);
 	static bool sendUserResponse(BUS_ADDRESS &busAddress,int cmd,const int ret);
 
 	static void handleUserRegist(BUS_ADDRESS &busAddress,const char *pdata);

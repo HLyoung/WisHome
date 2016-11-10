@@ -222,12 +222,6 @@ void CDeviceManager::OnDisconnect(UINT32 size, void* data )
 	}
 
 	string addresskey = GetAddressKey(*bus_address);
-	if (addresskey.length() == 0)
-	{
-		LOG_ERROR("address key is empty");
-		return;
-	}
-	
 	std::string uuid;
 	int loginType;
 	
@@ -310,7 +304,6 @@ bool CDeviceManager::SendData(std::string uuid,int nRole,int nDataType,char *pDa
 		if(ite->second->GetUuid() == uuid  && ite->second->IsLogined()) 
 		{
 			res = ite->second->Send(nDataType,pData,nDataSize);
-			LOG_INFO("the device or user(uuid = %s key = %s) is already exist  ",uuid.c_str(),ite->first.c_str());
 			count ++;			
 		}
 

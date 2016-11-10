@@ -179,7 +179,7 @@ bool WisUserDao::logoutAll()
 	
 }
 
-bool WisUserDao::userGetDevice(const char *uuid)
+bool WisUserDao::userGetDevice(BUS_ADDRESS &busAddress,const char *uuid)
 {
 	TRACE_IN();
 	std::map<std::string,WisDeviceInfo> mapDevice;
@@ -198,7 +198,7 @@ bool WisUserDao::userGetDevice(const char *uuid)
 			}
 		}
 
-	GetUniteDataModuleInstance()->SendData(uuid,WIS_CMD_USER_GET_DEVICES,(char *)deviceList,size,TCP_SERVER_MODE);
+	GetUniteDataModuleInstance()->SendData(busAddress,WIS_CMD_USER_GET_DEVICES,(char *)deviceList,size,TCP_SERVER_MODE);
 	SafeDeleteArray(deviceList);
 	TRACE_OUT();
 }

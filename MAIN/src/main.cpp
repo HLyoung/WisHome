@@ -69,7 +69,7 @@ class Reporter : public IAutoReportToInterface
 				WisToUserHandler::handleToUser(DeviceInfo.bus_address,DeviceInfo.uuid.c_str(),nDataLen,pData);
 				break;
 			case WIS_CMD_USER_GET_DEVICES:
-				WisUserDao::userGetDevice(DeviceInfo.uuid.c_str());
+				WisUserDao::userGetDevice(DeviceInfo.bus_address,DeviceInfo.uuid.c_str());
 				break;
 			case WIS_CMD_USER_PRIVATE:
 				WisUserPrivateHandler::handleUserPrivate(DeviceInfo.bus_address,DeviceInfo.uuid.c_str(),nDataLen,pData);
