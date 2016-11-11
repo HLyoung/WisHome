@@ -209,11 +209,8 @@ void CDeviceManager::OnDisconnect(UINT32 size, void* data )
 		return;
 	}
 
-	string addresskey = GetAddressKey(*bus_address);
-	std::string uuid;
-	int loginType;
-	
-    m_Device_mutex.lock();
+	string addresskey = GetAddressKey(*bus_address);	
+    std::lock_guard<std::mutex> lg(m_Device_mutex);
 	map<string,CDevice*>::iterator ite = m_mapDevice.find(addresskey);	
 	if (ite == m_mapDevice.end()) 
 		return;
@@ -222,17 +219,17 @@ void CDeviceManager::OnDisconnect(UINT32 size, void* data )
 	if (NULL == pGatewayDevice)
 		return;
 	
-	uuid = pGatewayDevice->GetUuid();
-	loginType = pGatewayDevice->GetLoginType();
+	std::string uuid = pGatewayDevice->GetUuid();
+	int loginType = pGatewayDevice->GetLoginType();
+	
 	SafeDelete(ite->second);
 	m_mapDevice.erase(ite->first);	
+	
 	for(ite = m_mapDevice.begin();ite != m_mapDevice.end();ite ++){  //当一个设备有多个连接的时候，某一个连接断了并不将设备置为离线。
 		if(ite->second->GetUuid() == uuid){
-			m_Device_mutex.unlock();
 			return;
 		}
 	}
-    m_Device_mutex.unlock();
 		
     CUniteDataModule::GetInstance()->ShowClientDisConnect(*bus_address,uuid,loginType);
 	TRACE_OUT();
