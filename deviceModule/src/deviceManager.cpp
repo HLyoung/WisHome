@@ -212,12 +212,16 @@ void CDeviceManager::OnDisconnect(UINT32 size, void* data )
 	string addresskey = GetAddressKey(*bus_address);	
     std::lock_guard<std::mutex> lg(m_Device_mutex);
 	map<string,CDevice*>::iterator ite = m_mapDevice.find(addresskey);	
-	if (ite == m_mapDevice.end()) 
+	if (ite == m_mapDevice.end()){
+		LOG_INFO("the link doesn`t found");
 		return;
+		}
 	
 	CDevice* pGatewayDevice = (CDevice*)ite->second;
-	if (NULL == pGatewayDevice)
+	if (NULL == pGatewayDevice){
+		LOG_INFO("the device doesn`t found");
 		return;
+		}
 	
 	std::string uuid = pGatewayDevice->GetUuid();
 	int loginType = pGatewayDevice->GetLoginType();

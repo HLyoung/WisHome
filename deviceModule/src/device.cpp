@@ -146,8 +146,11 @@ int CDevice::HeartBeratTimerHandler(void *device)
 		return -1;
 	CDevice *pDevice  = (CDevice *)device;
 
-	if(!pDevice->m_isGetHeartBeatResponse)
+	if(!pDevice->m_isGetHeartBeatResponse){
 		pDevice->m_loseHeartBeatTimes++;
+		LOG_INFO("lose heart beat %d times",pDevice->m_loseHeartBeatTimes);
+		}
+		
 	if(pDevice->m_loseHeartBeatTimes >= 3)
 	{
 		pDevice->m_pManageOwner->StopTcpServer(&(pDevice->m_DeviceAddress));
