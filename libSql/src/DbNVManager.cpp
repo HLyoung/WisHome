@@ -323,14 +323,31 @@ extern "C" int DbaModule_Initialize(
 								const char *pcPwd
 								)
 {
-	try
+
+    int res = CDbNVManager::Instance()->SetDNS(pcHost,pcDbname,pcUsername,pcPwd);
+	if(0 != res)
+		return res;
+
+	CNVDataAccess *access = DbaModule_GetNVDataAccess();
+	if(NULL == access) 
+		return -1
+    
+	char *sql1 = "update wis_user_tbl set `status`=0";
+	if(0 != access->ExecuteNonQuery(sql1))
 	{
-		return CDbNVManager::Instance()->SetDNS(pcHost,pcDbname,pcUsername,pcPwd);
-	}
-	catch(...)
-	{
+		LOG_ERROR("set user login status failed");
 		return -1;
 	}
+	char *sql2 = "update wis_device_tbl set `status`=0";
+	if(0 != access->ExecuteNonQuery(sql2))
+	{
+		LOG_ERROR("set device login status failed");
+		return -1;
+	}	
+
+	return 0;
+	
+	
 }
 
 extern "C" void* DbaModule_GetNVDataAccess()

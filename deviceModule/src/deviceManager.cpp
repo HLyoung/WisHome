@@ -134,18 +134,12 @@ void CDeviceManager::OnConnect( UINT32 size, void* data )
     CDevice* pGatewayDevice = GetDeviceClient(*bus_address);
     if (!pGatewayDevice)
 	{
-		LOG_INFO("client(key = %s) connect is not exist and will create it",addresskey.c_str());
 		pGatewayDevice = new CDevice(this,bus_address);
-
 		
 		m_Device_mutex.lock();
 		m_mapDevice.insert(pair<string,CDevice*>(addresskey,pGatewayDevice));
 		m_Device_mutex.unlock();
 	}
-    else
-    {
-    	LOG_INFO("client(key = %s) is already exist,set unexpire",addresskey.c_str());
-    }
 
 	CUniteDataModule::GetInstance()->ShowClientConnect(*bus_address);
 
@@ -175,20 +169,18 @@ string CDeviceManager::GetAddressKey(BUS_ADDRESS& address)
 CDevice* CDeviceManager::GetDeviceClient(BUS_ADDRESS& address)
 {
 	TRACE_IN();
-
-	LOG_INFO("%s-%d",address.host_address.ip, address.host_address.port);
 	string address_key = GetAddressKey(address);
 
 	std::lock_guard<std::mutex> lg(m_Device_mutex);	
 	map<string,CDevice*>::iterator ite = m_mapDevice.find(address_key);
-	if (ite != m_mapDevice.end())
+	if (ite == m_mapDevice.end())
 	{
-		LOG_INFO("the device(key = %s) is already exist",address_key.c_str());
-		return (CDevice*)ite->second;
-	}
-	LOG_INFO("the device(key = %s ) is not exist ",address_key.c_str());
+		LOG_INFO("the device(key = %s ) is not exist ",address_key.c_str());
+		return NULL;
+		
+	}	
 	TRACE_OUT();
-	return NULL;
+	return (CDevice*)ite->second;
 }
 
 CDevice* CDeviceManager::GetDeviceClient(std::string uuid)
@@ -201,11 +193,9 @@ CDevice* CDeviceManager::GetDeviceClient(std::string uuid)
 	{
 		if(ite->second->GetUuid() == uuid  && ite->second->IsLogined()) 
 		{
-			LOG_INFO("the device or user(uuid = %s) is already exist",uuid.c_str());
 			return ite->second;
 		}
-	}
-	
+	}	
 	LOG_INFO("the device or user (uuid = %s) is not exist",uuid.c_str());
 	TRACE_OUT();
 	return NULL;

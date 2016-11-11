@@ -46,13 +46,7 @@ bool CUniteDataModule::StartModule()
 		std::cout<<"load config file filed."<<std::endl;
 		Result = false;
 	}
-	//数据库模块初始化
-	
-	if(!DatabaseModuleInit())
-	{
-		std::cout<<"init database module failed."<<std::endl;
-		Result = false;
-	}
+
 	//LOG模块初始化
 	
 	if(!LogModuleInit())
@@ -60,6 +54,15 @@ bool CUniteDataModule::StartModule()
 		std::cout<<"init log module failed."<<std::endl;
 		Result = false;
 	}
+	
+	//数据库模块初始化
+	
+	if(!DatabaseModuleInit())
+	{
+		std::cout<<"init database module failed."<<std::endl;
+		Result = false;
+	}
+	
 
 	if(!StartTimerModule())
 	{

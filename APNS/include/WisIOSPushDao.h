@@ -11,7 +11,7 @@
 
 class WisIOSPushDao {
 public:
-    static bool save(const std::string& device, int flag, int len, const char* msg);
+    static bool save(const std::string& device, int flag, int len, const std::string& msg);
 };
 
 #endif //WIS_WISIOSPUSHDAO_H

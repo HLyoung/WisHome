@@ -38,14 +38,12 @@ void WisToUserHandler::handlePushMessage(BUS_ADDRESS &busAddress,const char *uui
 	std::set<std::string> tokens;
 	WisIOSTokenDao::getTokens(deviceUUIDs,tokens);
 	if(!tokens.empty()){	
-		//int badge = WisBadgeCache::getBadge(*tIter) + 1;
 		int errCode = (int)JPush::push_SpecifiedIDs(std::string(packet->data,packet->len),"device message",1,tokens);
 		if(CURLE_OK != errCode)
 			LOG_ERROR("push message to users failed,erroCode:%d",errCode);
-		//WisBadgeCache::setBadge(*tIter,badge);
 	}
     sendToUserResponse(busAddress, WIS_CMD_TO_USER, 0);
-    WisIOSPushDao::save(uuid, packet->flag, packet->len, packet->data);
+    WisIOSPushDao::save(uuid, packet->flag, packet->len,std::string(packet->data,packet->len));
 
 	TRACE_OUT();
 }
@@ -53,7 +51,6 @@ void WisToUserHandler::handlePushMessage(BUS_ADDRESS &busAddress,const char *uui
 void WisToUserHandler::handleSendToOne(BUS_ADDRESS &busAddress,const char *uuid, const WisToUserData* packet)
 {
 	TRACE_IN();
-
 
     char deviceUUID[UUID_LEN + 1] = {0};
 	memcpy(deviceUUID, packet->uuid, UUID_LEN);
@@ -141,8 +138,6 @@ void WisToUserHandler::handleToUser(BUS_ADDRESS &busAddress,const char *uuid,int
 void WisToUserHandler::sendToUserResponse(BUS_ADDRESS &busAddress,int nCmd,int done)
 {
 	TRACE_IN();
-
-	LOG_INFO("send response to(ip = %s,cmd = %d,result = %d)",busAddress.host_address.ip,nCmd,done);
 	int isDone = done;
     GetUniteDataModuleInstance()->SendData(busAddress,nCmd,(char *)&isDone,sizeof(int),TCP_SERVER_MODE);
 	TRACE_OUT();
