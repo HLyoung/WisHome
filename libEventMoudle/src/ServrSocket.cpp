@@ -240,6 +240,7 @@ void ServrSocket::bufMapAddBuf(struct bufferevent *bev,BUS_ADDRESS_POINTER pBusA
 
 bool ServrSocket::bufMapDeleteBuf(struct bufferevent * bev)
 {
+	TRACE_IN();
 	std::lock_guard<std::mutex> lg(bufMapMutex);
 	std::map<struct bufferevent*,BUS_ADDRESS_POINTER>::iterator ite = bufMap.find(bev);
 	if(ite != bufMap.end())
@@ -248,6 +249,8 @@ bool ServrSocket::bufMapDeleteBuf(struct bufferevent * bev)
 		bufferevent_free(bev);
 		return true;
 	}
+
+	TRACE_OUT();
 	return false;
 }
 

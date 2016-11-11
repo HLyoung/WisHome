@@ -66,7 +66,7 @@ void CHostAddressMap::RemoveHostAddress(HOST_ADDRESS host_address)
 	TRACE_IN();
 	CHostAddressMap *instance = GetLocalInstancePointer(CHostAddressMap);
 	string key_string = CHostAddress::GetKey((char*)host_address.ip,host_address.port);
-	instance->RemoveHostAddress(key_string);
+	instance->RemoveHostAddress(key_string,true);
 	TRACE_OUT();
 }
 

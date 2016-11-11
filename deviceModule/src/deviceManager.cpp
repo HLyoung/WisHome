@@ -52,9 +52,41 @@ int CDeviceManager::GetTcpServicePort()
 {
 }
 
-bool CDeviceManager::StopTcpServer(BUS_ADDRESS_POINTER pBusAddress)
+bool CDeviceManager::StopTcpServer(BUS_ADDRESS_POINTER bus_address)
 {	
-	OnDisconnect(sizeof(BUS_ADDRESS),pBusAddress);
+	if (NULL == bus_address)
+	{
+		LOG_INFO("OnDisconnect callback argument error!");
+		return false;
+	}
+	
+	string addresskey = GetAddressKey(*bus_address);	
+	std::lock_guard<std::mutex> lg(m_Device_mutex);
+	map<string,CDevice*>::iterator ite = m_mapDevice.find(addresskey);	
+	if (ite == m_mapDevice.end()){
+		LOG_INFO("the link doesn`t found");
+		return;
+		}
+		
+	CDevice* pGatewayDevice = (CDevice*)ite->second;
+	if (NULL == pGatewayDevice){
+		LOG_INFO("the device doesn`t found");
+		return;
+		}
+		
+	std::string uuid = pGatewayDevice->GetUuid();
+	int loginType = pGatewayDevice->GetLoginType();
+		
+	SafeDelete(ite->second);
+	m_mapDevice.erase(ite);	
+		
+	for(ite = m_mapDevice.begin();ite != m_mapDevice.end();ite ++){  //当一个设备有多个连接的时候，某一个连接断了并不将设备置为离线。
+		if(ite->second->GetUuid() == uuid){
+			return;
+		}
+	}
+			
+	CUniteDataModule::GetInstance()->ShowClientDisConnect(*bus_address,uuid,loginType);
 	return GetTCPServiceModuleInstance()->StopService(pBusAddress);
 }
 

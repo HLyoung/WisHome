@@ -153,8 +153,8 @@ int CDevice::HeartBeratTimerHandler(void *device)
 		
 	if(pDevice->m_loseHeartBeatTimes >= 3)
 	{
-		pDevice->m_pManageOwner->StopTcpServer(&(pDevice->m_DeviceAddress));
 		pDevice->StopHeartBeat();
+		pDevice->m_pManageOwner->StopTcpServer(&(pDevice->m_DeviceAddress));		
 		LOG_INFO("lose heart beat response 3 times,delete the link(ip = %s,port = %d)",pDevice->m_DeviceAddress.host_address.ip,\
 					pDevice->m_DeviceAddress.host_address.port);
 		return -1;

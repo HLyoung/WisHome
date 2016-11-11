@@ -196,7 +196,7 @@ void CTCPServiceManage::RemoveTcpService(BUS_ADDRESS_POINTER pBus_address)
 		return;
 	}
 	SafeDelete(ite->second);
-	m_mapTcpLink.erase(key);
+	m_mapTcpLink.erase(ite);
 		
 	TRACE_OUT();
 }  

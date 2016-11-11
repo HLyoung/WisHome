@@ -52,6 +52,7 @@ int CommonTCPManager::Send(void * handle,const char * pData,int nProLen)
 
 int CommonTCPManager::CloseConnection(void * dwHandle)
 {
+	TRACE_IN();
 	std::list<ClientSocket*>::iterator ite = ClientSocketList.begin();
 	for(; ite != ClientSocketList.end();ite++){
 		if((*ite)->_bev == (struct bufferevent *)dwHandle){
@@ -66,7 +67,9 @@ int CommonTCPManager::CloseConnection(void * dwHandle)
 			return 0;
 		}
 	}
-
+   if(sIte == ServrSocketList.end())
+   LOG_INFO("the link about to delete not found");
+   TRACE_OUT();
 	return -1;
 }
 
