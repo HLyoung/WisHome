@@ -175,7 +175,6 @@ CDevice* CDeviceManager::GetDeviceClient(BUS_ADDRESS& address)
 	map<string,CDevice*>::iterator ite = m_mapDevice.find(address_key);
 	if (ite == m_mapDevice.end())
 	{
-		LOG_INFO("the device(key = %s ) is not exist ",address_key.c_str());
 		return NULL;
 		
 	}	
@@ -196,7 +195,6 @@ CDevice* CDeviceManager::GetDeviceClient(std::string uuid)
 			return ite->second;
 		}
 	}	
-	LOG_INFO("the device or user (uuid = %s) is not exist",uuid.c_str());
 	TRACE_OUT();
 	return NULL;
 }
@@ -217,21 +215,17 @@ void CDeviceManager::OnDisconnect(UINT32 size, void* data )
 	
     m_Device_mutex.lock();
 	map<string,CDevice*>::iterator ite = m_mapDevice.find(addresskey);	
-	if (ite != m_mapDevice.end())
-	{
-		CDevice* pGatewayDevice = (CDevice*)ite->second;
-		if (NULL != pGatewayDevice)
-		{			
-		    uuid = pGatewayDevice->GetUuid();
-			loginType = pGatewayDevice->GetLoginType();
-
-			SafeDelete(ite->second);
-			m_mapDevice.erase(ite->first);			
-		}
-	}
-	else 
-		LOG_INFO("the link(key = %s) about to delete is not found",addresskey.c_str());
+	if (ite == m_mapDevice.end()) 
+		return;
 	
+	CDevice* pGatewayDevice = (CDevice*)ite->second;
+	if (NULL == pGatewayDevice)
+		return;
+	
+	uuid = pGatewayDevice->GetUuid();
+	loginType = pGatewayDevice->GetLoginType();
+	SafeDelete(ite->second);
+	m_mapDevice.erase(ite->first);	
 	for(ite = m_mapDevice.begin();ite != m_mapDevice.end();ite ++){  //当一个设备有多个连接的时候，某一个连接断了并不将设备置为离线。
 		if(ite->second->GetUuid() == uuid){
 			m_Device_mutex.unlock();
@@ -286,8 +280,7 @@ bool CDeviceManager::SendData(std::string uuid,int nRole,int nDataType,char *pDa
 
 	bool res = false;
 	int count = 0;
-	std::lock_guard<std::mutex> lg(m_Device_mutex);
-	
+   
 	map<string,CDevice*>::iterator ite = m_mapDevice.begin();
 	for( ;ite != m_mapDevice.end();ite++)
 	{
