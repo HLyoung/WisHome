@@ -316,41 +316,6 @@ void CDbNVManager::Release()
 	TRACE_OUT();
 }
 
-extern "C" int DbaModule_Initialize(
-								const char *pcHost,
-								const char *pcDbname,
-								const char *pcUsername,
-								const char *pcPwd
-								)
-{
-
-    int res = CDbNVManager::Instance()->SetDNS(pcHost,pcDbname,pcUsername,pcPwd);
-	if(0 != res)
-		return res;
-
-	CNVDataAccess *access = DbaModule_GetNVDataAccess();
-	if(NULL == access) 
-		return -1
-    
-	char *sql1 = "update wis_user_tbl set `status`=0";
-	if(0 != access->ExecuteNonQuery(sql1))
-	{
-		LOG_ERROR("set user login status failed");
-		DbaModule_ReleaseNVDataAccess(access);
-		return -1;
-	}
-	char *sql2 = "update wis_device_tbl set `status`=0";
-	if(0 != access->ExecuteNonQuery(sql2))
-	{
-		LOG_ERROR("set device login status failed");
-		DbaModule_ReleaseNVDataAccess(access);
-		return -1;
-	}	
-	DbaModule_ReleaseNVDataAccess(access);
-	return 0;
-	
-	
-}
 
 extern "C" void* DbaModule_GetNVDataAccess()
 {
@@ -375,6 +340,41 @@ extern "C" void DbaModule_ReleaseNVDataAccess(void * pNVDataAccess)
 	{
 		//TraceError( "Catch exception at " << __FILE__ << ":" << __LINE__ );
 	}
+}
+extern "C" int DbaModule_Initialize(
+								const char *pcHost,
+								const char *pcDbname,
+								const char *pcUsername,
+								const char *pcPwd
+								)
+{
+
+    int res = CDbNVManager::Instance()->SetDNS(pcHost,pcDbname,pcUsername,pcPwd);
+	if(0 != res)
+		return res;
+
+	CNVDataAccess *access =(CNVDataAccess *)DbaModule_GetNVDataAccess();
+	if(NULL == access) 
+		return -1;
+    
+	const char *sql1 = "update wis_user_tbl set `status`=0";
+	if(0 != access->ExecuteNonQuery(sql1))
+	{
+		LOG_ERROR("set user login status failed");
+		DbaModule_ReleaseNVDataAccess(access);
+		return -1;
+	}
+	const char *sql2 = "update wis_device_tbl set `status`=0";
+	if(0 != access->ExecuteNonQuery(sql2))
+	{
+		LOG_ERROR("set device login status failed");
+		DbaModule_ReleaseNVDataAccess(access);
+		return -1;
+	}	
+	DbaModule_ReleaseNVDataAccess(access);
+	return 0;
+	
+	
 }
 
 extern "C" int DbaModule_UnInitialize()
