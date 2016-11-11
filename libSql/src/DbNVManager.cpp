@@ -336,15 +336,17 @@ extern "C" int DbaModule_Initialize(
 	if(0 != access->ExecuteNonQuery(sql1))
 	{
 		LOG_ERROR("set user login status failed");
+		DbaModule_ReleaseNVDataAccess(access);
 		return -1;
 	}
 	char *sql2 = "update wis_device_tbl set `status`=0";
 	if(0 != access->ExecuteNonQuery(sql2))
 	{
 		LOG_ERROR("set device login status failed");
+		DbaModule_ReleaseNVDataAccess(access);
 		return -1;
 	}	
-
+	DbaModule_ReleaseNVDataAccess(access);
 	return 0;
 	
 	

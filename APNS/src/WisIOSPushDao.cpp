@@ -6,8 +6,7 @@ bool WisIOSPushDao::save(const std::string& device, int flag, int len, const std
 {
 	
 	char sql[400] = {0};
-	snprintf(sql,sizeof(sql),"INSERT INTO wis_ios_push_tbl(`submit_time`,`from_dev`,`flag`,`len`,`message`,`status`) \
-		VALUES(CURRENT_TIMESTAMP,'%s',%d,%d,'%s',1)",device.c_str(),flag,len,msg.c_str());
+	snprintf(sql,sizeof(sql),"INSERT INTO wis_ios_push_tbl(`submit_time`,`from_dev`,`flag`,`len`,`message`,`status`) VALUES(CURRENT_TIMESTAMP,'%s',%d,%d,'%s',1)",device.c_str(),flag,len,msg.c_str());
 	
 	CNVDataAccess *access = (CNVDataAccess *)DbaModule_GetNVDataAccess();
 	if(NULL == access)
@@ -17,9 +16,8 @@ bool WisIOSPushDao::save(const std::string& device, int flag, int len, const std
 		return false;
 	}
 	
-	if(access->ExecuteNoThrow(sql) < 1)
+	if(0 != access->ExecuteNonQuery(sql))
 	{
-		LOG_ERROR("execute sql(%s) query failed",sql);
 		DbaModule_ReleaseNVDataAccess(access);
 		return false;
 	}

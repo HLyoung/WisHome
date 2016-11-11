@@ -47,6 +47,13 @@ bool CUniteDataModule::StartModule()
 		Result = false;
 	}
 
+	
+	if(!StartTimerModule())
+	{
+		std::cout<<"init timer module failed"<<std::endl;
+		Result = false;
+	}
+	
 	//LOG模块初始化
 	
 	if(!LogModuleInit())
@@ -61,15 +68,7 @@ bool CUniteDataModule::StartModule()
 	{
 		std::cout<<"init database module failed."<<std::endl;
 		Result = false;
-	}
-	
-
-	if(!StartTimerModule())
-	{
-		std::cout<<"init timer module failed"<<std::endl;
-		Result = false;
-	}
-
+	}	
 	m_bStarted = true;
       
 	return Result;
