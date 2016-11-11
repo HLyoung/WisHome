@@ -65,29 +65,29 @@ bool CDeviceManager::StopTcpServer(BUS_ADDRESS_POINTER bus_address)
 	map<string,CDevice*>::iterator ite = m_mapDevice.find(addresskey);	
 	if (ite == m_mapDevice.end()){
 		LOG_INFO("the link doesn`t found");
-		return;
+		return false;
 		}
 		
 	CDevice* pGatewayDevice = (CDevice*)ite->second;
 	if (NULL == pGatewayDevice){
 		LOG_INFO("the device doesn`t found");
-		return;
+		return false;
 		}
 		
 	std::string uuid = pGatewayDevice->GetUuid();
 	int loginType = pGatewayDevice->GetLoginType();
 		
-	SafeDelete(ite->second);
+//	SafeDelete(ite->second);
 	m_mapDevice.erase(ite);	
 		
 	for(ite = m_mapDevice.begin();ite != m_mapDevice.end();ite ++){  //当一个设备有多个连接的时候，某一个连接断了并不将设备置为离线。
 		if(ite->second->GetUuid() == uuid){
-			return;
+			return false;
 		}
 	}
 			
 	CUniteDataModule::GetInstance()->ShowClientDisConnect(*bus_address,uuid,loginType);
-	return GetTCPServiceModuleInstance()->StopService(pBusAddress);
+	return GetTCPServiceModuleInstance()->StopService(bus_address);
 }
 
 bool CDeviceManager::CreateConnectToDevice(string& strIp,int nPort)

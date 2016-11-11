@@ -173,7 +173,7 @@ void *ServrSocket::handle_signel_connct(void *p)
 	pSock->owner->OnAccept((void*)bev,pBus_address);			
 	event_base_dispatch(base); 
 
-	
+	event_base_free(base);	
 	SafeDelete(pBus_address);
 	SafeDelete(param);
 	TRACE_OUT();
