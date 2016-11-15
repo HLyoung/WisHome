@@ -156,7 +156,7 @@ void *ServrSocket::handle_signel_connct(void *p)
 	BUS_ADDRESS_POINTER pBus_address = new BUS_ADDRESS;
 	pBus_address->size = sizeof(BUS_ADDRESS);
 	pBus_address->model_type = TCP_SERVER_MODE;
-	pBus_address->  bus_address_type = BUS_ADDRESS_TYPE_TCP;
+	pBus_address->bus_address_type = BUS_ADDRESS_TYPE_TCP;
 	pBus_address->host_address.size = sizeof(HOST_ADDRESS);
 	pBus_address->host_address.port =ntohs(((sockaddr_in*)(param->address))->sin_port);
 	param->address = pBus_address;

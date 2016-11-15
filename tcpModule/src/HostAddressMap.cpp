@@ -20,7 +20,7 @@ const void* CHostAddressMap::GetHostAddress(const std::string key)
 {
 	TRACE_IN();	
 	CHostAddressMap * instance = GetLocalInstancePointer(CHostAddressMap);	
-	
+
 	std::lock_guard<std::mutex> lck(instance->map_lock);	
 	HostAddressMap::iterator pos = instance->m_mapHostAddress.find(key);
 	if(pos == instance->m_mapHostAddress.end())
