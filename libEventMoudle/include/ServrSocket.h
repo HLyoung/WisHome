@@ -26,6 +26,7 @@
 #include <event2/event.h>
 #include <event2/listener.h>
 #include <event2/bufferevent.h>
+#include <event2/bufferevent_struct.h>
 #include <event2/buffer.h>
 
 #include <assert.h>
@@ -74,6 +75,8 @@ public:
 	static void accept_error_cb(struct evconnlistener *listener,void *ctx);
 
 	static void event_cb(struct bufferevent *bev,short events,void *ctx);
+
+	bool closeServer(struct bufferevent *bev);
 
 	std::map<struct bufferevent*,BUS_ADDRESS_POINTER> bufMap;
 	std::mutex bufMapMutex;

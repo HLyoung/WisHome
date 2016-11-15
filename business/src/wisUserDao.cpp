@@ -34,14 +34,9 @@ bool WisUserDao::checkUser(const std::string &user)
 		DbaModule_ReleaseNVDataAccess(access);
 		return false;
 	}
-	if(access->RowsAffected() >0)
-	{	
-		DbaModule_ReleaseNVDataAccess(access);
-		return true;
-	}
 	DbaModule_ReleaseNVDataAccess(access);
 	TRACE_OUT();
-	return false;	
+	return true;	
 }
 
 bool WisUserDao::checkUserAndPassword(const std::string &user,const std::string &password){

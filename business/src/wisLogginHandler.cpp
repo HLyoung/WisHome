@@ -55,7 +55,7 @@ void WisLoginHandler::handleUserLogin(BUS_ADDRESS &busAddress,int datalen,char *
 			pos = token.find_first_of(' ',0);
 		}
 		std::transform(token.begin(),token.end(),token.begin(),(int(*)(int))toupper);
-        if( !token.empty() && token.length() == 64 ) {
+        if( token.length() == TOKEN_LEN ) {
             WisIOSTokenDao::save( loginInfo->uuid, token );
         } else {
             LOG_ERROR("user(uuid = %s) token(token = %s) is illegal",std::string(loginInfo->uuid,UUID_LEN).c_str(),std::string(loginInfo->token,TOKEN_LEN).c_str());

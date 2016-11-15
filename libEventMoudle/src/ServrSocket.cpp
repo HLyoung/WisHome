@@ -254,4 +254,19 @@ bool ServrSocket::bufMapDeleteBuf(struct bufferevent * bev)
 	return false;
 }
 
+bool ServrSocket::closeServer(struct bufferevent*bev)
+{
+	TRACE_IN();
+	std::lock_guard<std::mutex> lg(bufMapMutex);
+	std::map<struct bufferevent*,BUS_ADDRESS_POINTER>::iterator ite = bufMap.find((struct bufferevent *)bev);
+	if(ite != bufMap.end())
+	{	
+		event_active(&bev->ev_read, EV_READ, 1);
+		LOG_INFO("initative delete link(bev = %ld)",(long int )bev);
+		return true;
+	}
+	TRACE_OUT();
+	return false;
+}
+
 

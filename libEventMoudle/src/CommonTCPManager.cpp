@@ -63,14 +63,14 @@ int CommonTCPManager::CloseConnection(void * dwHandle)
 	std::list<ServrSocket*>::iterator sIte = ServrSocketList.begin();
 	for(; sIte != ServrSocketList.end();sIte++){
 		if((*sIte)->bufMap.find((struct bufferevent *)dwHandle) != (*sIte)->bufMap.end()){
-			(*sIte)->bufMapDeleteBuf((struct bufferevent *)dwHandle);
+			(*sIte)->closeServer((struct bufferevent *)dwHandle);
 			return 0;
 		}
 	}
    if(sIte == ServrSocketList.end())
-   LOG_INFO("the link about to delete not found");
+   LOG_INFO("close connection failed");
    TRACE_OUT();
-	return -1;
+   return -1;
 }
 
 

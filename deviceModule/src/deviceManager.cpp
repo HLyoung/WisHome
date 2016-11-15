@@ -60,7 +60,7 @@ bool CDeviceManager::StopTcpServer(BUS_ADDRESS_POINTER bus_address)
 		return false;
 	}
 	
-	string addresskey = GetAddressKey(*bus_address);	
+/*	string addresskey = GetAddressKey(*bus_address);	
 	std::lock_guard<std::mutex> lg(m_Device_mutex);
 	map<string,CDevice*>::iterator ite = m_mapDevice.find(addresskey);	
 	if (ite == m_mapDevice.end()){
@@ -86,7 +86,7 @@ bool CDeviceManager::StopTcpServer(BUS_ADDRESS_POINTER bus_address)
 		}
 	}
 			
-	CUniteDataModule::GetInstance()->ShowClientDisConnect(*bus_address,uuid,loginType);
+	CUniteDataModule::GetInstance()->ShowClientDisConnect(*bus_address,uuid,loginType);*/
 	return GetTCPServiceModuleInstance()->StopService(bus_address);
 }
 

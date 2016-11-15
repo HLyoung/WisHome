@@ -14,7 +14,7 @@
 #include <macro.h>
 #define MAX_WIS_DATA_LEN (1048576)
 #define UUID_LEN 32
-#define TOKEN_LEN 64
+#define TOKEN_LEN 72
 #define PASSWORD_LEN 24
 #define DEVICE_NAME_LEN 32
 

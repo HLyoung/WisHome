@@ -3,9 +3,9 @@
 #include <iostream>
 
 const std::string user = "1017348166@qq.com";
-const std::string password = "kerxkhzwqdqfbeea";
+const std::string password = "syxqcpwusgnkbeaf";
 const std::string from = "1017348166@qq.com";
-const std::string subject = "apply for wisHome verification code ";
+const std::string subject = "wisHome account reset password ";
 const std::string smtpServer = "smtp.qq.com";
 short port = 25;
 
