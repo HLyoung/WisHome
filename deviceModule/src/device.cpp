@@ -17,7 +17,7 @@ CDevice::CDevice(CDeviceManager *pOwner,BUS_ADDRESS_POINTER address):m_pManageOw
 	tParserCallBack.pParserCallback = ParserCallback;
 	m_pProtocolPaser = GetParseProtocolModuleInstance()->RegisteCallBack(tParserCallBack);
 	
-//	StartHeartBeat();
+	StartHeartBeat();
 }
 
 
