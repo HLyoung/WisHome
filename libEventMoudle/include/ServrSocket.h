@@ -78,6 +78,8 @@ public:
 
 	bool closeServer(struct bufferevent *bev);
 
+	static void closeLinkTimer_cb(int fd,short event,void *params);
+
 	std::map<struct bufferevent*,BUS_ADDRESS_POINTER> bufMap;
 	std::mutex bufMapMutex;
 private:

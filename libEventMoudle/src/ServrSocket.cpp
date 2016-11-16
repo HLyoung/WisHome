@@ -159,10 +159,8 @@ void *ServrSocket::handle_signel_connct(void *p)
 	pBus_address->bus_address_type = BUS_ADDRESS_TYPE_TCP;
 	pBus_address->host_address.size = sizeof(HOST_ADDRESS);
 	pBus_address->host_address.port =ntohs(((sockaddr_in*)(param->address))->sin_port);
-	param->address = pBus_address;
-	
-
 	memcpy(pBus_address->host_address.ip,inet_ntoa(((sockaddr_in*)(param->address))->sin_addr),HOST_NAME_LENGTH);
+	param->address = pBus_address;
 
 	bufferevent_setwatermark(bev,EV_READ,0,0);
     bufferevent_setwatermark(bev,EV_WRITE,0,0);
@@ -254,19 +252,48 @@ bool ServrSocket::bufMapDeleteBuf(struct bufferevent * bev)
 	return false;
 }
 
+
+typedef struct{
+	ServrSocket *handle;
+	struct bufferevent *bev;
+}closeLinkTimer_param,*pCloseLinkTimer_param;
 bool ServrSocket::closeServer(struct bufferevent*bev)
 {
 	TRACE_IN();
 	std::lock_guard<std::mutex> lg(bufMapMutex);
-	std::map<struct bufferevent*,BUS_ADDRESS_POINTER>::iterator ite = bufMap.find((struct bufferevent *)bev);
+	std::map<struct bufferevent*,BUS_ADDRESS_POINTER>::iterator ite = bufMap.find(bev);
 	if(ite != bufMap.end())
 	{	
-		event_active(&bev->ev_read, EV_READ, 1);
+		struct event_base *base = (struct event_base*)bufferevent_get_base(bev);
+		struct timeval tv = {0,0};
+		
+		pCloseLinkTimer_param params= new closeLinkTimer_param;
+		params->handle = this;
+		params->bev = bev;
+		
+		struct event *timeout = event_new(base, -1, 0, closeLinkTimer_cb, params); 
+   		evtimer_add(timeout, &tv);
 		LOG_INFO("initative delete link(bev = %ld)",(long int )bev);
 		return true;
 	}
 	TRACE_OUT();
 	return false;
+}
+
+void ServrSocket::closeLinkTimer_cb(int fd,short event,void * params)
+{
+	TRACE_IN();
+	pCloseLinkTimer_param pa = (pCloseLinkTimer_param)params;
+	
+	std::lock_guard<std::mutex> lg(pa->handle->bufMapMutex);
+	std::map<struct bufferevent*,BUS_ADDRESS_POINTER>::iterator ite = pa->handle->bufMap.find(pa->bev);
+	if(ite != pa->handle->bufMap.end())
+	{
+		pa->handle->owner->OnClose(ite->first,ite->second);
+		event_base_loopbreak(bufferevent_get_base(pa->bev));		
+	}
+	TRACE_OUT();
+	
 }
 
 
