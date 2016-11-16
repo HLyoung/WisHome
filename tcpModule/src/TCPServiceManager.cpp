@@ -60,14 +60,7 @@ void CTCPServiceManage::StopService(BUS_ADDRESS_POINTER pBusAddress)
 {
 
 	TRACE_IN();
-//	RemoveTcpService(pBusAddress); 
-	const std::string key = CHostAddress::GetKey(&(pBusAddress->host_address))
-	
-	std::lock_guard<std::mutex> lg(m_tcpLinkMutex);
-	std::map<string,CTCPService*>::iterator ite = m_mapTcpLink.find(key);
-	if(ite != m_mapTcpLink.end())
-		ite->second->SetTcpServiceValid(false);
-	
+	const std::string key = CHostAddress::GetKey(&(pBusAddress->host_address));
 	void *handle = (void *)CHostAddressMap::GetHostAddress(key);
 	GetCommonTCPManager()->CloseConnection(handle);
 
