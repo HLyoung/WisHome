@@ -38,13 +38,16 @@ private:
 	CDevice *GetDeviceClient(BUS_ADDRESS &address);
 	CDevice *GetDeviceClient(std::string uuid);
 	int GetTcpServicePort();
+	void StartClearTimer();
+	static int ClearDeviceTimerHandler(void *manager);
+	
 	
 private:
 	static CDeviceManager *m_pInstance;
 	INITIAL_ARGUMENTS m_tInitialArguments;
 	map<string,CDevice*> m_mapDevice;
 	std::mutex m_Device_mutex;
-	bool m_bInitScan;
+	Timer m_tClearExpireDevice;
 	
 };
 

@@ -37,6 +37,9 @@ public:
 	void StartHeartBeat();
 	void StopHeartBeat();
 	static int HeartBeratTimerHandler(void*);
+
+	void  SetDeviceExpire(bool isExpire);
+	bool GetDeviceExpire();
 	
 	
 	
@@ -55,6 +58,8 @@ private:
 	Timer m_heartBeartTiemr;
 	bool m_isGetHeartBeatResponse;
 	unsigned int m_loseHeartBeatTimes;
+	std::mutex m_expireMutex;
+	std::mutex m_isLoginedMutex;
 
 };
 

@@ -28,6 +28,7 @@
 #include <event2/bufferevent.h>
 #include <event2/bufferevent_struct.h>
 #include <event2/buffer.h>
+#include <event2/thread.h>
 
 #include <assert.h>
 #include <unistd.h>
@@ -76,9 +77,7 @@ public:
 
 	static void event_cb(struct bufferevent *bev,short events,void *ctx);
 
-	bool closeServer(struct bufferevent *bev);
-
-	static void closeLinkTimer_cb(int fd,short event,void *params);
+	void closeServer(struct bufferevent *bev);
 
 	std::map<struct bufferevent*,BUS_ADDRESS_POINTER> bufMap;
 	std::mutex bufMapMutex;

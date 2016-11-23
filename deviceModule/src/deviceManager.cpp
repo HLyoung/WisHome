@@ -7,7 +7,8 @@ CDeviceManager::CDeviceManager(void)
 	memset(&m_tInitialArguments,0,sizeof(INITIAL_ARGUMENTS));
 	m_tInitialArguments.owner = (HANDLE)this;
 	m_tInitialArguments.net_message_callback = MessageCallback;
-	m_bInitScan = false;
+
+	StartClearTimer();
 }
 
 CDeviceManager::~CDeviceManager(void)
@@ -54,40 +55,28 @@ int CDeviceManager::GetTcpServicePort()
 
 bool CDeviceManager::StopTcpServer(BUS_ADDRESS_POINTER bus_address)
 {	
-	if (NULL == bus_address)
-	{
-		LOG_INFO("OnDisconnect callback argument error!");
-		return false;
-	}
-	
-/*	string addresskey = GetAddressKey(*bus_address);	
+	string addresskey = GetAddressKey(*bus_address);
+		
 	std::lock_guard<std::mutex> lg(m_Device_mutex);
 	map<string,CDevice*>::iterator ite = m_mapDevice.find(addresskey);	
-	if (ite == m_mapDevice.end()){
-		LOG_INFO("the link doesn`t found");
-		return false;
+	if (ite != m_mapDevice.end()){	
+		CDevice* pGatewayDevice = (CDevice*)ite->second;
+		if (NULL != pGatewayDevice){		
+			std::string uuid = pGatewayDevice->GetUuid();	
+			for(ite = m_mapDevice.begin();ite != m_mapDevice.end();ite ++){  //当一个用户在多地登录时，一个用户下线，不把用户设为未登录状态。
+				if(ite->second->GetUuid() == uuid){
+					break;
+				}
+			}
+			if(ite == m_mapDevice.end())
+				if(pGatewayDevice->IsLogined())
+			   		CUniteDataModule::GetInstance()->ShowClientDisConnect(*bus_address,uuid, pGatewayDevice->GetLoginType());
+				
+			pGatewayDevice->SetLogined(false);
+			pGatewayDevice->SetDeviceExpire(true);
+			return GetTCPServiceModuleInstance()->StopService(bus_address);
 		}
-		
-	CDevice* pGatewayDevice = (CDevice*)ite->second;
-	if (NULL == pGatewayDevice){
-		LOG_INFO("the device doesn`t found");
-		return false;
-		}
-		
-	std::string uuid = pGatewayDevice->GetUuid();
-	int loginType = pGatewayDevice->GetLoginType();
-		
-//	SafeDelete(ite->second);
-	m_mapDevice.erase(ite);	
-		
-	for(ite = m_mapDevice.begin();ite != m_mapDevice.end();ite ++){  //当一个设备有多个连接的时候，某一个连接断了并不将设备置为离线。
-		if(ite->second->GetUuid() == uuid){
-			return false;
-		}
-	}
-			
-	CUniteDataModule::GetInstance()->ShowClientDisConnect(*bus_address,uuid,loginType);*/
-	return GetTCPServiceModuleInstance()->StopService(bus_address);
+    }
 }
 
 bool CDeviceManager::CreateConnectToDevice(string& strIp,int nPort)
@@ -263,6 +252,7 @@ void CDeviceManager::OnDisconnect(UINT32 size, void* data )
 	
 	for(ite = m_mapDevice.begin();ite != m_mapDevice.end();ite ++){  //当一个设备有多个连接的时候，某一个连接断了并不将设备置为离线。
 		if(ite->second->GetUuid() == uuid){
+			LOG_INFO("use or device(uuid = %s) has more than one link",uuid.c_str());
 			return;
 		}
 	}
@@ -312,8 +302,7 @@ bool CDeviceManager::SendData(std::string uuid,int nRole,int nDataType,char *pDa
 	TRACE_IN();
 
 	bool res = false;
-	int count = 0;
-   
+	int count = 0;   
 	map<string,CDevice*>::iterator ite = m_mapDevice.begin();
 	for( ;ite != m_mapDevice.end();ite++)
 	{
@@ -327,5 +316,26 @@ bool CDeviceManager::SendData(std::string uuid,int nRole,int nDataType,char *pDa
 	LOG_INFO("WOWWOWWOW  device(uuid = %s) has %d connects",uuid.c_str(),count);
 	TRACE_OUT();
 	return res;
+}
+
+void CDeviceManager::StartClearTimer()
+{
+	m_tClearExpireDevice.open(1,ClearDeviceTimerHandler,(void*)this);
+	TIMERMANAGER->Register(&m_tClearExpireDevice);	
+}
+
+int CDeviceManager::ClearDeviceTimerHandler(void * manager)
+{
+	CDeviceManager* pManager = (CDeviceManager *)manager;
+	std::lock_guard<std::mutex> lg(pManager->m_Device_mutex);
+	std::map<string,CDevice*>::iterator ite = pManager->m_mapDevice.begin();
+	while(ite != pManager->m_mapDevice.end()){
+		if(ite->second->GetDeviceExpire()){
+			SafeDelete(ite->second);			
+			pManager->m_mapDevice.erase(ite++);
+			continue;
+			}
+		ite++;
+		}
 }
 

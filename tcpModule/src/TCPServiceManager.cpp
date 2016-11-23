@@ -60,10 +60,7 @@ void CTCPServiceManage::StopService(BUS_ADDRESS_POINTER pBusAddress)
 {
 
 	TRACE_IN();
-	const std::string key = CHostAddress::GetKey(&(pBusAddress->host_address));
-	void *handle = (void *)CHostAddressMap::GetHostAddress(key);
-	GetCommonTCPManager()->CloseConnection(handle);
-
+	RemoveTcpService(pBusAddress);
 	TRACE_OUT();
 }
 
@@ -71,6 +68,7 @@ void CTCPServiceManage::NotifyMessageConnect(CTCPService *pTcpService,void* hand
 {
 	if(NULL == pTcpService)
 	{
+		LOG_INFO("illegal parameter");
 		return;
 	}
 	SaveLinkAndCallBack(pBusAddress,pTcpService,handle);

@@ -25,14 +25,12 @@ const void* CHostAddressMap::GetHostAddress(const std::string key)
 	HostAddressMap::iterator pos = instance->m_mapHostAddress.find(key);
 	if(pos == instance->m_mapHostAddress.end())
 	{
-		LOG_ERROR("the key = %s is not in the hostaddressmap ,maybe it is not connected.",key.c_str());
 		return NULL;
 	}
 	
 	CHostAddress *pHostAddress = (CHostAddress*)pos->second;
 	if(!pHostAddress->IsValid())
 	{
-		LOG_INFO("the connect is expired. key = %s",key.c_str());
 		return NULL;
 	}
 	
@@ -80,7 +78,6 @@ void CHostAddressMap::RemoveHostAddress(const string key,bool bDeleteLink)
 	HostAddressMap::iterator pos = instance->m_mapHostAddress.find(key);
 	if(pos != instance->m_mapHostAddress.end())
 	{
-	    LOG_INFO("the host address(key = %s) about to remove is in the map",key.c_str());
 		CHostAddress *pHostAddress = (CHostAddress *)pos->second;
 		const void* nSocketHandle = pHostAddress->GetHandle();
 		if(bDeleteLink)
@@ -90,8 +87,6 @@ void CHostAddressMap::RemoveHostAddress(const string key,bool bDeleteLink)
 		SafeDelete(pHostAddress);
 		instance->m_mapHostAddress.erase(pos);
 	}
-	else
-		LOG_INFO("the hos address(key = %s) is not in the map",key.c_str());
 	TRACE_OUT();
 }
 

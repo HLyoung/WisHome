@@ -65,8 +65,6 @@ int CTCPService::OnCmdCome(void* handle,const char *pData,int nLen,BUS_ADDRESS_P
 {
 	if(m_bValid)
 		CTCPServiceManage::GetInstance()->NotifyMessageReceiveData(this,handle,pData,nLen,pBus_address);
-	else
-		CTCPServiceManage::GetInstance()->NotifyMessageDisconnect(this,handle,pBus_address);
 	return 0;
 }
 

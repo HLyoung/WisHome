@@ -42,7 +42,7 @@ public:
 	void* GetOwnerHandle();
 	
 	bool GetTcpServiceValid();
-	void SetTcpServiceValid(bool bValid);
+	void SetTcpServiceValid(bool bValid);	
 	
 private:
 	int m_port;

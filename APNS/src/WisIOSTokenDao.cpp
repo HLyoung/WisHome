@@ -17,7 +17,7 @@ int WisIOSTokenDao::save(const std::string& uuid, const std::string& token )
 		return -1;
 	}
 	
-	if(-1 == access->ExecuteNonQuery(sql)  || access->RowsAffected() == 0)
+	if(-1 == access->ExecuteNonQuery(sql))
 	{
 		memset(sql,0,sizeof(sql));
 		snprintf(sql,sizeof(sql),"insert into wis_ios_token_tbl2 values('%s','%s',CURRENT_TIMESTAMP)",uuid.c_str(),\

@@ -42,15 +42,20 @@ void *TimerThread::run(void)
 void TimerThread::Register(Timer* _timer)
 {	
 
-	std::lock_guard<std::mutex> lg(_time_list_mutex);
+	std::lock_guard<std::mutex> lg(_time_list_mutex);   //this means we can`t regist a timer in another timer`s handler.
 	_timer_list.push_back(_timer);
 
 }
 
 void TimerThread::unRegister(Timer* _timer)
 {
-	std::lock_guard<std::mutex> lg(_time_list_mutex);
-	_timer_list.remove(_timer);
+//	std::lock_guard<std::mutex> lg(_time_list_mutex);   //without a lock is not safe ,but if we locked this,we can`t unregist a timer in another timer,this is embarassed.
+	std::list<Timer*>::iterator ite = _timer_list.begin();
+	for(;ite != _timer_list.end();ite++)
+		if(*ite == _timer){
+			_timer_list.erase(ite);
+			return;
+			}
 }
 
 TimerThread *TimerThread::get_instance()

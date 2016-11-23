@@ -67,8 +67,6 @@ int CommonTCPManager::CloseConnection(void * dwHandle)
 			return 0;
 		}
 	}
-   if(sIte == ServrSocketList.end())
-   LOG_INFO("close connection failed");
    TRACE_OUT();
    return -1;
 }

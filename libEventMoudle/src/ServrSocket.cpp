@@ -88,7 +88,8 @@ void *ServrSocket::startServrThread(void *p)
         SafeDelete(pSock);
         pthread_exit(0);
     }
-
+    evthread_use_pthreads();  //this is very important,otherwise you can`t operator base in another thread......
+    
 	struct event_base *base = event_base_new();
     struct evconnlistener* listener = evconnlistener_new(base,accept_conn_cb,pSock,LEV_OPT_CLOSE_ON_FREE | LEV_OPT_REUSEABLE,100,fd);
 	if(!listener)
@@ -152,13 +153,13 @@ void *ServrSocket::handle_signel_connct(void *p)
 	evutil_make_socket_nonblocking(param->fd);
 	struct event_base *base = event_base_new();
 	struct bufferevent *bev = bufferevent_socket_new(base,param->fd,BEV_OPT_CLOSE_ON_FREE);   //will close the socket when free bufferevent.
-	
+
 	BUS_ADDRESS_POINTER pBus_address = new BUS_ADDRESS;
 	pBus_address->size = sizeof(BUS_ADDRESS);
 	pBus_address->model_type = TCP_SERVER_MODE;
 	pBus_address->bus_address_type = BUS_ADDRESS_TYPE_TCP;
 	pBus_address->host_address.size = sizeof(HOST_ADDRESS);
-	pBus_address->host_address.port =ntohs(((sockaddr_in*)(param->address))->sin_port);
+	pBus_address->host_address.port = ntohs(((sockaddr_in*)(param->address))->sin_port);
 	memcpy(pBus_address->host_address.ip,inet_ntoa(((sockaddr_in*)(param->address))->sin_addr),HOST_NAME_LENGTH);
 	param->address = pBus_address;
 
@@ -169,9 +170,9 @@ void *ServrSocket::handle_signel_connct(void *p)
 
 	pSock->bufMapAddBuf(bev,pBus_address);
 	pSock->owner->OnAccept((void*)bev,pBus_address);			
-	event_base_dispatch(base); 
-
-	event_base_free(base);	
+	event_base_dispatch(base);  
+	
+    event_base_free(base);	
 	SafeDelete(pBus_address);
 	SafeDelete(param);
 	TRACE_OUT();
@@ -251,49 +252,12 @@ bool ServrSocket::bufMapDeleteBuf(struct bufferevent * bev)
 	TRACE_OUT();
 	return false;
 }
-
-
-typedef struct{
-	ServrSocket *handle;
-	struct bufferevent *bev;
-}closeLinkTimer_param,*pCloseLinkTimer_param;
-bool ServrSocket::closeServer(struct bufferevent*bev)
-{
-	TRACE_IN();
-	std::lock_guard<std::mutex> lg(bufMapMutex);
-	std::map<struct bufferevent*,BUS_ADDRESS_POINTER>::iterator ite = bufMap.find(bev);
-	if(ite != bufMap.end())
-	{	
-		struct event_base *base = (struct event_base*)bufferevent_get_base(bev);
-		struct timeval tv = {0,0};
-		
-		pCloseLinkTimer_param params= new closeLinkTimer_param;
-		params->handle = this;
-		params->bev = bev;
-		
-		struct event *timeout = event_new(base, -1, 0, closeLinkTimer_cb, params); 
-   		evtimer_add(timeout, &tv);
-		LOG_INFO("initative delete link(bev = %ld)",(long int )bev);
-		return true;
-	}
-	TRACE_OUT();
-	return false;
-}
-
-void ServrSocket::closeLinkTimer_cb(int fd,short event,void * params)
+void ServrSocket::closeServer(struct bufferevent*bev)
 {
 	TRACE_IN();
-	pCloseLinkTimer_param pa = (pCloseLinkTimer_param)params;
-	
-	std::lock_guard<std::mutex> lg(pa->handle->bufMapMutex);
-	std::map<struct bufferevent*,BUS_ADDRESS_POINTER>::iterator ite = pa->handle->bufMap.find(pa->bev);
-	if(ite != pa->handle->bufMap.end())
-	{
-		pa->handle->owner->OnClose(ite->first,ite->second);
-		event_base_loopbreak(bufferevent_get_base(pa->bev));		
-	}
+	bufMapDeleteBuf(bev);
 	TRACE_OUT();
-	
 }
+
 
 

@@ -3,6 +3,7 @@
 
 #ifndef _TOOLS_H_
 #define _TOOLS_H_
+#include "macro.h"
 
 //nlen表示转换为字符串之后的长度
 static void StrToHex(UINT8 *pbDest,const UINT8 *pbSrc,INT32 nLen)

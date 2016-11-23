@@ -129,33 +129,44 @@ void CDevice::UpdateAddressInfo(BUS_ADDRESS &tBusAddr)
 
 void CDevice::SetLogined(bool isLogined)
 {
+	std::lock_guard<std::mutex> lg(m_isLoginedMutex);
 	m_isLogined = isLogined;
 }
 
 bool CDevice::IsLogined(void)
 {
+	std::lock_guard<std::mutex> lg(m_isLoginedMutex);
 	return m_isLogined;
+}
+
+void CDevice::SetDeviceExpire(bool isExpire)
+{
+	std::lock_guard<std::mutex> lg(m_expireMutex);
+	m_bExpire = isExpire;
+}
+
+bool CDevice::GetDeviceExpire()
+{
+	std::lock_guard<std::mutex> lg(m_expireMutex);
+	return m_bExpire;
 }
 
 
 int CDevice::HeartBeratTimerHandler(void *device)
 {
 	TRACE_IN();
-	
-	if(NULL == device)
-		return -1;
 	CDevice *pDevice  = (CDevice *)device;
+	
+	if(pDevice->GetDeviceExpire()) 
+		return -1;
 
-	if(!pDevice->m_isGetHeartBeatResponse){
+	if(!pDevice->m_isGetHeartBeatResponse)
 		pDevice->m_loseHeartBeatTimes++;
-		LOG_INFO("lose heart beat %d times",pDevice->m_loseHeartBeatTimes);
-		}
-		
+	
 	if(pDevice->m_loseHeartBeatTimes >= 3)
 	{
-		pDevice->m_pManageOwner->StopTcpServer(&(pDevice->m_DeviceAddress));		
-		LOG_INFO("lose heart beat response 3 times,delete the link(ip = %s,port = %d)",pDevice->m_DeviceAddress.host_address.ip,\
-					pDevice->m_DeviceAddress.host_address.port);
+		LOG_INFO("lose heart beat %d times,will delete the link",pDevice->m_loseHeartBeatTimes);
+		pDevice->m_pManageOwner->StopTcpServer(&(pDevice->m_DeviceAddress));  //this function will stop the thread.	and you can`t unregist the timer,otherwise is will case died lock.	
 		return -1;
 	}
     int heartBeatCmd = 0;
@@ -166,7 +177,6 @@ int CDevice::HeartBeratTimerHandler(void *device)
 	
 	unsigned int current = (unsigned int )time(0);
 	pDevice->Send(heartBeatCmd,(char *)&current,sizeof(int ));
-	
     pDevice->m_isGetHeartBeatResponse = false;
 	
 	TRACE_OUT();
@@ -183,7 +193,7 @@ void CDevice::StartHeartBeat()
 	}
 	m_isGetHeartBeatResponse = false;
 	m_loseHeartBeatTimes = 0;
-	m_heartBeartTiemr.open(30,HeartBeratTimerHandler,this);
+	m_heartBeartTiemr.open(10,HeartBeratTimerHandler,this);
 
 	TIMERMANAGER->Register(&m_heartBeartTiemr);
 	

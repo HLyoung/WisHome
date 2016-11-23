@@ -187,7 +187,6 @@ bool CNVDataAccess::FetchNewRow()
 	row_ = mysql_fetch_row(pRes_);
 	if(NULL == row_)
 	{
-		LOG_INFO("reach the end of the result");
 		mysql_free_result(pRes_);		
 		pRes_ = NULL;
 		return false;

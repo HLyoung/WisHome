@@ -29,7 +29,7 @@ bool CProtocolParser::ParseSocketProtocol(const char *recvbuf,UINT32 recvlen)
 	
 	while(sBuffer.length() >= 12)
 	{
-		int packetDataLen = *((int *)(sBuffer.data() + 8));
+		int packetDataLen = *((unsigned int *)(sBuffer.data() + 8));
 		if(packetDataLen <= sBuffer.length() - 12)
 		{
 			if(!CheckCheckSum(sBuffer.data(),packetDataLen + 12))
@@ -96,7 +96,7 @@ bool CProtocolParser::CheckCheckSum(const char *recvbuf,UINT32 recvlen)
 		LOG_INFO("buffer len is less then the min length");
 		return false;
 	}
-	UINT32 checksum = *((int *)recvbuf);
+	UINT32 checksum = *((unsigned int *)recvbuf);
 	UINT32 tmpsum = 0;
 	for(int i = 0;i<recvlen-4;i++)
 	{
