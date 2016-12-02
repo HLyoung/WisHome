@@ -80,6 +80,7 @@ bool WisUserDao::login(const std::string &user,const std::string& passwd)
 	if(access->ExecuteNoThrow(sql) < 1)
 	{
 		LOG_ERROR("use(uuid = %s ,password = %s) try to login but it doesn`t exist! ",user.c_str(),passwd.c_str());
+		DbaModule_ReleaseNVDataAccess(access);
 		return false;
 	}
 	if(access->IsResultSet())
@@ -109,9 +110,7 @@ bool WisUserDao::logout(const std::string &user,const std::string &passwd)
 	
 	CNVDataAccess *access = (CNVDataAccess *)DbaModule_GetNVDataAccess();
 	if(NULL == access)
-	{
 		return false;
-	}
 	
 	char sql[200] = {0};
 	snprintf(sql,sizeof(sql),"update wis_user_tbl set `status`=0 where `name`='%s'",user.c_str());
@@ -126,6 +125,7 @@ bool WisUserDao::logout(const std::string &user,const std::string &passwd)
 	TRACE_OUT();
 	return false;
 }
+
 
 bool WisUserDao::regist(const std::string &user,const std::string &passwd)
 {
@@ -267,10 +267,6 @@ void WisUserDao::handleUserModifyPassword(std::string &uuid,BUS_ADDRESS &busAddr
 void WisUserDao::handleUserResetPassword(BUS_ADDRESS &busAddress,const char *pdata)
 {
 	TRACE_IN();
-	if(NULL == pdata){
-		LOG_ERROR("illegal parameter");
-		return;
-	}
 
 	WisUserResetPassword*resetInfo = (WisUserResetPassword*)pdata;	
     if(!checkUser(string(resetInfo->uuid,UUID_LEN))){
@@ -282,6 +278,7 @@ void WisUserDao::handleUserResetPassword(BUS_ADDRESS &busAddress,const char *pda
 		sendUserResponse(busAddress,WIS_CMD_USER_RESET_PASSWORD,0);
 	else
 		sendUserResponse(busAddress,WIS_CMD_USER_RESET_PASSWORD,-1);
+	TRACE_OUT();
 }
 
 string WisUserDao::makeupURL(const std::string& uuid)
@@ -351,6 +348,32 @@ bool WisUserDao::checkMail(const std::string &mail)
    	return true;
 }
 
+bool WisUserDao::handleUserQuit(BUS_ADDRESS & busAddress,const char *pdata)
+{
+	TRACE_IN();
+	WisUserQuitInfo *quitinfo = (WisUserQuitInfo *)pdata;
+	CNVDataAccess *access = (CNVDataAccess *)DbaModule_GetNVDataAccess();
+	if(NULL == access)
+	{
+		LOG_ERROR("get database access failed");
+		sendUserResponse(busAddress,WIS_CMD_USER_QUIT,-1);
+		return false;
+	}
+
+	char sql[200] = {0};
+	snprintf(sql,sizeof(sql),"delete from wis_ios_token_tbl2 where `token`='%s'",quitinfo->token);
+	if(-1 == access->ExecuteNonQuery(sql))
+	{
+		LOG_INFO("delete token failed(sql = %s)",sql);
+		sendUserResponse(busAddress,WIS_CMD_USER_QUIT,-1);
+		DbaModule_ReleaseNVDataAccess(access);
+		return  false;
+	}	
+	sendUserResponse(busAddress,WIS_CMD_USER_QUIT,0);
+	DbaModule_ReleaseNVDataAccess(access);
+	return true;
+	TRACE_OUT();
+}
 
 
 

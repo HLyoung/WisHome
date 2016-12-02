@@ -110,7 +110,7 @@ bool Mail::sendMail(const string &content)
 	string content = string("dear sir:<br />&nbsp&nbsp&nbsp&nbsp please click this link <a href=\"http://192.168.2.70/test.php\" id=\"myid\">192.168.2.70/test.php</a> to reset your password \
 		<a href=\"https://baidu.com\">qubaidu</a>"); 	
     std::set<std::string> to,cc,bcc,file;
-	to.insert("sfafasdfasdfdasfsdfsdfsdfsdafsdafsdafdsfdsfasdfasdfsd@163.com");
+	to.insert("1255324511@qq.com");
 	Mail mail;
 	mail.setTargetAndFile(to,cc,bcc,file);
 	if(mail.sendMail(content)){

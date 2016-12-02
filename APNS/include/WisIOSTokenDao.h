@@ -18,7 +18,7 @@
 class WisIOSTokenDao {
 public:
     static int save( const std::string& uuid, const std::string& token );
-    static std::string getToken( const std::string& uuid );
+    static int getToken( const std::string& uuid,std::set<std::string>&tokens );
     static int getTokens( std::vector<std::string>& uuids, std::set<std::string>& tokens );
 private:
 

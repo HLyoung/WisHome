@@ -106,7 +106,7 @@ int  WisBindDao::getBindedUsers(const std::string& devUUID, std::map<std::string
     CNVDataAccess *access = (CNVDataAccess *)DbaModule_GetNVDataAccess();
 	if(access->ExecuteNoThrow(sql) < 1)
 	{
-		LOG_INFO("get binded user failed(devUUID = %s ,sql = %s)",devUUID.c_str(),sql);
+		LOG_INFO("device(devUUID = %s) bind no user",devUUID.c_str());
 		DbaModule_ReleaseNVDataAccess(access);
 		return 0;
 	}

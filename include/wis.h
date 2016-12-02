@@ -65,6 +65,8 @@ enum WisCommandID {
 	WIS_CMD_USER_REGIST         = WIS_CMD(0x91),
 	WIS_CMD_USER_MODIFY_PASSWORD = WIS_CMD(0x92),
 	WIS_CMD_USER_RESET_PASSWORD = WIS_CMD(0x94),
+	WIS_CMD_SERVICE_KICKOUT_USER= WIS_CMD(0x95),
+	WIS_CMD_USER_QUIT           = WIS_CMD(0x96),
 
    
     /* SHOWHOME */
@@ -111,6 +113,11 @@ struct WisUserLoginInfo {
     char uuid[UUID_LEN];
 	char password[PASSWORD_LEN];
     char token[TOKEN_LEN];
+};
+
+struct WisUserQuitInfo{
+	char uuid[UUID_LEN];
+	char token[TOKEN_LEN];
 };
 
 struct WisUserRegistInfo{

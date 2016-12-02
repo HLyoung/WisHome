@@ -53,17 +53,17 @@ bool CProtocolParser::MakeProtocolForSocket(UINT32 command, const char* input,\
 {
 	TRACE_IN();
 	
-    if(NULL == input || NULL == output )
+    if(NULL == output )
 	{
 		LOG_ERROR("parameter illegal");
 		return false;
 	}		
 	
 	*((UINT32* )(output+4)) = command;
-	memcpy(output + 12,input,inputlen);
+	if(input != NULL && inputlen != 0)
+		memcpy(output + 12,input,inputlen);
 
-    *((int *)(output + 8)) = inputlen;
-	
+    *((int *)(output + 8)) = inputlen;	
 	UINT32 checksum = getCheckSum(output+4,inputlen + 8);
 	*((UINT32*)output) = checksum;
 	

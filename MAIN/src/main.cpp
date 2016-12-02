@@ -47,6 +47,9 @@ class Reporter : public IAutoReportToInterface
 			case WIS_CMD_USER_REGIST:
 				WisUserDao::handleUserRegist(DeviceInfo.bus_address,pData);
 				break;
+			case WIS_CMD_USER_QUIT:
+				WisUserDao::handleUserQuit(DeviceInfo.bus_address,pData);
+				break;
 			case WIS_CMD_USER_MODIFY_PASSWORD:
 				WisUserDao::handleUserModifyPassword(DeviceInfo.uuid,DeviceInfo.bus_address,pData);
 				break;
@@ -74,6 +77,7 @@ class Reporter : public IAutoReportToInterface
 			case WIS_CMD_USER_PRIVATE:
 				WisUserPrivateHandler::handleUserPrivate(DeviceInfo.bus_address,DeviceInfo.uuid.c_str(),nDataLen,pData);
 				break;
+			
 			default:
 				break;
 		}

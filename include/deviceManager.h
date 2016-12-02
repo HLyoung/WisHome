@@ -23,6 +23,7 @@ public:
 	bool SendData(string uuid,int nRole,int nDataType,char *pData,int nDataSize);
 	bool SendData(BUS_ADDRESS& busAddress,int nRole,int nDataType,char *pData,int nDataSize);
 	bool ScanAllDevice();
+	void HandlerUserMultipleLogin(const std::string& uuid);
 	
 protected:
 	virtual void OnConnect(UINT32 size,void *data);
@@ -39,6 +40,8 @@ private:
 	CDevice *GetDeviceClient(std::string uuid);
 	int GetTcpServicePort();
 	void StartClearTimer();
+	
+	
 	static int ClearDeviceTimerHandler(void *manager);
 	
 	

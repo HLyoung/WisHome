@@ -80,7 +80,6 @@ void WisToUserHandler::handleSendToAll(BUS_ADDRESS &busAddress,const char *uuid,
 {
 
 	TRACE_IN();
-    LOG_INFO("len = %d",packet->len);
 	char * toUser = new char[UUID_LEN + packet->len];
 	
 	memcpy(toUser,uuid,UUID_LEN);

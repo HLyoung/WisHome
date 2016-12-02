@@ -7,8 +7,8 @@ int WisIOSTokenDao::save(const std::string& uuid, const std::string& token )
 {
 	TRACE_IN();
     char sql[200] = {0};
-	snprintf(sql,sizeof(sql),"update wis_ios_token_tbl2 set `token`='%s',`update_time`=CURRENT_TIMESTAMP where `user`='%s'",\
-	token.c_str(),uuid.c_str());
+	snprintf(sql,sizeof(sql),"update wis_ios_token_tbl2 set `user`='%s',`update_time`=CURRENT_TIMESTAMP where `token`='%s'",\
+	uuid.c_str(),token.c_str());
 	
 	CNVDataAccess *access = (CNVDataAccess *)DbaModule_GetNVDataAccess();
 	if(NULL == access)
@@ -24,18 +24,17 @@ int WisIOSTokenDao::save(const std::string& uuid, const std::string& token )
 		token.c_str());
 		if(-1 == access->ExecuteNonQuery(sql))
 		{
-			LOG_ERROR("save token handle log failed. token='%s',uuid='%s'",token.c_str(),uuid.c_str());
+			LOG_ERROR("save token  failed. token='%s',uuid='%s'",token.c_str(),uuid.c_str());
 			DbaModule_ReleaseNVDataAccess(access);
 			return -1;			
 		}		
 	}
 	DbaModule_ReleaseNVDataAccess(access);
-	
 	TRACE_OUT();
 	return 0;
 }
 
-std::string WisIOSTokenDao::getToken(const std::string& uuid )
+int  WisIOSTokenDao::getToken(const std::string& uuid,std::set<std::string> &tokens )
 {
 	TRACE_IN();
     char sql[100] = {0};
@@ -45,28 +44,24 @@ std::string WisIOSTokenDao::getToken(const std::string& uuid )
 	if(NULL == access)
 	{
 		LOG_ERROR("get database access failed");
-		return "";
+		return -1;
 	}
 	if(access->ExecuteNoThrow(sql) < 1)
 	{
 		LOG_ERROR("get token failed uuid = %s",uuid.c_str());
 		DbaModule_ReleaseNVDataAccess(access);
-		return "";
+		return -1;
 	}
-	
-	if(access->RowsAffected() == 1)
+	if(access->RowsAffected() >= 1)
 	{
-		if(access->FetchNewRow())
+		while(access->FetchNewRow())
 		{
-			
-			std::string Res =  access->GetString("uuid");
-			DbaModule_ReleaseNVDataAccess(access);
-			return Res;
+			tokens.insert(access->GetString("token"));
 		}
 	}
 	DbaModule_ReleaseNVDataAccess(access);
 	TRACE_OUT();
-    return "";
+    return static_cast<int>(tokens.size());
 }
 
 int WisIOSTokenDao::getTokens(std::vector<std::string>& uuids, std::set<std::string>& tokens )
@@ -105,7 +100,6 @@ int WisIOSTokenDao::getTokens(std::vector<std::string>& uuids, std::set<std::str
 		}
 	}
 	DbaModule_ReleaseNVDataAccess(access);
-	
 	TRACE_OUT();
     return static_cast<int>(tokens.size());
 }

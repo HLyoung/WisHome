@@ -37,6 +37,7 @@ public:
 	static bool sendGreetMailTo(const std::string &uuid);
 	static string makeupURL(const std::string &uuid);
 	static bool checkMail(const std::string &mail);
+	static bool handleUserQuit(BUS_ADDRESS& busAddress,const char *pdata);
 public:
 	static std::string defaultPassword;
 };

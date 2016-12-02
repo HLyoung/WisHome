@@ -105,7 +105,11 @@ void CDevice::ParserCallback(UINT32 wEvent, UINT32 wResultCode, UINT32 wDataLen,
 		pDevice->m_loseHeartBeatTimes = 0;
 		return;
 	}
-	
+
+	if(WIS_CMD_USER_AUTO_LOGIN == wEvent){
+		WisUserLoginInfo *loginfo = (WisUserLoginInfo *)pData;
+		pDevice->m_pManageOwner->HandlerUserMultipleLogin(std::string(loginfo->uuid,UUID_LEN));
+		}
 	DEVICE_INFO devInfo;  
 	memcpy((char *)&devInfo.bus_address,(const char *)(&(pDevice->m_DeviceAddress)),sizeof(BUS_ADDRESS));
 

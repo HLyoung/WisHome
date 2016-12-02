@@ -64,10 +64,7 @@ int CNVDataAccess::ExecuteNonQuery(const char *pcCmdText)
 		return -1;
 	}
 	if(0 != mysql_real_query(&mysql,pcCmdText,strlen(pcCmdText)))
-	{
-		LOG_ERROR("query(cmd=%s) failed,error = %s ",pcCmdText,mysql_error(&mysql));
 		return -1;
-	}
 	return 0;
 
 }
