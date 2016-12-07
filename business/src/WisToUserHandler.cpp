@@ -44,7 +44,7 @@ void WisToUserHandler::handlePushMessage(BUS_ADDRESS_POINTER busAddress,const ch
 			LOG_ERROR("push message to users failed,erroCode:%d",errCode);
 	}
     sendToUserResponse(busAddress, WIS_CMD_TO_USER, 0);
-    WisIOSPushDao::save(uuid, packet->flag, packet->len,std::string(packet->data,packet->len));
+    WisIOSPushDao::save(getUuidFromBuffer(uuid),(char * buffer), packet->flag, packet->len,std::string(packet->data,packet->len));
 
 	TRACE_OUT();
 }
@@ -60,7 +60,7 @@ void WisToUserHandler::handleSendToOne(BUS_ADDRESS_POINTER busAddress,const char
 	memcpy((char *)toUser,uuid,UUID_LEN);
 	memcpy((char *)toUser + UUID_LEN,packet->data,packet->len);
 
-	BUS_ADDRESS_POINTER bus_address = WisLoginHandler::getUserAddress(std::string(deviceUUID));
+	BUS_ADDRESS_POINTER bus_address = WisLoginHandler::getUserAddress(getUuidFromBuffer(deviceUUID));
 	if(NULL != bus_address){
 		if(GetUniteDataModuleInstance()->SendData(bus_address,WIS_CMD_TO_USER,toUser,UUID_LEN + packet->len,TCP_SERVER_MODE)){
 			sendToUserResponse(busAddress, WIS_CMD_TO_USER, 0);
@@ -93,7 +93,7 @@ void WisToUserHandler::handleSendToAll(BUS_ADDRESS_POINTER  busAddress,const cha
 	std::map<std::string ,WisUserInfo>::iterator iter = DeviceBuddiesMap.begin();
 	for(;iter != DeviceBuddiesMap.end();iter ++)
 	{
-		BUS_ADDRESS_POINTER bus_address  = WisLoginHandler::getUserAddress(std::string(iter->second.uuid));
+		BUS_ADDRESS_POINTER bus_address  = WisLoginHandler::getUserAddress(iter->second.uuid);
 		if(NULL != bus_address)
 		    GetUniteDataModuleInstance()->SendData(bus_address,WIS_CMD_TO_USER,toUser, UUID_LEN + packet->len,TCP_SERVER_MODE);
 	}

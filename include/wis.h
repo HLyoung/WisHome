@@ -13,9 +13,9 @@
 
 #include <macro.h>
 #define MAX_WIS_DATA_LEN (1048576)
-#define UUID_LEN 33   //32 + 1
+#define UUID_LEN 32
 #define TOKEN_LEN 72
-#define PASSWORD_LEN 25 // 24 + 1
+#define PASSWORD_LEN 24
 #define DEVICE_NAME_LEN 32
 
 
@@ -165,9 +165,19 @@ typedef struct{
 	char uuid[32];
 }logResult,*plogResult;
 
+std::string getUuidFromBuffer(char *buffer){
+	if(strlen(buffer)>UUID_LEN)
+		return std::string(buffer,UUID_LEN);
+	else
+		return std::string(buffer);
+}
 
-
-
+std::string getPasswordFromBuffer(char *buffer){
+	if(strlen(buffer)>PASSWORD_LEN)
+		return std::string(buffer,PASSWORD_LEN);
+	else
+		return std::string(buffer);
+}
 enum {TYPE_DEVICE=1,TYPE_USER=2};
 
 #endif

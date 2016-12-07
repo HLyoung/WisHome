@@ -57,10 +57,10 @@ class Reporter : public IAutoReportToInterface
 				WisUserDao::handleUserResetPassword(DeviceInfo.bus_address, pData);
 				break;
 			case WIS_CMD_USER_BIND:
-				WisBindDao::addBind(DeviceInfo.bus_address,DeviceInfo.uuid,std::string(pData));
+				WisBindDao::addBind(DeviceInfo.bus_address,DeviceInfo.uuid,getUuidFromBuffer(pData));
 				break;
 			case WIS_CMD_USER_UNBIND:
-				WisBindDao::delBind(DeviceInfo.bus_address,DeviceInfo.uuid,std::string(pData));
+				WisBindDao::delBind(DeviceInfo.bus_address,DeviceInfo.uuid,getUuidFromBuffer(pData));
 				break;
 			case WIS_CMD_HEART_BEAT:
 				WisHeartBeatHandler::handleDeviceHeartBeat(DeviceInfo.bus_address);

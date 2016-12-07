@@ -175,7 +175,7 @@ bool WisUserDao::userGetDevice(BUS_ADDRESS_POINTER busAddress,const char *uuid)
 {
 	TRACE_IN();
 	std::map<std::string,WisDeviceInfo> mapDevice;
-	int count = WisBindDao::getBindedDevices(std::string(uuid),mapDevice);
+	int count = WisBindDao::getBindedDevices(getUuidFromBuffer(uuid),mapDevice);
 	int size = sizeof(int) + count*sizeof(WisDeviceInfo);
 
 	WisUserDeviceList *deviceList = (WisUserDeviceList*)malloc(size);
@@ -210,7 +210,7 @@ void WisUserDao::handleUserRegist(BUS_ADDRESS_POINTER busAddress,const char * pd
 		
 	char sql[200] = {0};
 	snprintf(sql,sizeof(sql),"insert into wis_user_tbl(`name`,`password`,`type`,`permission`,\
-	`reg_time`,`login_cnt`) values('%s','%s', 0, 0, CURRENT_TIMESTAMP,0)",std::string(registInfo->uuid).c_str(), std::string(registInfo->password).c_str());
+	`reg_time`,`login_cnt`) values('%s','%s', 0, 0, CURRENT_TIMESTAMP,0)",getUuidFromBuffer(registInfo->uuid).c_str(),getPasswordFromBuffer(registInfo->password).c_str());
 		
 	CNVDataAccess *access = (CNVDataAccess *)DbaModule_GetNVDataAccess();
 	if(NULL == access)

@@ -48,7 +48,7 @@ bool CDevice::Send(INT32 nCmd, void* data, INT32 nDataSize)
 		    LOG_INFO("device(uuid = %s logined",result->uuid);
 			SetLogined(true);
 			SetLoginType(TYPE_DEVICE);
-			m_uuid = std::string(result->uuid);
+			m_uuid = getUuidFromBuffer(result->uuid);
 			nDataSize = sizeof(int);
 			
 		}
@@ -57,7 +57,7 @@ bool CDevice::Send(INT32 nCmd, void* data, INT32 nDataSize)
 			LOG_INFO("user(uuid = %s) logined.",result->uuid);
 			SetLogined(true);
 			SetLoginType(TYPE_USER);	
-			m_uuid = std::string(result->uuid);
+			m_uuid = getUuidFromBuffer(result->uuid);
 			nDataSize = sizeof(int);
 		}
 	}

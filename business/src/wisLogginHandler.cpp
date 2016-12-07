@@ -37,11 +37,11 @@ void WisLoginHandler::handleUserLogin(BUS_ADDRESS_POINTER busAddress,int datalen
 {
 	TRACE_IN();	
     WisUserLoginInfo* loginInfo = (WisUserLoginInfo*)(pdata);	
-	if(WisUserDao::checkUserAndPassword(std::string(loginInfo->uuid),std::string(loginInfo->password)))
-		handleKickoutUser(std::string(loginInfo->uuid));      //若一个用户在不同终端登录，先将用户踢出。
+	if(WisUserDao::checkUserAndPassword(getUuidFromBuffer(loginInfo->uuid),getPasswordFromBuffer(loginInfo->password)))
+		handleKickoutUser(getUuidFromBuffer(loginInfo->uuid));      //若一个用户在不同终端登录，先将用户踢出。
 	
-    if(WisUserDao::login(std::string(loginInfo->uuid), std::string(loginInfo->password))){
-		mapAddUser(busAddress,std::string(loginInfo->uuid));
+    if(WisUserDao::login(getUuidFromBuffer(loginInfo->uuid), getPasswordFromBuffer(loginInfo->password))){
+		mapAddUser(busAddress,getUuidFromBuffer(loginInfo->uuid));
 	    WisLogDao::saveUserLoginLog(loginInfo->uuid, strlen((char *)busAddress->host_address.ip),(const char*)busAddress->host_address.ip);
 	    if ( datalen >= TOKEN_LEN + UUID_LEN + PASSWORD_LEN) {
 	        std::string token(loginInfo->token);
@@ -81,11 +81,11 @@ void WisLoginHandler::handleDeviceLogin( BUS_ADDRESS_POINTER busAddress,int data
     WisDeviceLoginInfo* loginInfo = (WisDeviceLoginInfo*)pdata;
 	
     bool firstLogin = false;
-    bool rc = WisDeviceDao::check(std::string(loginInfo->uuid));
+    bool rc = WisDeviceDao::check(getUuidFromBuffer(loginInfo->uuid));
     if( !rc ) {
-        rc = WisDeviceDao::regist(std::string(loginInfo->uuid), std::string(loginInfo->name));
+        rc = WisDeviceDao::regist(getUuidFromBuffer(loginInfo->uuid), std::string(loginInfo->name));
         if( !rc ) {
-            LOG_ERROR("device(uuid = %s,name = %s )regist failed.",std::string(loginInfo->uuid).c_str(),
+            LOG_ERROR("device(uuid = %s,name = %s )regist failed.",getUuidFromBuffer(loginInfo->uuid).c_str(),
             std::string(loginInfo->name,NAME_LEN).c_str());
             sendLoginResponse( busAddress,loginInfo->uuid, -1,TYPE_DEVICE );
             return;
@@ -103,7 +103,7 @@ void WisLoginHandler::handleDeviceLogin( BUS_ADDRESS_POINTER busAddress,int data
     } else {
         WisLogDao::saveDeviceLoginLog(loginInfo->uuid, strlen((char*)busAddress->host_address.ip),(const char*) busAddress->host_address.ip);
     } 
-	mapAddDevice(busAddress,std::string(loginInfo->uuid));
+	mapAddDevice(busAddress,getUuidFromBuffer(loginInfo->uuid));
     sendLoginResponse( busAddress,loginInfo->uuid, 1 ,TYPE_DEVICE);	
     
     std:map<std::string,WisUserInfo> mapUserIfno;
@@ -112,7 +112,7 @@ void WisLoginHandler::handleDeviceLogin( BUS_ADDRESS_POINTER busAddress,int data
 		for(std::map<std::string,WisUserInfo>::iterator ite = mapUserIfno.begin();\
 			ite != mapUserIfno.end();ite++)
 			{
-			    BUS_ADDRESS_POINTER pBus_address = getUserAddress(std::string(ite->second.uuid));
+			    BUS_ADDRESS_POINTER pBus_address = getUserAddress(getUuidFromBuffer(ite->second.uuid));
 				if(pBus_address != NULL)
 					GetUniteDataModuleInstance()->SendData(pBus_address,WIS_CMD_USER_DEV_LOGIN,loginInfo->uuid,\
 					strlen(loginInfo->uuid),TCP_SERVER_MODE);
@@ -131,7 +131,7 @@ void WisLoginHandler::handleDeviceLogout(BUS_ADDRESS_POINTER busAddress,std::str
 	    std:map<std::string,WisUserInfo> mapUserIfno;
 		if(0 < WisBindDao::getBindedUsers(uuid,mapUserIfno)){
 			for(std::map<std::string,WisUserInfo>::iterator ite = mapUserIfno.begin();ite != mapUserIfno.end();ite++){
-					BUS_ADDRESS_POINTER pBus_address = getUserAddress(std::string(ite->second.uuid));
+					BUS_ADDRESS_POINTER pBus_address = getUserAddress(ite->second.uuid);
 					if(pBus_address != NULL)
 						GetUniteDataModuleInstance()->SendData(pBus_address,WIS_CMD_USER_DEV_LOGOUT,(char *)uuid.c_str(),strlen(uuid.c_str()),TCP_SERVER_MODE);
 					}			

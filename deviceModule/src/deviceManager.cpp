@@ -65,7 +65,6 @@ bool CDeviceManager::StopTcpServer(BUS_ADDRESS_POINTER bus_address)
 		pDevice->SetDeviceExpire(true);
 		return GetTCPServiceModuleInstance()->StopService(bus_address);
 		}
-    }
 }
 
 bool CDeviceManager::CreateConnectToDevice(string& strIp,int nPort)
@@ -191,7 +190,7 @@ void CDeviceManager::OnDisconnect(UINT32 size, void* data )
 	CDevice *pDevice = GetDeviceClient(bus_address);
 	if (NULL != pDevice){
 		pDevice->SetDeviceExpire(true);
-		int count = CountByUuid(std::string(pDevice->GetUuid()));
+		int count = CountByUuid(pDevice->GetUuid());
 		if(pDevice->IsLogined()  && count < 2)
 			CUniteDataModule::GetInstance()->ShowClientDisConnect(bus_address,pDevice->GetUuid(),pDevice->GetLoginType());
 	}	
