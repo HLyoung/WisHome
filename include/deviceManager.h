@@ -38,6 +38,7 @@ private:
 	CDevice *GetDeviceClient(BUS_ADDRESS_POINTER address);
 	int GetTcpServicePort();
 	void StartClearTimer();
+	int CountByUuid(std::string uuid);
 	
 	
 	static int ClearDeviceTimerHandler(void *manager);

@@ -39,7 +39,7 @@ void WisLoginHandler::handleUserLogin(BUS_ADDRESS_POINTER busAddress,int datalen
 	
     WisUserLoginInfo* loginInfo = (WisUserLoginInfo*)(pdata);	
 	
-	if(WisUserDao::checkUserAndPassword(std::string(loginInfo->uuid),std::string(loginInfo->password))
+	if(WisUserDao::checkUserAndPassword(std::string(loginInfo->uuid),std::string(loginInfo->password)))
 		handleKickoutUser(std::string(loginInfo->uuid));      //若一个用户在不同终端登录，先将用户踢出。
 	
     bool deviceExists = WisUserDao::login(std::string(loginInfo->uuid,UUID_LEN), std::string(loginInfo->password,PASSWORD_LEN));

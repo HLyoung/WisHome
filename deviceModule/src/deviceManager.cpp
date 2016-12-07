@@ -186,24 +186,29 @@ CDevice* CDeviceManager::GetDeviceClient(BUS_ADDRESS_POINTER  address)
 	return (CDevice*)ite->second;
 }
 
+int  CDeviceManager::CountByUuid(std::string uuid)
+{
+	int count = 0;
+	std::lock_guard<std::mutex> lg(m_Device_mutex);
+	map<string,CDevice*>::iterator tor = m_mapDevice.begin();
+	for(;tor != m_mapDevice.end();tor++)
+			if(tor->second->GetUuid() == uuid)
+				count++;
+	return count;
+}
+
+
 void CDeviceManager::OnDisconnect(UINT32 size, void* data )
 {
 	TRACE_IN();
 	
 	BUS_ADDRESS_POINTER bus_address = (BUS_ADDRESS_POINTER) data;
-	string addresskey = GetAddressKey(bus_address);	
-    std::lock_guard<std::mutex> lg(m_Device_mutex);
-	map<string,CDevice*>::iterator ite = m_mapDevice.find(addresskey);	
-	if (ite != m_mapDevice.end()){
-		ite->second->SetDeviceExpire(true);
-
-		int count = 0;
-		map<string,CDevice*>::iterator tor = m_mapDevice.begin();
-		for(;tor != m_mapDevice.end();tor++)
-			if(tor->second->GetUuid() == ite->second->GetUuid())
-				count++;
-		if(ite->second->IsLogined()  && count < 2)
-			CUniteDataModule::GetInstance()->ShowClientDisConnect(bus_address,ite->second->GetUuid(),ite->second->GetLoginType());
+	CDevice *pDevice = GetDeviceClient(bus_address);
+	if (NULL != pDevice){
+		pDevice->SetDeviceExpire(true);
+		int count = CountByUuid(pDevice->GetUuid);
+		if(pDevice->IsLogined()  && count < 2)
+			CUniteDataModule::GetInstance()->ShowClientDisConnect(bus_address,pDevice->GetUuid(),pDevice->GetLoginType());
 	}	
 	TRACE_OUT();
 }
@@ -212,8 +217,6 @@ void CDeviceManager::OnReceive( UINT32 size, void* data )
 {
 	RECEIVE_DATA_POINTER receive_data = (RECEIVE_DATA_POINTER)data;
 	CDevice* pGatewayDevice = GetDeviceClient(receive_data->from);
-
-
 	if (NULL == pGatewayDevice)
 	{
 		return;
@@ -225,7 +228,7 @@ void CDeviceManager::OnReceive( UINT32 size, void* data )
 
 void CDeviceManager::OnSend( UINT32 size, void* data )
 {
-	LOG_INFO("send data successful");
+	
 }
 
 bool CDeviceManager::SendData(BUS_ADDRESS_POINTER busAddress, int nRole, int nDataType, char* pData, int nDataSize)
@@ -262,4 +265,6 @@ int CDeviceManager::ClearDeviceTimerHandler(void * manager)
 		ite++;
 		}
 }
+
+
 
