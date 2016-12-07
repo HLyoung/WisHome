@@ -29,6 +29,7 @@ protected:
 	virtual void OnReceive(UINT32 size,void *data);
 	virtual void OnSend(UINT32 size,void *data);
 	
+	
 private:
 	CDeviceManager(void);
 	~CDeviceManager(void);

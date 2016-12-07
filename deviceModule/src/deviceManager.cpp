@@ -196,7 +196,13 @@ void CDeviceManager::OnDisconnect(UINT32 size, void* data )
 	map<string,CDevice*>::iterator ite = m_mapDevice.find(addresskey);	
 	if (ite != m_mapDevice.end()){
 		ite->second->SetDeviceExpire(true);
-		if(ite->second->IsLogined())
+
+		int count = 0;
+		map<string,CDevice*>::iterator tor = m_mapDevice.begin();
+		for(;tor != m_mapDevice.end();tor++)
+			if(tor->second->GetUuid() == ite->second->GetUuid())
+				count++;
+		if(ite->second->IsLogined()  && count < 2)
 			CUniteDataModule::GetInstance()->ShowClientDisConnect(bus_address,ite->second->GetUuid(),ite->second->GetLoginType());
 	}	
 	TRACE_OUT();
