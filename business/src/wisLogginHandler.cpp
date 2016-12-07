@@ -38,7 +38,9 @@ void WisLoginHandler::handleUserLogin(BUS_ADDRESS_POINTER busAddress,int datalen
 	TRACE_IN();
 	
     WisUserLoginInfo* loginInfo = (WisUserLoginInfo*)(pdata);	
-	handleKickoutUser(std::string(loginInfo->uuid));      //若一个用户在不同终端登录，先将用户踢出。
+	
+	if(WisUserDao::checkUserAndPassword(std::string(loginInfo->uuid),std::string(loginInfo->password))
+		handleKickoutUser(std::string(loginInfo->uuid));      //若一个用户在不同终端登录，先将用户踢出。
 	
     bool deviceExists = WisUserDao::login(std::string(loginInfo->uuid,UUID_LEN), std::string(loginInfo->password,PASSWORD_LEN));
     if( !deviceExists ) {
@@ -79,9 +81,10 @@ void WisLoginHandler::handleKickoutUser(std::string uuid)
 {
 	TRACE_IN();
 	BUS_ADDRESS_POINTER busAddress = getUserAddress(uuid);
-	mapDeleteUser(busAddress);
-	if(busAddress != NULL)
+	if(busAddress != NULL){
+		mapDeleteUser(busAddress);
 		GetUniteDataModuleInstance()->SendData(busAddress,WIS_CMD_SERVICE_KICKOUT_USER,NULL,0,TCP_SERVER_MODE);	
+		}
 	TRACE_OUT();
 }
 
@@ -92,11 +95,11 @@ void WisLoginHandler::handleDeviceLogin( BUS_ADDRESS_POINTER busAddress,int data
     WisDeviceLoginInfo* loginInfo = (WisDeviceLoginInfo*)pdata;
 	
     bool firstLogin = false;
-    bool rc = WisDeviceDao::check(std::string(loginInfo->uuid,UUID_LEN));
+    bool rc = WisDeviceDao::check(std::string(loginInfo->uuid));
     if( !rc ) {
-        rc = WisDeviceDao::regist(std::string(loginInfo->uuid,UUID_LEN), std::string(loginInfo->name,DEVICE_NAME_LEN));
+        rc = WisDeviceDao::regist(std::string(loginInfo->uuid), std::string(loginInfo->name));
         if( !rc ) {
-            LOG_ERROR("device(uuid = %s,name = %s )regist failed.",std::string(loginInfo->uuid,UUID_LEN).c_str(),
+            LOG_ERROR("device(uuid = %s,name = %s )regist failed.",std::string(loginInfo->uuid).c_str(),
             std::string(loginInfo->name,NAME_LEN).c_str());
             sendLoginResponse( busAddress,loginInfo->uuid, -1,TYPE_DEVICE );
             return;
@@ -127,9 +130,7 @@ void WisLoginHandler::handleDeviceLogin( BUS_ADDRESS_POINTER busAddress,int data
 				if(pBus_address != NULL)
 					GetUniteDataModuleInstance()->SendData(pBus_address,WIS_CMD_USER_DEV_LOGIN,loginInfo->uuid,\
 					strlen(loginInfo->uuid),TCP_SERVER_MODE);
-			}			
-		LOG_INFO("device(uuid = %s) login,send %d notifications to online user",loginInfo->uuid,(int )mapUserIfno.size());
-		
+			}				
 	}	
 	TRACE_OUT();
 }

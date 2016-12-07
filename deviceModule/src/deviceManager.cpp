@@ -139,30 +139,15 @@ void CDeviceManager::OnConnect( UINT32 size, void* data )
 
 	TRACE_IN();
 	BUS_ADDRESS_POINTER bus_address = (BUS_ADDRESS_POINTER) data;
-	if (NULL == bus_address)
-	{
-		LOG_INFO("OnConnect callback argument error!");
-		return;
-	}
-
     string addresskey = GetAddressKey(bus_address);
-
-    if (addresskey.length() == 0)
-    {
-        LOG_INFO("RemoveGateway address key is empty");
-        return;
-    }
-
     CDevice* pGatewayDevice = GetDeviceClient(bus_address);
     if (!pGatewayDevice)
 	{
 		pGatewayDevice = new CDevice(this,bus_address);
-		
 		m_Device_mutex.lock();
 		m_mapDevice.insert(pair<string,CDevice*>(addresskey,pGatewayDevice));
 		m_Device_mutex.unlock();
 	}
-
 	CUniteDataModule::GetInstance()->ShowClientConnect(bus_address);
 
 	TRACE_OUT();
@@ -204,38 +189,16 @@ CDevice* CDeviceManager::GetDeviceClient(BUS_ADDRESS_POINTER  address)
 void CDeviceManager::OnDisconnect(UINT32 size, void* data )
 {
 	TRACE_IN();
+	
 	BUS_ADDRESS_POINTER bus_address = (BUS_ADDRESS_POINTER) data;
-	if (NULL == bus_address)
-	{
-		LOG_INFO("OnDisconnect callback argument error!");
-		return;
-	}
-
 	string addresskey = GetAddressKey(bus_address);	
     std::lock_guard<std::mutex> lg(m_Device_mutex);
 	map<string,CDevice*>::iterator ite = m_mapDevice.find(addresskey);	
-	if (ite == m_mapDevice.end()){
-		LOG_INFO("the link doesn`t found");
-		return;
-	}
-	
-	CDevice* pGatewayDevice = (CDevice*)ite->second;
-	if (NULL == pGatewayDevice){
-		LOG_INFO("the device doesn`t found");
-		return;
-	}
-	
-	std::string uuid = pGatewayDevice->GetUuid();
-	ite->second->SetDeviceExpire(true);                        //set device expire and delete it in the timer.
-	
-	for(ite = m_mapDevice.begin();ite != m_mapDevice.end();ite ++){  //当一个设备有多个连接的时候，某一个连接断了并不将设备置为离线。
-		if(ite->second->GetUuid() == uuid){
-			LOG_INFO("use or device(uuid = %s) has more than one link",uuid.c_str());
-			return;
-		}
-	}
-		
-    CUniteDataModule::GetInstance()->ShowClientDisConnect(bus_address,uuid,pGatewayDevice->GetLoginType());
+	if (ite != m_mapDevice.end()){
+		ite->second->SetDeviceExpire(true);
+		if(ite->second->IsLogined())
+			CUniteDataModule::GetInstance()->ShowClientDisConnect(bus_address,ite->second->GetUuid(),ite->second->GetLoginType());
+	}	
 	TRACE_OUT();
 }
 

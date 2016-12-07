@@ -24,7 +24,6 @@ bool WisDeviceDao::check(const std::string& uuid )
 
 	if(access->ResNumRows() >= 1)
 	{
-		LOG_INFO("devide(uuid = %s ) is already in the database",uuid.c_str());
 		DbaModule_ReleaseNVDataAccess(access);
 		return true;
 	}

@@ -70,6 +70,9 @@ void WisToUserHandler::handleSendToOne(BUS_ADDRESS_POINTER busAddress,const char
 			sendToUserResponse(busAddress, WIS_CMD_TO_USER, -1);
 			}
 		}
+	else{
+		LOG_INFO("send message to one(uuid = %s) failed,because the device not loggied",deviceUUID);
+		}
 
 	SafeDeleteArray(toUser);
 	TRACE_OUT();

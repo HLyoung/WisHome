@@ -42,8 +42,6 @@ bool WisUserDao::checkUser(const std::string &user)
 
 bool WisUserDao::checkUserAndPassword(const std::string &user,const std::string &password){
 	TRACE_IN();
-	if(user.empty()) return false;
-	
 	CNVDataAccess *access = (CNVDataAccess *)DbaModule_GetNVDataAccess();
 	if(NULL == access)
 	{
