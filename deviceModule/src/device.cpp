@@ -92,7 +92,7 @@ void CDevice::ParserCallback(UINT32 wEvent, UINT32 wResultCode, UINT32 wDataLen,
 	{
 		if(!pDevice->IsLogined())
 		{
-			LOG_INFO("received something(event=%d) from a unloggined device and it`s not heart beat   --will drop it.  ",wEvent);
+			LOG_INFO("received something(event=%X) from a unloggined device and it`s not heart beat   --will drop it.  ",wEvent);
 			return;
 		}
 	}

@@ -97,30 +97,17 @@ bool WisDeviceDao::login(const std::string& uuid ,const std::string &name )
 
 bool WisDeviceDao::logout(const std::string& uuid )
 {
-    char updateSQL[1024] = {0};
-    snprintf( updateSQL, sizeof(updateSQL),
-              "UPDATE wis_device_tbl SET `status`=0 WHERE `uuid`='%s'",uuid.c_str()
-    );
-   
+    char updateSQL[200] = {0};
+    snprintf( updateSQL, sizeof(updateSQL),"UPDATE wis_device_tbl SET `status`=0 WHERE `uuid`='%s'",uuid.c_str()); 
     CNVDataAccess *access = (CNVDataAccess *)DbaModule_GetNVDataAccess();
-	if(NULL == access)
-	{
-		LOG_ERROR("get database access failed");
-		DbaModule_ReleaseNVDataAccess(access);
-		return false;
-	}
-	
-	if(-1 == access->ExecuteNonQuery(updateSQL))
-	{
-		LOG_ERROR("execute sql(%s) query failed",updateSQL);
-		DbaModule_ReleaseNVDataAccess(access);
-		return false;
-	}
-
+	if(NULL != access){
+		if(-1 != access->ExecuteNonQuery(updateSQL)){
+			DbaModule_ReleaseNVDataAccess(access);
+			return true;
+		   }
+		}
 	DbaModule_ReleaseNVDataAccess(access);
-	TRACE_OUT();
     return false;
-   
 }
 
 bool WisDeviceDao::logoutAll( )

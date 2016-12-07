@@ -105,8 +105,6 @@ bool WisUserDao::login(const std::string &user,const std::string& passwd)
 
 bool WisUserDao::logout(const std::string &user,const std::string &passwd)
 {
-	if(user.empty()) return false;
-	
 	CNVDataAccess *access = (CNVDataAccess *)DbaModule_GetNVDataAccess();
 	if(NULL == access)
 		return false;
@@ -204,15 +202,15 @@ void WisUserDao::handleUserRegist(BUS_ADDRESS_POINTER busAddress,const char * pd
 	}	
 	
 	WisUserRegistInfo *registInfo = (WisUserRegistInfo*)pdata;	
-    if(checkUser(string(registInfo->uuid,UUID_LEN))){
-		LOG_INFO("%s is already registed",string(registInfo->uuid,UUID_LEN).c_str());
+    if(checkUser(string(registInfo->uuid))){
+		LOG_INFO("%s is already registed",string(registInfo->uuid).c_str());
 		sendUserResponse(busAddress,WIS_CMD_USER_REGIST,-2);
 		return;
     }
 		
 	char sql[200] = {0};
 	snprintf(sql,sizeof(sql),"insert into wis_user_tbl(`name`,`password`,`type`,`permission`,\
-	`reg_time`,`login_cnt`) values('%s','%s', 0, 0, CURRENT_TIMESTAMP,0)",std::string(registInfo->uuid,UUID_LEN).c_str(), std::string(registInfo->password,PASSWORD_LEN).c_str());
+	`reg_time`,`login_cnt`) values('%s','%s', 0, 0, CURRENT_TIMESTAMP,0)",std::string(registInfo->uuid).c_str(), std::string(registInfo->password).c_str());
 		
 	CNVDataAccess *access = (CNVDataAccess *)DbaModule_GetNVDataAccess();
 	if(NULL == access)
@@ -266,12 +264,12 @@ void WisUserDao::handleUserResetPassword(BUS_ADDRESS_POINTER busAddress,const ch
 	TRACE_IN();
 
 	WisUserResetPassword*resetInfo = (WisUserResetPassword*)pdata;	
-    if(!checkUser(string(resetInfo->uuid,UUID_LEN))){
-		LOG_INFO("user(uuid = %s) want to reset his password,but he is not registed yet",string(resetInfo->uuid,UUID_LEN).c_str());
+    if(!checkUser(string(resetInfo->uuid))){
+		LOG_INFO("user(uuid = %s) want to reset his password,but he is not registed yet",string(resetInfo->uuid).c_str());
 		sendUserResponse(busAddress,WIS_CMD_USER_RESET_PASSWORD,-2);
 		return;
     }	
-	if(sendResetPasswordMailTo(string(resetInfo->uuid,UUID_LEN)))
+	if(sendResetPasswordMailTo(string(resetInfo->uuid)))
 		sendUserResponse(busAddress,WIS_CMD_USER_RESET_PASSWORD,0);
 	else
 		sendUserResponse(busAddress,WIS_CMD_USER_RESET_PASSWORD,-1);
@@ -291,7 +289,7 @@ bool WisUserDao::sendUserResponse(BUS_ADDRESS_POINTER  busAddress,int cmd,const 
 
 bool WisUserDao::sendResetPasswordMailTo(const std::string & uuid)
 {
-	string url = makeupURL(string(uuid,UUID_LEN));
+	string url = makeupURL(string(uuid));
 	string content = string("dear sir:<br/> &nbsp &nbsp &nbsp &nbsp &nbsp  please click this link <a href=\"http://192.168.2.70/test.php\">") + url + string(" </a>to reset your password"); 	
 
 	Mail mail;

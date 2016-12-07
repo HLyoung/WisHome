@@ -21,8 +21,9 @@ void WisUserPrivateHandler::sendUserPrivateResponse(BUS_ADDRESS_POINTER busAddre
 
 void WisUserPrivateHandler::handleUserPrivate( BUS_ADDRESS_POINTER   busAddress,const char *uuid,int datalen,const char *pdata )
 {
+	TRACE_IN();
     const WisUserPrivatePacket* userPrivate = reinterpret_cast<const WisUserPrivatePacket*>( pdata );  
-	BUS_ADDRESS_POINTER pbusAddress = WisLoginHandler::getUserAddress(std::string(uuid));
+	BUS_ADDRESS_POINTER pbusAddress = WisLoginHandler::getDeviceAddress(std::string(userPrivate->uuid));
 	if(pbusAddress != NULL){
 		if(!GetUniteDataModuleInstance()->SendData(pbusAddress,userPrivate->cmdId,(char *)userPrivate + 40,userPrivate->argLen,TCP_SERVER_MODE)){
 			LOG_ERROR("handle user private failed(dstUuid = %s,cmd = %d,datalen = %d)",userPrivate->uuid,userPrivate->cmdId,userPrivate->argLen);
@@ -31,5 +32,7 @@ void WisUserPrivateHandler::handleUserPrivate( BUS_ADDRESS_POINTER   busAddress,
 			}
 		else
 			sendUserPrivateResponse(busAddress,0);
-		}	
+		}
+
+	TRACE_OUT();
 }

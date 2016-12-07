@@ -65,9 +65,6 @@ class Reporter : public IAutoReportToInterface
 			case WIS_CMD_HEART_BEAT:
 				WisHeartBeatHandler::handleDeviceHeartBeat(DeviceInfo.bus_address);
 				break;
-		//	case WIS_CMD_USER_HEART_BEAT:
-		//		WisHeartBeatHandler::handleUserHeartBeat(DeviceInfo.bus_address);
-		//		break;
 			case WIS_CMD_TO_USER:
 				WisToUserHandler::handleToUser(DeviceInfo.bus_address,DeviceInfo.uuid.c_str(),nDataLen,pData);
 				break;

@@ -54,28 +54,16 @@ int CDeviceManager::GetTcpServicePort()
 }
 
 bool CDeviceManager::StopTcpServer(BUS_ADDRESS_POINTER bus_address)
-{	
-	string addresskey = GetAddressKey(bus_address);
-		
-	std::lock_guard<std::mutex> lg(m_Device_mutex);
-	map<string,CDevice*>::iterator ite = m_mapDevice.find(addresskey);	
-	if (ite != m_mapDevice.end()){	
-		CDevice* pGatewayDevice = (CDevice*)ite->second;
-		if (NULL != pGatewayDevice){		
-			std::string uuid = pGatewayDevice->GetUuid();
-			int count = 0;
-			for(ite = m_mapDevice.begin();ite != m_mapDevice.end();ite ++){  //当一个用户在多地登录时，一个用户下线，不把用户设为未登录状态。
-				if(ite->second->GetUuid() == uuid){
-					count++;
-				}
-			}
-			if(count <= 1)
-				if(pGatewayDevice->IsLogined())
-			   		CUniteDataModule::GetInstance()->ShowClientDisConnect(bus_address,uuid, pGatewayDevice->GetLoginType());
-				
-			pGatewayDevice->SetLogined(false);
-			pGatewayDevice->SetDeviceExpire(true);
-			return GetTCPServiceModuleInstance()->StopService(bus_address);
+{		
+    CDevice *pDevice = GetDeviceClient(bus_address);
+	if (pDevice != NULL){	
+		std::string uuid = pDevice->GetUuid();
+		int count = CountByUuid(uuid);
+	    if(pDevice->IsLogined() && count < 2)
+			  CUniteDataModule::GetInstance()->ShowClientDisConnect(bus_address,uuid, pDevice->GetLoginType());				
+		pDevice->SetLogined(false);
+		pDevice->SetDeviceExpire(true);
+		return GetTCPServiceModuleInstance()->StopService(bus_address);
 		}
     }
 }
@@ -141,13 +129,10 @@ void CDeviceManager::OnConnect( UINT32 size, void* data )
 	BUS_ADDRESS_POINTER bus_address = (BUS_ADDRESS_POINTER) data;
     string addresskey = GetAddressKey(bus_address);
     CDevice* pGatewayDevice = GetDeviceClient(bus_address);
-    if (!pGatewayDevice)
-	{
+    if (!pGatewayDevice){
 		pGatewayDevice = new CDevice(this,bus_address);
-		m_Device_mutex.lock();
 		m_mapDevice.insert(pair<string,CDevice*>(addresskey,pGatewayDevice));
-		m_Device_mutex.unlock();
-	}
+    	}
 	CUniteDataModule::GetInstance()->ShowClientConnect(bus_address);
 
 	TRACE_OUT();
@@ -186,7 +171,7 @@ CDevice* CDeviceManager::GetDeviceClient(BUS_ADDRESS_POINTER  address)
 	return (CDevice*)ite->second;
 }
 
-int  CDeviceManager::CountByUuid(std::string uuid)
+int  CDeviceManager::CountByUuid(const std::string & uuid)
 {
 	int count = 0;
 	std::lock_guard<std::mutex> lg(m_Device_mutex);
@@ -206,7 +191,7 @@ void CDeviceManager::OnDisconnect(UINT32 size, void* data )
 	CDevice *pDevice = GetDeviceClient(bus_address);
 	if (NULL != pDevice){
 		pDevice->SetDeviceExpire(true);
-		int count = CountByUuid(pDevice->GetUuid);
+		int count = CountByUuid(std::string(pDevice->GetUuid()));
 		if(pDevice->IsLogined()  && count < 2)
 			CUniteDataModule::GetInstance()->ShowClientDisConnect(bus_address,pDevice->GetUuid(),pDevice->GetLoginType());
 	}	
