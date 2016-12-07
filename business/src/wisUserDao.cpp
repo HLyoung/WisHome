@@ -12,6 +12,7 @@
 #include "libSql.h"
 #include "CNVDataAccess.h"
 #include "WisBindDao.h"
+#include "wisLogginHandler.h"
 
 std::string WisUserDao::defaultPassword = "R800JL.Ke8MBo";
 
@@ -174,7 +175,7 @@ bool WisUserDao::logoutAll()
 	
 }
 
-bool WisUserDao::userGetDevice(BUS_ADDRESS &busAddress,const char *uuid)
+bool WisUserDao::userGetDevice(BUS_ADDRESS_POINTER busAddress,const char *uuid)
 {
 	TRACE_IN();
 	std::map<std::string,WisDeviceInfo> mapDevice;
@@ -182,8 +183,6 @@ bool WisUserDao::userGetDevice(BUS_ADDRESS &busAddress,const char *uuid)
 	int size = sizeof(int) + count*sizeof(WisDeviceInfo);
 
 	WisUserDeviceList *deviceList = (WisUserDeviceList*)malloc(size);
-
-	LOG_INFO("use(uuid = %s) get %d device and server will send response(size = %d)",uuid,count,size);
 	if(deviceList){
 		deviceList->nums = count;
 		int index = 0;
@@ -198,7 +197,7 @@ bool WisUserDao::userGetDevice(BUS_ADDRESS &busAddress,const char *uuid)
 	TRACE_OUT();
 }
 
-void WisUserDao::handleUserRegist(BUS_ADDRESS & busAddress,const char * pdata)
+void WisUserDao::handleUserRegist(BUS_ADDRESS_POINTER busAddress,const char * pdata)
 {
 	TRACE_IN();
 	if(NULL == pdata){
@@ -235,7 +234,7 @@ void WisUserDao::handleUserRegist(BUS_ADDRESS & busAddress,const char * pdata)
 	TRACE_OUT();
 }
 
-void WisUserDao::handleUserModifyPassword(std::string &uuid,BUS_ADDRESS &busAddress,const char *pdata)
+void WisUserDao::handleUserModifyPassword(std::string &uuid,BUS_ADDRESS_POINTER busAddress,const char *pdata)
 {
 	TRACE_IN();
 	if(NULL == pdata){
@@ -264,7 +263,7 @@ void WisUserDao::handleUserModifyPassword(std::string &uuid,BUS_ADDRESS &busAddr
 	DbaModule_ReleaseNVDataAccess(access);
 }
 
-void WisUserDao::handleUserResetPassword(BUS_ADDRESS &busAddress,const char *pdata)
+void WisUserDao::handleUserResetPassword(BUS_ADDRESS_POINTER busAddress,const char *pdata)
 {
 	TRACE_IN();
 
@@ -286,7 +285,7 @@ string WisUserDao::makeupURL(const std::string& uuid)
 	return "wisHome password manager";
 }
 
-bool WisUserDao::sendUserResponse(BUS_ADDRESS &busAddress,int cmd,const int ret)
+bool WisUserDao::sendUserResponse(BUS_ADDRESS_POINTER  busAddress,int cmd,const int ret)
 {
 	return GetUniteDataModuleInstance()->SendData(busAddress,cmd,(char *)&ret,sizeof(int),TCP_SERVER_MODE);
 }
@@ -348,7 +347,7 @@ bool WisUserDao::checkMail(const std::string &mail)
    	return true;
 }
 
-bool WisUserDao::handleUserQuit(BUS_ADDRESS & busAddress,const char *pdata)
+bool WisUserDao::handleUserQuit(BUS_ADDRESS_POINTER busAddress,const char *pdata)
 {
 	TRACE_IN();
 	WisUserQuitInfo *quitinfo = (WisUserQuitInfo *)pdata;
@@ -368,9 +367,11 @@ bool WisUserDao::handleUserQuit(BUS_ADDRESS & busAddress,const char *pdata)
 		sendUserResponse(busAddress,WIS_CMD_USER_QUIT,-1);
 		DbaModule_ReleaseNVDataAccess(access);
 		return  false;
-	}	
+	}
 	sendUserResponse(busAddress,WIS_CMD_USER_QUIT,0);
 	DbaModule_ReleaseNVDataAccess(access);
+
+	WisLoginHandler::handleUserLogout(busAddress,quitinfo->uuid);
 	return true;
 	TRACE_OUT();
 }

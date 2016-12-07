@@ -13,8 +13,8 @@ class IAutoReportToInterface
 {
 public:
 	//向应用返回信息
-	virtual void ShowClientConnect(BUS_ADDRESS DeviceAddress) = 0;
-	virtual void ShowClientDisConnect(BUS_ADDRESS DeviceAddress,std::string uuid,int loginType) = 0;
+	virtual void ShowClientConnect(BUS_ADDRESS_POINTER DeviceAddress) = 0;
+	virtual void ShowClientDisConnect(BUS_ADDRESS_POINTER DeviceAddress,std::string uuid,int loginType) = 0;
 	virtual void ShowClientReceiveData(DEVICE_INFO & DeviceInfo,int nDataType,int nResultCode,int nDataLen,const char* pData) = 0;
 	virtual void ShowDeviceScanResult(const char* pDeviceId, int nIp) = 0;
 };
@@ -33,8 +33,7 @@ public:
 	//应用手动连接服务器
 	virtual bool ConnectServer(std::string strServerIp,int nServerPort) = 0;
 	//应用驱动向网络对端发送数据（服务器或客户端)
-	virtual bool SendData(std::string uuid, int nType, char* pSendData, int nDataSize, int nRole = TCP_CLIENT_MODE) = 0;
-	virtual bool SendData(BUS_ADDRESS &busAddress, int nType, char* pSendData, int nDataSize, int nRole = TCP_CLIENT_MODE) = 0;
+	virtual bool SendData(BUS_ADDRESS_POINTER busAddress, int nType, char* pSendData, int nDataSize, int nRole = TCP_CLIENT_MODE) = 0;
 	
 };
 

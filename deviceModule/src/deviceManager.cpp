@@ -55,7 +55,7 @@ int CDeviceManager::GetTcpServicePort()
 
 bool CDeviceManager::StopTcpServer(BUS_ADDRESS_POINTER bus_address)
 {	
-	string addresskey = GetAddressKey(*bus_address);
+	string addresskey = GetAddressKey(bus_address);
 		
 	std::lock_guard<std::mutex> lg(m_Device_mutex);
 	map<string,CDevice*>::iterator ite = m_mapDevice.find(addresskey);	
@@ -71,7 +71,7 @@ bool CDeviceManager::StopTcpServer(BUS_ADDRESS_POINTER bus_address)
 			}
 			if(count <= 1)
 				if(pGatewayDevice->IsLogined())
-			   		CUniteDataModule::GetInstance()->ShowClientDisConnect(*bus_address,uuid, pGatewayDevice->GetLoginType());
+			   		CUniteDataModule::GetInstance()->ShowClientDisConnect(bus_address,uuid, pGatewayDevice->GetLoginType());
 				
 			pGatewayDevice->SetLogined(false);
 			pGatewayDevice->SetDeviceExpire(true);
@@ -91,7 +91,7 @@ bool CDeviceManager::CreateConnectToDevice(string& strIp,int nPort)
 	addr.model_type = TCP_CLIENT_MODE;
 	addr.host_address.port = nPort;
 
- 	CDevice * pGatewayDevice = GetDeviceClient(addr);
+ 	CDevice * pGatewayDevice = GetDeviceClient(&addr);
 	if (NULL == pGatewayDevice)
 	{
 		return GetTCPServiceModuleInstance()->ConnectGatewayServer(this, strIp, nPort, MessageCallback);
@@ -145,7 +145,7 @@ void CDeviceManager::OnConnect( UINT32 size, void* data )
 		return;
 	}
 
-    string addresskey = GetAddressKey(*bus_address);
+    string addresskey = GetAddressKey(bus_address);
 
     if (addresskey.length() == 0)
     {
@@ -153,7 +153,7 @@ void CDeviceManager::OnConnect( UINT32 size, void* data )
         return;
     }
 
-    CDevice* pGatewayDevice = GetDeviceClient(*bus_address);
+    CDevice* pGatewayDevice = GetDeviceClient(bus_address);
     if (!pGatewayDevice)
 	{
 		pGatewayDevice = new CDevice(this,bus_address);
@@ -163,22 +163,22 @@ void CDeviceManager::OnConnect( UINT32 size, void* data )
 		m_Device_mutex.unlock();
 	}
 
-	CUniteDataModule::GetInstance()->ShowClientConnect(*bus_address);
+	CUniteDataModule::GetInstance()->ShowClientConnect(bus_address);
 
 	TRACE_OUT();
 }
 
-string CDeviceManager::GetAddressKey(BUS_ADDRESS& address)
+string CDeviceManager::GetAddressKey(BUS_ADDRESS_POINTER  address)
 {
 	char tmp[128];
 	memset(tmp,0,128);
 
-	switch( address.bus_address_type )
+	switch( address->bus_address_type )
 	{
 	case BUS_ADDRESS_TYPE_TCP:
 	case BUS_ADDRESS_TYPE_UDP:
 		{	
-			sprintf(tmp,"%s-%u",address.host_address.ip, address.host_address.port);
+			sprintf(tmp,"%s-%u",address->host_address.ip, address->host_address.port);
 		}
 		break;
 	default:
@@ -188,7 +188,7 @@ string CDeviceManager::GetAddressKey(BUS_ADDRESS& address)
 	return key;
 }
 
-CDevice* CDeviceManager::GetDeviceClient(BUS_ADDRESS& address)
+CDevice* CDeviceManager::GetDeviceClient(BUS_ADDRESS_POINTER  address)
 {
 	TRACE_IN();
 	string address_key = GetAddressKey(address);
@@ -201,23 +201,6 @@ CDevice* CDeviceManager::GetDeviceClient(BUS_ADDRESS& address)
 	return (CDevice*)ite->second;
 }
 
-CDevice* CDeviceManager::GetDeviceClient(std::string uuid)
-{
-	TRACE_IN();
-	std::lock_guard<std::mutex> lg(m_Device_mutex);
-
-	map<string,CDevice*>::iterator ite = m_mapDevice.begin();
-	for( ;ite != m_mapDevice.end();ite++)
-	{
-		if(ite->second->GetUuid() == uuid  && ite->second->IsLogined()) 
-		{
-			return ite->second;
-		}
-	}	
-	TRACE_OUT();
-	return NULL;
-}
-
 void CDeviceManager::OnDisconnect(UINT32 size, void* data )
 {
 	TRACE_IN();
@@ -228,7 +211,7 @@ void CDeviceManager::OnDisconnect(UINT32 size, void* data )
 		return;
 	}
 
-	string addresskey = GetAddressKey(*bus_address);	
+	string addresskey = GetAddressKey(bus_address);	
     std::lock_guard<std::mutex> lg(m_Device_mutex);
 	map<string,CDevice*>::iterator ite = m_mapDevice.find(addresskey);	
 	if (ite == m_mapDevice.end()){
@@ -252,14 +235,14 @@ void CDeviceManager::OnDisconnect(UINT32 size, void* data )
 		}
 	}
 		
-    CUniteDataModule::GetInstance()->ShowClientDisConnect(*bus_address,uuid,pGatewayDevice->GetLoginType());
+    CUniteDataModule::GetInstance()->ShowClientDisConnect(bus_address,uuid,pGatewayDevice->GetLoginType());
 	TRACE_OUT();
 }
 
 void CDeviceManager::OnReceive( UINT32 size, void* data )
 {
 	RECEIVE_DATA_POINTER receive_data = (RECEIVE_DATA_POINTER)data;
-	CDevice* pGatewayDevice = GetDeviceClient(*(receive_data->from));
+	CDevice* pGatewayDevice = GetDeviceClient(receive_data->from);
 
 
 	if (NULL == pGatewayDevice)
@@ -276,7 +259,7 @@ void CDeviceManager::OnSend( UINT32 size, void* data )
 	LOG_INFO("send data successful");
 }
 
-bool CDeviceManager::SendData(BUS_ADDRESS &busAddress, int nRole, int nDataType, char* pData, int nDataSize)
+bool CDeviceManager::SendData(BUS_ADDRESS_POINTER busAddress, int nRole, int nDataType, char* pData, int nDataSize)
 {
 	TRACE_IN();
 	
@@ -290,20 +273,6 @@ bool CDeviceManager::SendData(BUS_ADDRESS &busAddress, int nRole, int nDataType,
 	return false;
 	
 }
-
-bool CDeviceManager::SendData(std::string uuid,int nRole,int nDataType,char *pData,int nDataSize)
-{
-	//当根据设备ID发送数据时，strIp是设备ID
-	TRACE_IN();
-	std::lock_guard<std::mutex> lg(m_Device_mutex);
-	map<string,CDevice*>::iterator ite = m_mapDevice.begin();
-	for( ;ite != m_mapDevice.end();ite++)
-		if(ite->second->GetUuid() == uuid  && ite->second->IsLogined()) 
-			ite->second->Send(nDataType,pData,nDataSize);		
-	TRACE_OUT();
-	return true;
-}
-
 void CDeviceManager::StartClearTimer()
 {
 	m_tClearExpireDevice.open(1,ClearDeviceTimerHandler,(void*)this);
@@ -323,19 +292,5 @@ int CDeviceManager::ClearDeviceTimerHandler(void * manager)
 			}
 		ite++;
 		}
-}
-
-void CDeviceManager::HandlerUserMultipleLogin( const std::string& uuid)  //logout the user who has the same id,wait for user to disconnect.
-{	
-	TRACE_IN();
-	std::lock_guard<std::mutex> lg(m_Device_mutex);
-	std::map<string,CDevice*>::iterator ite = m_mapDevice.begin();
-	for(;ite != m_mapDevice.end();ite ++)
-		if(uuid == ite->second->GetUuid() && ite->second->IsLogined()){
-			ite->second->Send(WIS_CMD_SERVICE_KICKOUT_USER,NULL,0);
-			ite->second->Send(WIS_CMD_SERVICE_KICKOUT_USER,NULL,0);
-			ite->second->SetLogined(false);
-			}
-	TRACE_OUT();
 }
 

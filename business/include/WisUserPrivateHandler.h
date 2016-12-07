@@ -10,9 +10,9 @@
 
 class WisUserPrivateHandler {
 public:
-    static void handleUserPrivate(BUS_ADDRESS &busAddress,const char *uuid,int datalen,const char *pdata );
+    static void handleUserPrivate(BUS_ADDRESS_POINTER busAddress,const char *uuid,int datalen,const char *pdata );
 	
-	static void sendUserPrivateResponse(BUS_ADDRESS &busAddress,int done);
+	static void sendUserPrivateResponse(BUS_ADDRESS_POINTER busAddress,int done);
 
 private:
 

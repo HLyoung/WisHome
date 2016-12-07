@@ -9,8 +9,8 @@
 
 class WisHeartBeatHandler {
 	public:    
-		static void handleDeviceHeartBeat( BUS_ADDRESS &busAddress);    
-		static void handleUserHeartBeat( BUS_ADDRESS &busAddress);
+		static void handleDeviceHeartBeat( BUS_ADDRESS_POINTER busAddress);    
+		static void handleUserHeartBeat( BUS_ADDRESS_POINTER busAddress);
 		};
 
 

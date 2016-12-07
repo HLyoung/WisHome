@@ -24,8 +24,7 @@ public:
 	
 	bool Receive(UINT32 length,void *data);
 	bool Send(INT32 nCmd,void *data,INT32 nDataLength);
-	void GetBusAddress(BUS_ADDRESS & tBusAddress);
-	void UpdateAddressInfo(BUS_ADDRESS &tBusAddress);
+	BUS_ADDRESS_POINTER GetBusAddress(void);
 	void SetLogined(bool logged);
 	bool IsLogined(void);
 	
@@ -49,7 +48,7 @@ private:
 	
 private:
 	CDeviceManager *m_pManageOwner;
-	BUS_ADDRESS m_DeviceAddress;
+	BUS_ADDRESS_POINTER m_DeviceAddress;
 	bool m_bExpire;
 	HANDLE m_pProtocolPaser;
 	bool m_isLogined;

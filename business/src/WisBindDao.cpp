@@ -4,14 +4,14 @@
 #include "WisBindDao.h"
 
 
-void WisBindDao::sendBindResponse(const std::string &userUUID,int nCmd, int done )
+void WisBindDao::sendBindResponse(BUS_ADDRESS_POINTER bus_address,int nCmd, int done )
 {
     int result = done;
-    GetUniteDataModuleInstance()->SendData(userUUID,nCmd,(char *)&result,sizeof(int),TCP_SERVER_MODE);
+    GetUniteDataModuleInstance()->SendData(bus_address,nCmd,(char *)&result,sizeof(int),TCP_SERVER_MODE);
 }
 
 
-bool WisBindDao::addBind(const std::string& userUUID, const std::string& deviceUUID )
+bool WisBindDao::addBind(BUS_ADDRESS_POINTER bus_address,const std::string& userUUID, const std::string& deviceUUID )
 {
 	TRACE_IN();
 	
@@ -24,7 +24,7 @@ bool WisBindDao::addBind(const std::string& userUUID, const std::string& deviceU
 	{
 		LOG_INFO("device(uuid = %s) and usre(uuid = %s) is already binded.",deviceUUID.c_str(),userUUID.c_str());
 		DbaModule_ReleaseNVDataAccess((void*)access);
-		sendBindResponse(userUUID,WIS_CMD_USER_BIND,0);
+		sendBindResponse(bus_address,WIS_CMD_USER_BIND,0);
 		return true;
 	}
 	memset(sql,0,sizeof(sql));
@@ -34,17 +34,17 @@ bool WisBindDao::addBind(const std::string& userUUID, const std::string& deviceU
 	{
 		LOG_INFO("bind device(uuid = %s) and user(uuid = %s) faild. sql = %s",userUUID.c_str(),deviceUUID.c_str(),sql);
 		DbaModule_ReleaseNVDataAccess((void*)access);
-		sendBindResponse(userUUID,WIS_CMD_USER_BIND,1);
+		sendBindResponse(bus_address,WIS_CMD_USER_BIND,1);
 		return false;
 	}
 	DbaModule_ReleaseNVDataAccess((void*)access);
-	sendBindResponse(userUUID,WIS_CMD_USER_BIND,0);
+	sendBindResponse(bus_address,WIS_CMD_USER_BIND,0);
 	WisLogDao::saveUserBindLog(userUUID,deviceUUID.length(),deviceUUID.c_str());
 	TRACE_OUT();
 	return true;
 }
 
-bool WisBindDao::delBind(const std::string& userUUID, const std::string& deviceUUID )
+bool WisBindDao::delBind(BUS_ADDRESS_POINTER bus_address,const std::string& userUUID, const std::string& deviceUUID )
 {
 	TRACE_IN();
 	char sql[200] = {0};
@@ -56,10 +56,10 @@ bool WisBindDao::delBind(const std::string& userUUID, const std::string& deviceU
 	{
 		LOG_INFO("delete bind(userUUID = %s ,deviceUUID = %s) failed",userUUID.c_str(),deviceUUID.c_str());
 		DbaModule_ReleaseNVDataAccess(access);
-		sendBindResponse(userUUID,WIS_CMD_USER_UNBIND,1);
+		sendBindResponse(bus_address,WIS_CMD_USER_UNBIND,1);
 		return false;
 	}
-	sendBindResponse(userUUID,WIS_CMD_USER_UNBIND,0);
+	sendBindResponse(bus_address,WIS_CMD_USER_UNBIND,0);
 	DbaModule_ReleaseNVDataAccess(access);
 	WisLogDao::saveUserUnBindLog(userUUID,deviceUUID.length(),deviceUUID.c_str());
 	TRACE_OUT();

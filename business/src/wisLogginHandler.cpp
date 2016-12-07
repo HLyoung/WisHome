@@ -2,8 +2,12 @@
 
 #include "wisLogginHandler.h"
 
+std::mutex WisLoginHandler::uMutex;
+std::mutex WisLoginHandler::dMutex;
+std::map<BUS_ADDRESS_POINTER,std::string> WisLoginHandler::mUser;
+std::map<BUS_ADDRESS_POINTER,std::string> WisLoginHandler::mDevice;
 
-void WisLoginHandler::sendLoginResponse(BUS_ADDRESS &busAddress,char *m_uuid,int done,int type )
+void WisLoginHandler::sendLoginResponse(BUS_ADDRESS_POINTER busAddress,char *m_uuid,int done,int type )
 {
   TRACE_IN();
 
@@ -29,23 +33,21 @@ void WisLoginHandler::sendLoginResponse(BUS_ADDRESS &busAddress,char *m_uuid,int
   TRACE_OUT();
 }
 
-void WisLoginHandler::handleUserLogin(BUS_ADDRESS &busAddress,int datalen,char *pdata )
+void WisLoginHandler::handleUserLogin(BUS_ADDRESS_POINTER busAddress,int datalen,char *pdata )
 {
 	TRACE_IN();
-	if(NULL == pdata)
-	{
-		LOG_ERROR("illegal parameter!");
-		return;
-	}	
 	
-    WisUserLoginInfo* loginInfo = (WisUserLoginInfo*)(pdata);		
+    WisUserLoginInfo* loginInfo = (WisUserLoginInfo*)(pdata);	
+	handleKickoutUser(std::string(loginInfo->uuid));      //若一个用户在不同终端登录，先将用户踢出。
+	
     bool deviceExists = WisUserDao::login(std::string(loginInfo->uuid,UUID_LEN), std::string(loginInfo->password,PASSWORD_LEN));
     if( !deviceExists ) {
         LOG_INFO("user(uuid = %s) login failed",std::string(loginInfo->uuid,UUID_LEN).c_str());
         sendLoginResponse( busAddress, loginInfo->uuid,1,TYPE_USER);
         return;
     } 
-    WisLogDao::saveUserLoginLog(loginInfo->uuid, strlen((char *)busAddress.host_address.ip),(const char*)busAddress.host_address.ip);
+	mapAddUser(busAddress,std::string(loginInfo->uuid));
+    WisLogDao::saveUserLoginLog(loginInfo->uuid, strlen((char *)busAddress->host_address.ip),(const char*)busAddress->host_address.ip);
     if ( datalen >= TOKEN_LEN + UUID_LEN + PASSWORD_LEN) {
         std::string token(loginInfo->token,TOKEN_LEN);
         int pos = token.find_first_of(' ',0);
@@ -64,23 +66,27 @@ void WisLoginHandler::handleUserLogin(BUS_ADDRESS &busAddress,int datalen,char *
     sendLoginResponse( busAddress, loginInfo->uuid,0,TYPE_USER );
 	TRACE_OUT();
 }
-void WisLoginHandler::handleUserLogout(BUS_ADDRESS &busAddress,std::string uuid)
+void WisLoginHandler::handleUserLogout(BUS_ADDRESS_POINTER busAddress,std::string uuid)
 {
    TRACE_IN();
-   if(uuid.empty())
-   {
-	   LOG_ERROR("illegal parameter.");
-	   return;
-   }
    WisUserDao::logout(uuid, WisUserDao::defaultPassword);
+   mapDeleteUser(busAddress);
    WisLogDao::saveUserLogoutLog(uuid, 0, "");
-   LOG_INFO("user(uuid = %s) logout",uuid.c_str());
- 
   TRACE_OUT();
 }
 
+void WisLoginHandler::handleKickoutUser(std::string uuid)
+{
+	TRACE_IN();
+	BUS_ADDRESS_POINTER busAddress = getUserAddress(uuid);
+	mapDeleteUser(busAddress);
+	if(busAddress != NULL)
+		GetUniteDataModuleInstance()->SendData(busAddress,WIS_CMD_SERVICE_KICKOUT_USER,NULL,0,TCP_SERVER_MODE);	
+	TRACE_OUT();
+}
 
-void WisLoginHandler::handleDeviceLogin( BUS_ADDRESS &busAddress,int datalen,char *pdata )
+
+void WisLoginHandler::handleDeviceLogin( BUS_ADDRESS_POINTER busAddress,int datalen,char *pdata )
 {
 	TRACE_IN();
     WisDeviceLoginInfo* loginInfo = (WisDeviceLoginInfo*)pdata;
@@ -104,10 +110,11 @@ void WisLoginHandler::handleDeviceLogin( BUS_ADDRESS &busAddress,int datalen,cha
         return;
     }
     if( firstLogin ) {
-        WisLogDao::saveDeviceRegLog(loginInfo->uuid, strlen((char *)busAddress.host_address.ip), (const char *)busAddress.host_address.ip);
+        WisLogDao::saveDeviceRegLog(loginInfo->uuid, strlen((char *)busAddress->host_address.ip), (const char *)busAddress->host_address.ip);
     } else {
-        WisLogDao::saveDeviceLoginLog(loginInfo->uuid, strlen((char*)busAddress.host_address.ip),(const char*) busAddress.host_address.ip);
+        WisLogDao::saveDeviceLoginLog(loginInfo->uuid, strlen((char*)busAddress->host_address.ip),(const char*) busAddress->host_address.ip);
     } 
+	mapAddDevice(busAddress,std::string(loginInfo->uuid));
     sendLoginResponse( busAddress,loginInfo->uuid, 1 ,TYPE_DEVICE);	
     
     std:map<std::string,WisUserInfo> mapUserIfno;
@@ -116,8 +123,10 @@ void WisLoginHandler::handleDeviceLogin( BUS_ADDRESS &busAddress,int datalen,cha
 		for(std::map<std::string,WisUserInfo>::iterator ite = mapUserIfno.begin();\
 			ite != mapUserIfno.end();ite++)
 			{
-				GetUniteDataModuleInstance()->SendData(ite->second.uuid,WIS_CMD_USER_DEV_LOGIN,loginInfo->uuid,\
-				strlen(loginInfo->uuid),TCP_SERVER_MODE);
+			    BUS_ADDRESS_POINTER pBus_address = getUserAddress(std::string(ite->second.uuid));
+				if(pBus_address != NULL)
+					GetUniteDataModuleInstance()->SendData(pBus_address,WIS_CMD_USER_DEV_LOGIN,loginInfo->uuid,\
+					strlen(loginInfo->uuid),TCP_SERVER_MODE);
 			}			
 		LOG_INFO("device(uuid = %s) login,send %d notifications to online user",loginInfo->uuid,(int )mapUserIfno.size());
 		
@@ -125,10 +134,11 @@ void WisLoginHandler::handleDeviceLogin( BUS_ADDRESS &busAddress,int datalen,cha
 	TRACE_OUT();
 }
 
-void WisLoginHandler::handleDeviceLogout(BUS_ADDRESS &busAddress,std::string uuid )
+void WisLoginHandler::handleDeviceLogout(BUS_ADDRESS_POINTER busAddress,std::string uuid )
 {
 	TRACE_IN();
     WisDeviceDao::logout( uuid );
+	mapDeleteDevice(busAddress);
     WisLogDao::saveDeviceLogoutLog(uuid, 0, "");
 	
     std:map<std::string,WisUserInfo> mapUserIfno;
@@ -137,12 +147,101 @@ void WisLoginHandler::handleDeviceLogout(BUS_ADDRESS &busAddress,std::string uui
 		for(std::map<std::string,WisUserInfo>::iterator ite = mapUserIfno.begin();\
 			ite != mapUserIfno.end();ite++)
 			{
-				GetUniteDataModuleInstance()->SendData(ite->second.uuid,WIS_CMD_USER_DEV_LOGOUT,(char *)uuid.c_str(),\
-				strlen(uuid.c_str()),TCP_SERVER_MODE);
-			}
-			
+				BUS_ADDRESS_POINTER pBus_address = getUserAddress(std::string(ite->second.uuid));
+				if(pBus_address != NULL)
+					GetUniteDataModuleInstance()->SendData(pBus_address,WIS_CMD_USER_DEV_LOGOUT,(char *)uuid.c_str(),\
+					strlen(uuid.c_str()),TCP_SERVER_MODE);
+			}			
 		LOG_INFO("device(uuid = %s) logout,send %d notifications to online user",uuid.c_str(),(int)mapUserIfno.size());
 		
 	}	
 	TRACE_OUT();
+}
+
+bool WisLoginHandler::isUserLogin(const std::string&uuid)
+{
+	std::lock_guard<std::mutex> lg(uMutex);
+	std::map<BUS_ADDRESS_POINTER ,std::string>::iterator ite = mUser.begin();
+	for(;ite != mUser.end(); ite++)
+		if(ite->second == uuid)
+			return true;
+
+	return false;
+}
+
+bool WisLoginHandler::isDeviceLogin(const  string & uuid)
+{
+	std::lock_guard<std::mutex> lg(dMutex);
+	std::map<BUS_ADDRESS_POINTER,std::string>::iterator ite = mDevice.begin();
+	for(; ite != mDevice.end();ite++)
+		if(ite->second == uuid)
+			return true;
+	return false;
+}
+
+bool WisLoginHandler::isLogin(const std::string &uuid)
+{
+	if(isUserLogin(uuid) || isDeviceLogin(uuid))
+		return true;
+	return false;
+}
+
+BUS_ADDRESS_POINTER  WisLoginHandler::getUserAddress(const  string & uuid)
+{
+	std::lock_guard<std::mutex> lg(uMutex);
+	std::map<BUS_ADDRESS_POINTER,std::string>::iterator ite = mUser.begin();
+	for(;ite != mUser.end();ite++)
+		if(ite->second == uuid)
+			return ite->first;
+	
+	return NULL;
+}
+
+BUS_ADDRESS_POINTER WisLoginHandler::getDeviceAddress(const  string & uuid)
+{
+	std::lock_guard<std::mutex> lg(dMutex);
+	std::map<BUS_ADDRESS_POINTER,std::string>::iterator ite = mDevice.begin();
+	for(; ite != mDevice.end(); ite++)
+		if(ite->second == uuid)
+			return ite->first;
+
+	return NULL;
+}
+
+void WisLoginHandler::mapAddUser(BUS_ADDRESS_POINTER bus_address,const std::string& uuid)
+{
+	std::lock_guard<std::mutex> lg(uMutex);
+	mUser[bus_address] = uuid;
+}
+
+void WisLoginHandler::mapAddDevice(BUS_ADDRESS_POINTER bus_address, const std::string & uuid)
+{
+	std::lock_guard<std::mutex> lg(dMutex);
+	mDevice[bus_address] = uuid;
+}
+
+void WisLoginHandler::mapDeleteUser(BUS_ADDRESS_POINTER bus_address)
+{
+	std::lock_guard<std::mutex> lg(uMutex);
+	if(mUser.find(bus_address) != mUser.end())
+		mUser.erase(bus_address);
+}
+
+void WisLoginHandler::mapDeleteSameUser(const std::string &uuid)
+{
+	std::lock_guard<std::mutex> lg(uMutex);
+	std::map<BUS_ADDRESS_POINTER,std::string>::iterator ite = mUser.begin();
+	for(;ite != mUser.end();){
+		if(ite->second == uuid)
+			mUser.erase(ite);
+		ite++;
+		}	
+}
+
+
+void WisLoginHandler::mapDeleteDevice(BUS_ADDRESS_POINTER bus_address)
+{
+	std::lock_guard<std::mutex> lg(dMutex);
+	if(mDevice.find(bus_address) != mDevice.end())
+		mDevice.erase(bus_address);
 }

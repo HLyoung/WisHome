@@ -114,13 +114,7 @@ bool CUniteDataModule::ConnectServer(string strServerIp,int nServerPort)
 	return CDeviceManager::GetInstance()->CreateConnectToDevice(strServerIp,nServerPort);
 }
 
-//向tcp对端发送数据（服务器端或客户端）
-bool CUniteDataModule::SendData(string uuid,int nDataType, char* pSendData, int nDataSize, int nRole)
-{
-	return CDeviceManager::GetInstance()->SendData(uuid,nRole,nDataType,pSendData,nDataSize);
-}
-
-bool CUniteDataModule::SendData(BUS_ADDRESS &busAddress,int nDataType, char* pSendData, int nDataSize, int nRole)
+bool CUniteDataModule::SendData(BUS_ADDRESS_POINTER busAddress,int nDataType, char* pSendData, int nDataSize, int nRole)
 {
 	return CDeviceManager::GetInstance()->SendData(busAddress,nRole,nDataType,pSendData,nDataSize);
 }
@@ -139,7 +133,7 @@ bool CUniteDataModule::ShowNetDataToInterface(DEVICE_INFO& GatewayInfo, int nDat
 }
 
 //向应用回调TCP连接状态
-void CUniteDataModule::ShowClientConnect(BUS_ADDRESS GatewayAddress)
+void CUniteDataModule::ShowClientConnect(BUS_ADDRESS_POINTER GatewayAddress)
 {
 	if (!m_pInterfaceCallback)
 	{
@@ -149,7 +143,7 @@ void CUniteDataModule::ShowClientConnect(BUS_ADDRESS GatewayAddress)
 	m_pInterfaceCallback->ShowClientConnect(GatewayAddress);
 }
 
-void CUniteDataModule::ShowClientDisConnect(BUS_ADDRESS GatewayAddress,std::string uuid,int loginType)
+void CUniteDataModule::ShowClientDisConnect(BUS_ADDRESS_POINTER GatewayAddress,std::string uuid,int loginType)
 {
 	if (!m_pInterfaceCallback)
 	{

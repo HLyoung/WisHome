@@ -9,8 +9,7 @@ CDevice::CDevice()
 CDevice::CDevice(CDeviceManager *pOwner,BUS_ADDRESS_POINTER address):m_pManageOwner(pOwner),m_isLogined(false),m_loginType(0)
 {
 	m_bExpire = false;	
-	memset((char *)&m_DeviceAddress,0,sizeof(BUS_ADDRESS));
-	memcpy((char *)&m_DeviceAddress,(char *)address,sizeof(BUS_ADDRESS));
+	m_DeviceAddress = address;
 	
 	TParserCallBack tParserCallBack = {0};
 	tParserCallBack.pOwner = this;
@@ -74,7 +73,7 @@ bool CDevice::Send(INT32 nCmd, void* data, INT32 nDataSize)
 		LOG_INFO("Parameter illegal!");
 		return false;
 	}
-	bool bRet = GetTCPServiceModuleInstance()->SendData(m_pManageOwner,(UINT8*)pOutBuffer,nOutBufferLen,&m_DeviceAddress);
+	bool bRet = GetTCPServiceModuleInstance()->SendData(m_pManageOwner,(UINT8*)pOutBuffer,nOutBufferLen,m_DeviceAddress);
 	
 	SafeDeleteArray(pOutBuffer);
 	TRACE_OUT();
@@ -106,12 +105,8 @@ void CDevice::ParserCallback(UINT32 wEvent, UINT32 wResultCode, UINT32 wDataLen,
 		return;
 	}
 
-	if(WIS_CMD_USER_AUTO_LOGIN == wEvent){
-		WisUserLoginInfo *loginfo = (WisUserLoginInfo *)pData;
-		pDevice->m_pManageOwner->HandlerUserMultipleLogin(std::string(loginfo->uuid,UUID_LEN));
-		}
 	DEVICE_INFO devInfo;  
-	memcpy((char *)&devInfo.bus_address,(const char *)(&(pDevice->m_DeviceAddress)),sizeof(BUS_ADDRESS));
+	devInfo.bus_address = pDevice->m_DeviceAddress;
 
 	devInfo.is_logined = pDevice->IsLogined(); 
 	devInfo.login_type = pDevice->GetLoginType();
@@ -121,14 +116,9 @@ void CDevice::ParserCallback(UINT32 wEvent, UINT32 wResultCode, UINT32 wDataLen,
 	TRACE_OUT();
 }
 
-void CDevice::GetBusAddress(BUS_ADDRESS & tBusAddr)
+BUS_ADDRESS_POINTER CDevice::GetBusAddress(void)
 {
-	memcpy((char *)&tBusAddr,(char *)&m_DeviceAddress,sizeof(BUS_ADDRESS));
-}
-
-void CDevice::UpdateAddressInfo(BUS_ADDRESS &tBusAddr)
-{
-	memcpy((char *)&m_DeviceAddress,(char *)&tBusAddr,sizeof(BUS_ADDRESS));
+	return m_DeviceAddress;
 }
 
 void CDevice::SetLogined(bool isLogined)
@@ -170,7 +160,7 @@ int CDevice::HeartBeratTimerHandler(void *device)
 	if(pDevice->m_loseHeartBeatTimes >= 3)
 	{
 		LOG_INFO("lose heart beat %d times,will delete the link",pDevice->m_loseHeartBeatTimes);
-		pDevice->m_pManageOwner->StopTcpServer(&(pDevice->m_DeviceAddress));  //this function will stop the thread.	and you can`t unregist the timer,otherwise is will case died lock.	
+		pDevice->m_pManageOwner->StopTcpServer(pDevice->m_DeviceAddress);  //this function will stop the thread.	and you can`t unregist the timer,otherwise is will case died lock.	
 		return -1;
 	}
     int heartBeatCmd = 0;
@@ -190,7 +180,7 @@ int CDevice::HeartBeratTimerHandler(void *device)
 void CDevice::StartHeartBeat()
 {
 	TRACE_IN();
-	if(this->m_DeviceAddress.model_type != TCP_SERVER_MODE)
+	if(this->m_DeviceAddress->model_type != TCP_SERVER_MODE)
 	{
 		LOG_INFO("heart beat sended only in server mode");
 		return;

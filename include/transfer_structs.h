@@ -73,7 +73,7 @@ typedef struct tagBUS_ADDRESS
 
 typedef struct tagDEVICE_INFO
 {
-	BUS_ADDRESS bus_address;
+	BUS_ADDRESS_POINTER bus_address;
 	bool is_logined;
 	char login_type;
 	std::string uuid;

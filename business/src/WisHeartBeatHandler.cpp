@@ -4,7 +4,7 @@
 
 #include "WisHeartBeatHandler.h"
 
-void  WisHeartBeatHandler::handleDeviceHeartBeat(BUS_ADDRESS &busAddress)
+void  WisHeartBeatHandler::handleDeviceHeartBeat(BUS_ADDRESS_POINTER busAddress)
 {
 	TRACE_IN();
 	unsigned int  current = (unsigned int )time(0);
@@ -12,7 +12,7 @@ void  WisHeartBeatHandler::handleDeviceHeartBeat(BUS_ADDRESS &busAddress)
 	TRACE_OUT();
 }
 
-void WisHeartBeatHandler::handleUserHeartBeat(BUS_ADDRESS &busAddress)
+void WisHeartBeatHandler::handleUserHeartBeat(BUS_ADDRESS_POINTER busAddress)
 {
 	TRACE_IN();
 	unsigned int current = (unsigned int)time(0);

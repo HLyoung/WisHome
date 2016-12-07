@@ -13,10 +13,10 @@ using namespace std;
 
 class Reporter : public IAutoReportToInterface
 {
-	void ShowClientConnect(BUS_ADDRESS DeviceAddress){
+	void ShowClientConnect(BUS_ADDRESS_POINTER DeviceAddress){
 		std::cout<<"somebody connected"<<std::endl;
 	}
-	void ShowClientDisConnect(BUS_ADDRESS busAddress,std::string uuid,int loginType){
+	void ShowClientDisConnect(BUS_ADDRESS_POINTER busAddress,std::string uuid,int loginType){
  
 		TRACE_IN();
 		
@@ -57,10 +57,10 @@ class Reporter : public IAutoReportToInterface
 				WisUserDao::handleUserResetPassword(DeviceInfo.bus_address, pData);
 				break;
 			case WIS_CMD_USER_BIND:
-				WisBindDao::addBind(DeviceInfo.uuid,std::string(pData));
+				WisBindDao::addBind(DeviceInfo.bus_address,DeviceInfo.uuid,std::string(pData));
 				break;
 			case WIS_CMD_USER_UNBIND:
-				WisBindDao::delBind(DeviceInfo.uuid,std::string(pData));
+				WisBindDao::delBind(DeviceInfo.bus_address,DeviceInfo.uuid,std::string(pData));
 				break;
 			case WIS_CMD_HEART_BEAT:
 				WisHeartBeatHandler::handleDeviceHeartBeat(DeviceInfo.bus_address);
@@ -109,11 +109,6 @@ int main()
 	iModuel->StartTcpServer(7788);	
 	while(1)
 	{
-		//JPush::push_ALL_ALL_Alert("alert","title",100);
-		
-		//std::set<string> testSet;
-		//testSet.insert("1517bfd3f7c928960c6");
-		//JPush::push_SpecifiedIDs("alert","title",1,testSet);
 		sleep(5);
 	}
 	iModuel->StopModule();

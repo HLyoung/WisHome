@@ -28,13 +28,12 @@ public:
 	virtual bool StopModule();
 	virtual bool RegistInterfacRecObject(IAutoReportToInterface* pInterfaceObj);
 	virtual bool ConnectServer(string strServerIp,int nServerPort);
-	virtual bool SendData(string uuid,int nDataType,char* pSendData,int nDataSize,int nRole = TCP_CLIENT_MODE);
-	virtual bool SendData(BUS_ADDRESS & busAddress,int nDataType,char *pSendData,int nDataSize,int nRole = TCP_CLIENT_MODE);
+	virtual bool SendData(BUS_ADDRESS_POINTER busAddress,int nDataType,char *pSendData,int nDataSize,int nRole = TCP_CLIENT_MODE);
 
 	//向界面回调数据和状态
 	bool ShowNetDataToInterface(DEVICE_INFO& GatewayAddress, int nDataType, int nResultCode, int nDataLen,const char* pData);
-	void ShowClientConnect(BUS_ADDRESS GatewayAddress);
-	void ShowClientDisConnect(BUS_ADDRESS GatewayAddress,std::string uuid,int loginType);
+	void ShowClientConnect(BUS_ADDRESS_POINTER GatewayAddress);
+	void ShowClientDisConnect(BUS_ADDRESS_POINTER GatewayAddress,std::string uuid,int loginType);
 
 	IAutoReportToInterface* GetInterfaceObj();
 	

@@ -5,6 +5,7 @@
 #include "WisIOSTokenDao.h"
 #include "WisBindDao.h"
 #include "JPush.h"
+#include "wisLogginHandler.h"
 
 #include "libLog.h"
 #include "libSql.h"
@@ -15,7 +16,7 @@ struct ServerSendToUser
 	char data[0];
 };
 
-void WisToUserHandler::handlePushMessage(BUS_ADDRESS &busAddress,const char *uuid,const WisToUserData *packet)
+void WisToUserHandler::handlePushMessage(BUS_ADDRESS_POINTER busAddress,const char *uuid,const WisToUserData *packet)
 {
 
 	TRACE_IN();
@@ -48,19 +49,18 @@ void WisToUserHandler::handlePushMessage(BUS_ADDRESS &busAddress,const char *uui
 	TRACE_OUT();
 }
 
-void WisToUserHandler::handleSendToOne(BUS_ADDRESS &busAddress,const char *uuid, const WisToUserData* packet)
+void WisToUserHandler::handleSendToOne(BUS_ADDRESS_POINTER busAddress,const char *uuid, const WisToUserData* packet)
 {
 	TRACE_IN();
 
     char deviceUUID[UUID_LEN + 1] = {0};
 	memcpy(deviceUUID, packet->uuid, UUID_LEN);
-    LOG_INFO("handle(srcuuid = %s) send to one(dstuuid = %s,len = %d)",uuid,deviceUUID,packet->len);
 
 	char *toUser =  new char[UUID_LEN + packet->len];
 	memcpy((char *)toUser,uuid,UUID_LEN);
 	memcpy((char *)toUser + UUID_LEN,packet->data,packet->len);
     
-	if(GetUniteDataModuleInstance()->SendData(std::string(deviceUUID),WIS_CMD_TO_USER,toUser,\
+	if(GetUniteDataModuleInstance()->SendData(WisLoginHandler::getUserAddress(std::string(deviceUUID)),WIS_CMD_TO_USER,toUser,\
 	UUID_LEN + packet->len,TCP_SERVER_MODE))
 	{
 		LOG_INFO("send message to one(uuid = %s )success ",deviceUUID);
@@ -76,7 +76,7 @@ void WisToUserHandler::handleSendToOne(BUS_ADDRESS &busAddress,const char *uuid,
 	TRACE_OUT();
 }
 
-void WisToUserHandler::handleSendToAll(BUS_ADDRESS &busAddress,const char *uuid, const WisToUserData* packet)
+void WisToUserHandler::handleSendToAll(BUS_ADDRESS_POINTER  busAddress,const char *uuid, const WisToUserData* packet)
 {
 
 	TRACE_IN();
@@ -91,7 +91,7 @@ void WisToUserHandler::handleSendToAll(BUS_ADDRESS &busAddress,const char *uuid,
 	std::map<std::string ,WisUserInfo>::iterator iter = DeviceBuddiesMap.begin();
 	for(;iter != DeviceBuddiesMap.end();iter ++)
 	{
-		GetUniteDataModuleInstance()->SendData(iter->second.uuid,WIS_CMD_TO_USER,toUser,\
+		GetUniteDataModuleInstance()->SendData(WisLoginHandler::getUserAddress(std::string(iter->second.uuid)),WIS_CMD_TO_USER,toUser,\
 											   UUID_LEN + packet->len,TCP_SERVER_MODE);
 	}
 	
@@ -100,7 +100,7 @@ void WisToUserHandler::handleSendToAll(BUS_ADDRESS &busAddress,const char *uuid,
 	TRACE_OUT();
 }
 
-void WisToUserHandler::handleToUser(BUS_ADDRESS &busAddress,const char *uuid,int nDataLen,const char *pData  )
+void WisToUserHandler::handleToUser(BUS_ADDRESS_POINTER busAddress,const char *uuid,int nDataLen,const char *pData  )
 {
 	TRACE_IN();
 	
@@ -108,8 +108,6 @@ void WisToUserHandler::handleToUser(BUS_ADDRESS &busAddress,const char *uuid,int
 
     char dstuuid[UUID_LEN + 1] = {0};
     memcpy(dstuuid,userData->uuid,UUID_LEN);
-	LOG_INFO("handle message(flag = %d,len = %d ) device(ip = %s,uuid = %s) send to user(uuid = %s)",userData->flag,userData->len,\
-			busAddress.host_address.ip,uuid,dstuuid);
 
     if( nDataLen < sizeof(WisToUserData) ) {
         sendToUserResponse(busAddress, WIS_CMD_TO_USER, -1);
@@ -134,7 +132,7 @@ void WisToUserHandler::handleToUser(BUS_ADDRESS &busAddress,const char *uuid,int
 	TRACE_OUT();
 }
 
-void WisToUserHandler::sendToUserResponse(BUS_ADDRESS &busAddress,int nCmd,int done)
+void WisToUserHandler::sendToUserResponse(BUS_ADDRESS_POINTER busAddress,int nCmd,int done)
 {
 	TRACE_IN();
 	int isDone = done;

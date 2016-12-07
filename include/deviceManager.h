@@ -20,10 +20,8 @@ public:
 	bool StartTcpServer(int nPort);
 	bool StopTcpServer(BUS_ADDRESS_POINTER pBusAddress);
 	bool CreateConnectToDevice(string &strIp,int nPort);
-	bool SendData(string uuid,int nRole,int nDataType,char *pData,int nDataSize);
-	bool SendData(BUS_ADDRESS& busAddress,int nRole,int nDataType,char *pData,int nDataSize);
+	bool SendData(BUS_ADDRESS_POINTER busAddress,int nRole,int nDataType,char *pData,int nDataSize);
 	bool ScanAllDevice();
-	void HandlerUserMultipleLogin(const std::string& uuid);
 	
 protected:
 	virtual void OnConnect(UINT32 size,void *data);
@@ -35,9 +33,8 @@ private:
 	CDeviceManager(void);
 	~CDeviceManager(void);
 	static void MessageCallback(HANDLE owner,UINT32 message,UINT32 message_size,void *message_data);
-	string GetAddressKey(BUS_ADDRESS &address);
-	CDevice *GetDeviceClient(BUS_ADDRESS &address);
-	CDevice *GetDeviceClient(std::string uuid);
+	string GetAddressKey(BUS_ADDRESS_POINTER address);
+	CDevice *GetDeviceClient(BUS_ADDRESS_POINTER address);
 	int GetTcpServicePort();
 	void StartClearTimer();
 	
