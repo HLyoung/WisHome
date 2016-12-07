@@ -59,18 +59,17 @@ void WisToUserHandler::handleSendToOne(BUS_ADDRESS_POINTER busAddress,const char
 	char *toUser =  new char[UUID_LEN + packet->len];
 	memcpy((char *)toUser,uuid,UUID_LEN);
 	memcpy((char *)toUser + UUID_LEN,packet->data,packet->len);
-    
-	if(GetUniteDataModuleInstance()->SendData(WisLoginHandler::getUserAddress(std::string(deviceUUID)),WIS_CMD_TO_USER,toUser,\
-	UUID_LEN + packet->len,TCP_SERVER_MODE))
-	{
-		LOG_INFO("send message to one(uuid = %s )success ",deviceUUID);
-		sendToUserResponse(busAddress, WIS_CMD_TO_USER, 0);
-	}
-	else
-	{
-		LOG_INFO("send message to one(uuid = %s )failed ",deviceUUID);
-		sendToUserResponse(busAddress, WIS_CMD_TO_USER, -1);
-	}
+
+	BUS_ADDRESS_POINTER bus_address = WisLoginHandler::getUserAddress(std::string(deviceUUID));
+	if(NULL != bus_address){
+		if(GetUniteDataModuleInstance()->SendData(bus_address,WIS_CMD_TO_USER,toUser,UUID_LEN + packet->len,TCP_SERVER_MODE)){
+			sendToUserResponse(busAddress, WIS_CMD_TO_USER, 0);
+			}
+		else{
+			LOG_INFO("send message to one(uuid = %s )failed ",deviceUUID);
+			sendToUserResponse(busAddress, WIS_CMD_TO_USER, -1);
+			}
+		}
 
 	SafeDeleteArray(toUser);
 	TRACE_OUT();
@@ -91,8 +90,9 @@ void WisToUserHandler::handleSendToAll(BUS_ADDRESS_POINTER  busAddress,const cha
 	std::map<std::string ,WisUserInfo>::iterator iter = DeviceBuddiesMap.begin();
 	for(;iter != DeviceBuddiesMap.end();iter ++)
 	{
-		GetUniteDataModuleInstance()->SendData(WisLoginHandler::getUserAddress(std::string(iter->second.uuid)),WIS_CMD_TO_USER,toUser,\
-											   UUID_LEN + packet->len,TCP_SERVER_MODE);
+		BUS_ADDRESS_POINTER bus_address  = WisLoginHandler::getUserAddress(std::string(iter->second.uuid));
+		if(NULL != bus_address)
+		    GetUniteDataModuleInstance()->SendData(bus_address,WIS_CMD_TO_USER,toUser, UUID_LEN + packet->len,TCP_SERVER_MODE);
 	}
 	
     sendToUserResponse(busAddress, WIS_CMD_TO_USER, 0);
