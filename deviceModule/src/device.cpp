@@ -61,7 +61,7 @@ bool CDevice::Send(INT32 nCmd, void* data, INT32 nDataSize)
 			nDataSize = sizeof(int);
 		}
 	}
-	if(WIS_CMD_SERVICE_KICKOUT_USER)
+	if(WIS_CMD_SERVICE_KICKOUT_USER == nCmd)   //如果用户被踢出，直接将其置为未注册状态。
 		this->SetLogined(false);
 	
 	UINT32 nOutBufferLen = 0;

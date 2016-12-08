@@ -190,6 +190,7 @@ void CDeviceManager::OnDisconnect(UINT32 size, void* data )
 	CDevice *pDevice = GetDeviceClient(bus_address);
 	if (NULL != pDevice){
 		pDevice->SetDeviceExpire(true);
+		pDevice->SetLogined(false);
 		int count = CountByUuid(pDevice->GetUuid());
 		if(pDevice->IsLogined()  && count < 2)
 			CUniteDataModule::GetInstance()->ShowClientDisConnect(bus_address,pDevice->GetUuid(),pDevice->GetLoginType());

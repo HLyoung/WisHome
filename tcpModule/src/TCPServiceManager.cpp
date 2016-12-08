@@ -156,12 +156,6 @@ void CTCPServiceManage::NotifyMessageReceiveData(CTCPService* pTcpService,void*h
 bool CTCPServiceManage::SendData(void* hHandle, UINT8* data, UINT32 length, BUS_ADDRESS_POINTER bus_address)
 {
 	TRACE_IN();
-
-	if(NULL == hHandle || NULL == data){
-		LOG_ERROR("illegal parameter");
-		return false;
-	}
-	
 	CTCPService *pTCPService = (CTCPService *)hHandle;
 
 	string key_string = CHostAddress::GetKey( (const char*) bus_address->host_address.ip, bus_address->host_address.port );

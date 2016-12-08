@@ -58,7 +58,7 @@ void WisLoginHandler::handleUserLogout(BUS_ADDRESS_POINTER busAddress,std::strin
 {
    TRACE_IN();
    if(WisUserDao::logout(uuid, WisUserDao::defaultPassword)){
-   		mapDeleteUser(busAddress);
+   		mapDeleteSameUser(uuid);
   		WisLogDao::saveUserLogoutLog(uuid, 0, "");
    	    }
   TRACE_OUT();
@@ -194,16 +194,20 @@ BUS_ADDRESS_POINTER WisLoginHandler::getDeviceAddress(const  string & uuid)
 
 void WisLoginHandler::mapAddUser(BUS_ADDRESS_POINTER bus_address,const std::string& uuid)
 {
+	TRACE_IN();
 	std::lock_guard<std::mutex> lg(uMutex);
 	std::map<BUS_ADDRESS_POINTER,std::string>::iterator ite = mUser.begin();
 	for(;ite != mUser.end();){
-		if(ite->second == uuid){
-			mUser.erase(ite);
+		if(ite->second == uuid){			
 			GetUniteDataModuleInstance()->SendData(ite->first,WIS_CMD_SERVICE_KICKOUT_USER,NULL,0,TCP_SERVER_MODE);	
+			std::map<BUS_ADDRESS_POINTER,std::string>::iterator ote = ite++;
+			mUser.erase(ote);
+			continue;
 			}
 		ite++;
 		}		
 	mUser[bus_address] = uuid;
+	TRACE_OUT();
 }
 
 void WisLoginHandler::mapAddDevice(BUS_ADDRESS_POINTER bus_address, const std::string & uuid)
@@ -224,8 +228,11 @@ void WisLoginHandler::mapDeleteSameUser(const std::string &uuid)
 	std::lock_guard<std::mutex> lg(uMutex);
 	std::map<BUS_ADDRESS_POINTER,std::string>::iterator ite = mUser.begin();
 	for(;ite != mUser.end();){
-		if(ite->second == uuid)
-			mUser.erase(ite);
+		if(ite->second == uuid){
+			std::map<BUS_ADDRESS_POINTER,std::string>::iterator ote = ite++;
+			mUser.erase(ote);
+			continue;
+			}
 		ite++;
 		}	
 }

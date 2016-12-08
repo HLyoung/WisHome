@@ -46,7 +46,10 @@ int CommonTCPManager::ConnectServer(const CADDRINFO & serAddr,CISocketOwner * pS
 
 int CommonTCPManager::Send(void * handle,const char * pData,int nProLen)
 {
-     return bufferevent_write((struct bufferevent*)handle,pData,nProLen);
+	if(NULL != handle)
+    	return bufferevent_write((struct bufferevent*)handle,pData,nProLen);
+	else
+		return -1;
 
 }
 

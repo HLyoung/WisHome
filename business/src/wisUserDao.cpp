@@ -59,8 +59,12 @@ bool WisUserDao::login(const std::string &user,const std::string& passwd)
 				DbaModule_ReleaseNVDataAccess(access);
 				return true;
 				}
+			else
+				LOG_INFO("user(uuid = %s password = %s) loggin failed",user.c_str(),passwd.c_str());
 			}
-			DbaModule_ReleaseNVDataAccess(access);
+		else
+			LOG_INFO("user(uuid = %s password = %s) does`t exit!",user.c_str(),passwd.c_str());
+		DbaModule_ReleaseNVDataAccess(access);
 		}
 	return false;
 }

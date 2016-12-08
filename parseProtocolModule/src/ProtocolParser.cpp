@@ -51,14 +51,8 @@ bool CProtocolParser::ParseSocketProtocol(const char *recvbuf,UINT32 recvlen)
 bool CProtocolParser::MakeProtocolForSocket(UINT32 command, const char* input,\
  UINT32 inputlen,char *output,UINT32* outputlen)
 {
-	TRACE_IN();
-	
-    if(NULL == output )
-	{
-		LOG_ERROR("parameter illegal");
-		return false;
-	}		
-	
+	TRACE_IN();	
+
 	*((UINT32* )(output+4)) = command;
 	if(input != NULL && inputlen != 0)
 		memcpy(output + 12,input,inputlen);
