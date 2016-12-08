@@ -61,6 +61,8 @@ bool CDevice::Send(INT32 nCmd, void* data, INT32 nDataSize)
 			nDataSize = sizeof(int);
 		}
 	}
+	if(WIS_CMD_SERVICE_KICKOUT_USER)
+		this->SetLogined(false);
 	
 	UINT32 nOutBufferLen = 0;
 	char *pOutBuffer = new char[nDataSize + 12];
@@ -84,8 +86,6 @@ void CDevice::ParserCallback(UINT32 wEvent, UINT32 wResultCode, UINT32 wDataLen,
 {
 
 	TRACE_IN();
-	if(NULL == pOwner || NULL == pData) return;
-	
 	CDevice* pDevice = (CDevice*)pOwner;
 	if(WIS_CMD_LOGIN != wEvent && WIS_CMD_USER_AUTO_LOGIN != wEvent && WIS_CMD_HEART_BEAT != wEvent 
 	   && WIS_CMD_USER_REGIST != wEvent && WIS_CMD_USER_RESET_PASSWORD != wEvent && WIS_CMD_USER_HEART_BEAT != wEvent)

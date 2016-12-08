@@ -14,7 +14,7 @@ void WisLoginHandler::sendLoginResponse(BUS_ADDRESS_POINTER busAddress,char *m_u
   logResult result;
   memset(&result,0,sizeof(logResult));
   result.result = done;
-  strncpy(result.uuid,m_uuid,32);
+  strncpy(result.uuid,m_uuid,UUID_LEN);
 
   int nCmd = 0;
   switch(type)
@@ -36,19 +36,20 @@ void WisLoginHandler::sendLoginResponse(BUS_ADDRESS_POINTER busAddress,char *m_u
 void WisLoginHandler::handleUserLogin(BUS_ADDRESS_POINTER busAddress,int datalen,char *pdata )
 {
 	TRACE_IN();	
-    WisUserLoginInfo* loginInfo = (WisUserLoginInfo*)(pdata);	
-	if(WisUserDao::checkUserAndPassword(getUuidFromBuffer(loginInfo->uuid),getPasswordFromBuffer(loginInfo->password)))
-		handleKickoutUser(getUuidFromBuffer(loginInfo->uuid));      //若一个用户在不同终端登录，先将用户踢出。
+    WisUserLoginInfo* loginInfo = (WisUserLoginInfo*)(pdata);
+	std::string uuid = getUuidFromBuffer(loginInfo->uuid);
+	std::string password = getPasswordFromBuffer(loginInfo->password);
 	
-    if(WisUserDao::login(getUuidFromBuffer(loginInfo->uuid), getPasswordFromBuffer(loginInfo->password))){
-		mapAddUser(busAddress,getUuidFromBuffer(loginInfo->uuid));
-	    WisLogDao::saveUserLoginLog(loginInfo->uuid, strlen((char *)busAddress->host_address.ip),(const char*)busAddress->host_address.ip);
+    if(WisUserDao::login(uuid, password)){
+		mapAddUser(busAddress,uuid);
+	    WisLogDao::saveUserLoginLog(uuid, strlen((char *)busAddress->host_address.ip),(const char*)busAddress->host_address.ip);
 	    if ( datalen >= TOKEN_LEN + UUID_LEN + PASSWORD_LEN) {
 	        std::string token(loginInfo->token);
 			std::transform(token.begin(),token.end(),token.begin(),(int(*)(int))toupper);
 			WisIOSTokenDao::save( loginInfo->uuid, token );
 	    	}
 	    sendLoginResponse( busAddress, loginInfo->uuid,0,TYPE_USER );
+		return;
     	}
 	sendLoginResponse( busAddress, loginInfo->uuid,-1,TYPE_USER );
 	TRACE_OUT();
@@ -67,9 +68,10 @@ void WisLoginHandler::handleKickoutUser(std::string uuid)
 {
 	TRACE_IN();
 	BUS_ADDRESS_POINTER busAddress = getUserAddress(uuid);
-	if(busAddress != NULL){
+	while(busAddress != NULL){
 		mapDeleteUser(busAddress);
 		GetUniteDataModuleInstance()->SendData(busAddress,WIS_CMD_SERVICE_KICKOUT_USER,NULL,0,TCP_SERVER_MODE);	
+		busAddress = getUserAddress(uuid);
 		}
 	TRACE_OUT();
 }
@@ -193,6 +195,14 @@ BUS_ADDRESS_POINTER WisLoginHandler::getDeviceAddress(const  string & uuid)
 void WisLoginHandler::mapAddUser(BUS_ADDRESS_POINTER bus_address,const std::string& uuid)
 {
 	std::lock_guard<std::mutex> lg(uMutex);
+	std::map<BUS_ADDRESS_POINTER,std::string>::iterator ite = mUser.begin();
+	for(;ite != mUser.end();){
+		if(ite->second == uuid){
+			mUser.erase(ite);
+			GetUniteDataModuleInstance()->SendData(ite->first,WIS_CMD_SERVICE_KICKOUT_USER,NULL,0,TCP_SERVER_MODE);	
+			}
+		ite++;
+		}		
 	mUser[bus_address] = uuid;
 }
 

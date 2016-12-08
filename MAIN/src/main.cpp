@@ -11,6 +11,8 @@
 #include <unistd.h>
 using namespace std;
 
+
+
 class Reporter : public IAutoReportToInterface
 {
 	void ShowClientConnect(BUS_ADDRESS_POINTER DeviceAddress){

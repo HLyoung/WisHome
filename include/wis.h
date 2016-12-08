@@ -165,19 +165,10 @@ typedef struct{
 	char uuid[32];
 }logResult,*plogResult;
 
-std::string getUuidFromBuffer(char *buffer){
-	if(strlen(buffer)>UUID_LEN)
-		return std::string(buffer,UUID_LEN);
-	else
-		return std::string(buffer);
-}
 
-std::string getPasswordFromBuffer(char *buffer){
-	if(strlen(buffer)>PASSWORD_LEN)
-		return std::string(buffer,PASSWORD_LEN);
-	else
-		return std::string(buffer);
-}
+#define getUuidFromBuffer(buffer) (strlen(buffer)>=UUID_LEN?std::string(buffer,UUID_LEN):std::string(buffer))
+#define getPasswordFromBuffer(buffer)  (strlen(buffer)>=PASSWORD_LEN?std::string(buffer,PASSWORD_LEN):std::string(buffer))
+	
 enum {TYPE_DEVICE=1,TYPE_USER=2};
 
 #endif

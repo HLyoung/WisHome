@@ -37,7 +37,8 @@ public:
 	static void mapDeleteSameUser(const std::string &uuid);
 	static void mapDeleteDevice(BUS_ADDRESS_POINTER bus_address);
     
-private:
+//private:
+public:
 	static std::map<BUS_ADDRESS_POINTER,std::string> mUser;
 	static std::map<BUS_ADDRESS_POINTER,std::string> mDevice;
 	static std::mutex uMutex;
