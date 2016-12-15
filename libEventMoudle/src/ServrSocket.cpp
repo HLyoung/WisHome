@@ -273,7 +273,10 @@ void ServrSocket::timer_cb(int fd,short event,void *ctx)
 		*((unsigned int*)(buf + 4)) = WIS_CMD_HEART_BEAT;
 		*((unsigned int*)(buf + 8)) = 4;
 		*((unsigned int*)(buf + 12)) = (unsigned int)seconds;
-		*((unsigned int*)(buf)) = (unsigned int)(WIS_CMD_HEART_BEAT + 4 + seconds);
+		unsigned checkSum = 0;
+		for(int i = 0;i<12;i++)
+			checkSum += *((unsigned char *)(buf + 4 + i));
+		*((unsigned int*)(buf)) = checkSum;
 		bufferevent_write(param->bev,buf,16);
 		}
 	
