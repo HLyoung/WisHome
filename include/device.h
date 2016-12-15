@@ -33,9 +33,6 @@ public:
 	
 	std::string GetUuid(void){return m_uuid;}
 	void SetUuid(std::string uuid){m_uuid = uuid;}
-	void StartHeartBeat();
-	void StopHeartBeat();
-	static int HeartBeratTimerHandler(void*);
 
 	void  SetDeviceExpire(bool isExpire);
 	bool GetDeviceExpire();
@@ -54,9 +51,6 @@ private:
 	bool m_isLogined;
 	char m_loginType;
 	std::string m_uuid;
-	Timer m_heartBeartTiemr;
-	bool m_isGetHeartBeatResponse;
-	unsigned int m_loseHeartBeatTimes;
 	std::mutex m_expireMutex;
 	std::mutex m_isLoginedMutex;
 

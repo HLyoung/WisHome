@@ -198,7 +198,7 @@ void WisLoginHandler::mapAddUser(BUS_ADDRESS_POINTER bus_address,const std::stri
 	std::lock_guard<std::mutex> lg(uMutex);
 	std::map<BUS_ADDRESS_POINTER,std::string>::iterator ite = mUser.begin();
 	for(;ite != mUser.end();){
-		if(ite->second == uuid){			
+		if(ite->second == uuid  && bus_address != ite->first){			
 			GetUniteDataModuleInstance()->SendData(ite->first,WIS_CMD_SERVICE_KICKOUT_USER,NULL,0,TCP_SERVER_MODE);	
 			std::map<BUS_ADDRESS_POINTER,std::string>::iterator ote = ite++;
 			mUser.erase(ote);

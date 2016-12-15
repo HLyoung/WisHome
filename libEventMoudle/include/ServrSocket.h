@@ -8,6 +8,7 @@
 #include "Common.h"
 #include "ISocket.h"
 #include "macro.h"
+#include "wis.h"
 #include <list>
 #include <map>
 
@@ -77,15 +78,16 @@ public:
 
 	static void event_cb(struct bufferevent *bev,short events,void *ctx);
 
+	static void timer_cb(int fd,short event,void *ctx);
+	
 	void closeServer(struct bufferevent *bev);
 
 	std::map<struct bufferevent*,BUS_ADDRESS_POINTER> bufMap;
 	std::mutex bufMapMutex;
 private:
 	CADDRINFO m_LocalAddr;
+	std::map<struct bufferevent*,int> loseHeartBeatCount;
 	static CISocketOwner *owner;
-	
-	
 };
 
 

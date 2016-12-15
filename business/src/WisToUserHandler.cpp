@@ -44,7 +44,7 @@ void WisToUserHandler::handlePushMessage(BUS_ADDRESS_POINTER busAddress,const ch
 			LOG_ERROR("push message to users failed,erroCode:%d",errCode);
 	}
     sendToUserResponse(busAddress, WIS_CMD_TO_USER, 0);
-    WisIOSPushDao::save(getUuidFromBuffer(uuid),(char * buffer), packet->flag, packet->len,std::string(packet->data,packet->len));
+    WisIOSPushDao::save(getUuidFromBuffer(uuid), packet->flag, packet->len,std::string(packet->data,packet->len));
 
 	TRACE_OUT();
 }

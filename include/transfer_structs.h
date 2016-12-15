@@ -12,6 +12,7 @@ enum {TCP_SERVER_MODE = 1,TCP_CLIENT_MODE = 2};
 enum {TCP_CONNECT_SHORT = 0,TCP_CONNECT_LONG = 1};
 enum {RES_ = 0,QUERY_ = 1};
 enum {WAY_ADDRESS = 0,WAY_TCPSERVICE = 1};
+enum {HEARTBEAT_TIME = 5};    //heart beat time set to 5
 
 
 typedef enum

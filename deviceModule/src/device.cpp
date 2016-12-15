@@ -15,14 +15,11 @@ CDevice::CDevice(CDeviceManager *pOwner,BUS_ADDRESS_POINTER address):m_pManageOw
 	tParserCallBack.pOwner = this;
 	tParserCallBack.pParserCallback = ParserCallback;
 	m_pProtocolPaser = GetParseProtocolModuleInstance()->RegisteCallBack(tParserCallBack);
-	
-	StartHeartBeat();
 }
 
 
 CDevice::~CDevice()
 {
-	StopHeartBeat();
 	GetParseProtocolModuleInstance()->FreeCallBack(m_pProtocolPaser);
 }
 
@@ -88,26 +85,18 @@ void CDevice::ParserCallback(UINT32 wEvent, UINT32 wResultCode, UINT32 wDataLen,
 	TRACE_IN();
 	CDevice* pDevice = (CDevice*)pOwner;
 	if(WIS_CMD_LOGIN != wEvent && WIS_CMD_USER_AUTO_LOGIN != wEvent && WIS_CMD_HEART_BEAT != wEvent 
-	   && WIS_CMD_USER_REGIST != wEvent && WIS_CMD_USER_RESET_PASSWORD != wEvent && WIS_CMD_USER_HEART_BEAT != wEvent)
-	{
-		if(!pDevice->IsLogined())
-		{
-			LOG_INFO("received something(event=%X) from a unloggined device and it`s not heart beat   --will drop it.  ",wEvent);
-			return;
-		}
-	}
-
-	//直接在设备层处理心跳。
-	if(WIS_CMD_HEART_BEAT == wEvent || WIS_CMD_USER_HEART_BEAT == wEvent)
-	{
-		pDevice->m_isGetHeartBeatResponse = true;
-		pDevice->m_loseHeartBeatTimes = 0;
+	   && WIS_CMD_USER_REGIST != wEvent && WIS_CMD_USER_RESET_PASSWORD != wEvent && WIS_CMD_USER_HEART_BEAT != wEvent 
+	   && !pDevice->IsLogined()){
+		LOG_INFO("received something(event=%X) from a unloggined device and it`s not heart beat   --will drop it.  ",wEvent);
 		return;
-	}
+		}
+
+	//心跳直接抛弃。 因为已经在socket层处理啦、
+	if(WIS_CMD_HEART_BEAT == wEvent || WIS_CMD_USER_HEART_BEAT == wEvent)
+		return;
 
 	DEVICE_INFO devInfo;  
 	devInfo.bus_address = pDevice->m_DeviceAddress;
-
 	devInfo.is_logined = pDevice->IsLogined(); 
 	devInfo.login_type = pDevice->GetLoginType();
 	devInfo.uuid = pDevice->GetUuid();
@@ -143,58 +132,4 @@ bool CDevice::GetDeviceExpire()
 {
 	std::lock_guard<std::mutex> lg(m_expireMutex);
 	return m_bExpire;
-}
-
-
-int CDevice::HeartBeratTimerHandler(void *device)
-{
-	TRACE_IN();
-	CDevice *pDevice  = (CDevice *)device;
-	
-	if(pDevice->GetDeviceExpire()) 
-		return -1;
-
-	if(!pDevice->m_isGetHeartBeatResponse)
-		pDevice->m_loseHeartBeatTimes++;
-	
-	if(pDevice->m_loseHeartBeatTimes >= 3)
-	{
-		LOG_INFO("lose heart beat %d times,will delete the link",pDevice->m_loseHeartBeatTimes);
-		pDevice->m_pManageOwner->StopTcpServer(pDevice->m_DeviceAddress);  //this function will stop the thread.	and you can`t unregist the timer,otherwise is will case died lock.	
-		return -1;
-	}
-    int heartBeatCmd = 0;
-	if(pDevice->m_loginType == TYPE_DEVICE)
-		heartBeatCmd = WIS_CMD_HEART_BEAT;
-	else
-		heartBeatCmd = WIS_CMD_USER_HEART_BEAT;
-	
-	unsigned int current = (unsigned int )time(0);
-	pDevice->Send(heartBeatCmd,(char *)&current,sizeof(int ));
-    pDevice->m_isGetHeartBeatResponse = false;
-	
-	TRACE_OUT();
-	return 0;
-}
-
-void CDevice::StartHeartBeat()
-{
-	TRACE_IN();
-	if(this->m_DeviceAddress->model_type != TCP_SERVER_MODE)
-	{
-		LOG_INFO("heart beat sended only in server mode");
-		return;
-	}
-	m_isGetHeartBeatResponse = false;
-	m_loseHeartBeatTimes = 0;
-	m_heartBeartTiemr.open(10,HeartBeratTimerHandler,this);
-
-	TIMERMANAGER->Register(&m_heartBeartTiemr);
-	
-	TRACE_OUT();
-}
-
-void CDevice::StopHeartBeat()
-{
-	TIMERMANAGER->unRegister(&m_heartBeartTiemr);
 }
