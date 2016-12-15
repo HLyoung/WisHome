@@ -36,12 +36,11 @@ private:
 	static void MessageCallback(HANDLE owner,UINT32 message,UINT32 message_size,void *message_data);
 	string GetAddressKey(BUS_ADDRESS_POINTER address);
 	CDevice *GetDeviceClient(BUS_ADDRESS_POINTER address);
+	void InsertDeviceClient(BUS_ADDRESS_POINTER address,CDevice *pDevice);
+	void DeleteDeviceClient(BUS_ADDRESS_POINTER address);
 	int GetTcpServicePort();
-	void StartClearTimer();
 	int CountByUuid(const std::string &uuid);
-	
-	
-	static int ClearDeviceTimerHandler(void *manager);
+
 	
 	
 private:

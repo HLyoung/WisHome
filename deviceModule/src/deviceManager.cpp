@@ -7,8 +7,6 @@ CDeviceManager::CDeviceManager(void)
 	memset(&m_tInitialArguments,0,sizeof(INITIAL_ARGUMENTS));
 	m_tInitialArguments.owner = (HANDLE)this;
 	m_tInitialArguments.net_message_callback = MessageCallback;
-
-	StartClearTimer();
 }
 
 CDeviceManager::~CDeviceManager(void)
@@ -123,17 +121,15 @@ void CDeviceManager::MessageCallback( HANDLE owner, UINT32 message, UINT32 messa
 
 void CDeviceManager::OnConnect( UINT32 size, void* data )
 {
-
 	TRACE_IN();
 	BUS_ADDRESS_POINTER bus_address = (BUS_ADDRESS_POINTER) data;
     string addresskey = GetAddressKey(bus_address);
     CDevice* pGatewayDevice = GetDeviceClient(bus_address);
     if (!pGatewayDevice){
 		pGatewayDevice = new CDevice(this,bus_address);
-		m_mapDevice.insert(pair<string,CDevice*>(addresskey,pGatewayDevice));
+		InsertDeviceClient(bus_address,pGatewayDevice);
     	}
 	CUniteDataModule::GetInstance()->ShowClientConnect(bus_address);
-
 	TRACE_OUT();
 }
 
@@ -159,15 +155,29 @@ string CDeviceManager::GetAddressKey(BUS_ADDRESS_POINTER  address)
 
 CDevice* CDeviceManager::GetDeviceClient(BUS_ADDRESS_POINTER  address)
 {
-	TRACE_IN();
 	string address_key = GetAddressKey(address);
-
 	std::lock_guard<std::mutex> lg(m_Device_mutex);	
 	map<string,CDevice*>::iterator ite = m_mapDevice.find(address_key);
 	if (ite == m_mapDevice.end())
 		return NULL;
-	TRACE_OUT();
 	return (CDevice*)ite->second;
+}
+
+void CDeviceManager::InsertDeviceClient(BUS_ADDRESS_POINTER address,CDevice * pDevice)
+{
+	string address_key = GetAddressKey(address);
+	std::lock_guard<std::mutex> lg(m_Device_mutex);
+	m_mapDevice[address_key] = pDevice;
+}
+
+
+void CDeviceManager::DeleteDeviceClient(BUS_ADDRESS_POINTER address)
+{
+	string address_key = GetAddressKey(address);
+	std::lock_guard<std::mutex> lg(m_Device_mutex);
+	map<string,CDevice*>::iterator ite = m_mapDevice.find(address_key);
+	if(ite != m_mapDevice.end())
+		m_mapDevice.erase(ite);
 }
 
 int  CDeviceManager::CountByUuid(const std::string & uuid)
@@ -189,11 +199,11 @@ void CDeviceManager::OnDisconnect(UINT32 size, void* data )
 	BUS_ADDRESS_POINTER bus_address = (BUS_ADDRESS_POINTER) data;
 	CDevice *pDevice = GetDeviceClient(bus_address);
 	if (NULL != pDevice){
-		pDevice->SetDeviceExpire(true);
-		pDevice->SetLogined(false);
 		int count = CountByUuid(pDevice->GetUuid());
 		if(pDevice->IsLogined()  && count < 2)
 			CUniteDataModule::GetInstance()->ShowClientDisConnect(bus_address,pDevice->GetUuid(),pDevice->GetLoginType());
+		DeleteDeviceClient(bus_address);
+		SafeDelete(pDevice);			
 	}	
 	TRACE_OUT();
 }
@@ -227,29 +237,11 @@ bool CDeviceManager::SendData(BUS_ADDRESS_POINTER busAddress, int nRole, int nDa
 	}
 
 	TRACE_OUT();
-	return false;
-	
-}
-void CDeviceManager::StartClearTimer()
-{
-	m_tClearExpireDevice.open(1,ClearDeviceTimerHandler,(void*)this);
-	TIMERMANAGER->Register(&m_tClearExpireDevice);	
+	return false;	
 }
 
-int CDeviceManager::ClearDeviceTimerHandler(void * manager)
-{
-	CDeviceManager* pManager = (CDeviceManager *)manager;
-	std::lock_guard<std::mutex> lg(pManager->m_Device_mutex);
-	std::map<string,CDevice*>::iterator ite = pManager->m_mapDevice.begin();
-	while(ite != pManager->m_mapDevice.end()){
-		if(ite->second->GetDeviceExpire()){
-			SafeDelete(ite->second);			
-			pManager->m_mapDevice.erase(ite++);
-			continue;
-			}
-		ite++;
-		}
-}
+
+	
 
 
 

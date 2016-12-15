@@ -85,14 +85,13 @@ void CDevice::ParserCallback(UINT32 wEvent, UINT32 wResultCode, UINT32 wDataLen,
 	TRACE_IN();
 	CDevice* pDevice = (CDevice*)pOwner;
 	if(WIS_CMD_LOGIN != wEvent && WIS_CMD_USER_AUTO_LOGIN != wEvent && WIS_CMD_HEART_BEAT != wEvent 
-	   && WIS_CMD_USER_REGIST != wEvent && WIS_CMD_USER_RESET_PASSWORD != wEvent && WIS_CMD_USER_HEART_BEAT != wEvent 
-	   && !pDevice->IsLogined()){
+	   && WIS_CMD_USER_REGIST != wEvent && WIS_CMD_USER_RESET_PASSWORD != wEvent && !pDevice->IsLogined()){
 		LOG_INFO("received something(event=%X) from a unloggined device and it`s not heart beat   --will drop it.  ",wEvent);
 		return;
 		}
 
 	//心跳直接抛弃。 因为已经在socket层处理啦、
-	if(WIS_CMD_HEART_BEAT == wEvent || WIS_CMD_USER_HEART_BEAT == wEvent)
+	if(WIS_CMD_HEART_BEAT == wEvent)
 		return;
 
 	DEVICE_INFO devInfo;  
