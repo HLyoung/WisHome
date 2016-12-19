@@ -213,12 +213,8 @@ void CDeviceManager::OnReceive( UINT32 size, void* data )
 	RECEIVE_DATA_POINTER receive_data = (RECEIVE_DATA_POINTER)data;
 	CDevice* pGatewayDevice = GetDeviceClient(receive_data->from);
 	if (NULL == pGatewayDevice)
-	{
 		return;
-	}
-
 	pGatewayDevice->Receive(receive_data->data.size, (void*)(receive_data->data.data));
-
 }
 
 void CDeviceManager::OnSend( UINT32 size, void* data )
@@ -227,16 +223,10 @@ void CDeviceManager::OnSend( UINT32 size, void* data )
 }
 
 bool CDeviceManager::SendData(BUS_ADDRESS_POINTER busAddress, int nRole, int nDataType, char* pData, int nDataSize)
-{
-	TRACE_IN();
-	
+{	
 	CDevice* pGatewayDevice = GetDeviceClient(busAddress);
 	if (NULL != pGatewayDevice  )
-	{
 		return pGatewayDevice->Send(nDataType, pData, nDataSize);
-	}
-
-	TRACE_OUT();
 	return false;	
 }
 

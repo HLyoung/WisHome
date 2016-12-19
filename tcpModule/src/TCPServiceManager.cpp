@@ -155,26 +155,15 @@ void CTCPServiceManage::NotifyMessageReceiveData(CTCPService* pTcpService,void*h
 //（服务器端/客户端）主动发送数据到对端
 bool CTCPServiceManage::SendData(void* hHandle, UINT8* data, UINT32 length, BUS_ADDRESS_POINTER bus_address)
 {
-	TRACE_IN();
 	CTCPService *pTCPService = (CTCPService *)hHandle;
 
-	string key_string = CHostAddress::GetKey( (const char*) bus_address->host_address.ip, bus_address->host_address.port );
+	string key_string = CHostAddress::GetKey((const char*) bus_address->host_address.ip, bus_address->host_address.port );
 	const void* handle = CHostAddressMap::GetHostAddress( key_string );
-	if ( NULL == handle )
-	{
-		LOG_INFO("get host address failed ");
-		return false;
-	}
-
-	int nret = GetCommonTCPManager()->Send((void*)handle, (const char *)data, length);
-	if (nret <0)
-	{
-		LOG_INFO("handle(%ld) send data failed ",(long)handle);
-		return false;
-	}
-
-	TRACE_OUT();
-	return true;
+	if (NULL != handle ){
+		if(GetCommonTCPManager()->Send((void*)handle, (const char *)data, length))
+			return true;
+		}
+	return false;
 }
 
 //只支持作为客户端主动删除tcp通信对象

@@ -46,10 +46,19 @@ int CommonTCPManager::ConnectServer(const CADDRINFO & serAddr,CISocketOwner * pS
 
 int CommonTCPManager::Send(void * handle,const char * pData,int nProLen)
 {
-	if(NULL != handle)
-    	return bufferevent_write((struct bufferevent*)handle,pData,nProLen);
-	else
-		return -1;
+	std::lock_guard<std::mutex> lg(servrMutex);
+	std::list<ServrSocket *>::iterator ite = ServrSocketList.begin();
+	for(; ite != ServrSocketList.end(); ite++)
+		if((*ite)->bufMap.find((struct bufferevent *)handle) != (*ite)->bufMap.end())
+			return bufferevent_write((struct bufferevent*)handle,pData,nProLen);
+
+	std::lock_guard<std::mutex> cg(clientMutex);
+	std::list<ClientSocket*>::iterator ote = ClientSocketList.begin();
+	for(; ote != ClientSocketList.end(); ote++)
+		if((*ote)->_bev == (struct bufferevent*)handle)
+			return bufferevent_write((struct bufferevent*)handle,pData,nProLen);
+
+	return -1;
 
 }
 
