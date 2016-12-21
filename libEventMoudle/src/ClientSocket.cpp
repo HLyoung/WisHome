@@ -103,6 +103,8 @@ void *ClientSocket::startClientThread(void *p)
 	}
     
 	event_base_dispatch(base);
+
+	pSock->owner->OnClose(pBus_address);
 	SafeDelete(pSock);
 	SafeDelete(pBus_address);
 	TRACE_OUT();
@@ -141,13 +143,11 @@ void ClientSocket::event_cb(struct bufferevent * bev,short events,void * ctx)
 		{				 
             int errorcode =  evutil_socket_geterror(fd);
             LOG_ERROR("error(event = %d) happens on socket(fd = %d), error message: %s",(int)events,(int)fd,evutil_socket_error_to_string(errorcode));
-            owner->OnClose((void*)bev,(BUS_ADDRESS_POINTER)ctx);
 			bufferevent_free(bev);
 		}
 	else if(events & (BEV_EVENT_EOF))
 		{		
 			LOG_INFO("EOF readed on socket(fd = %d)",(int)fd);
-			owner->OnClose((void*)bev,(BUS_ADDRESS_POINTER)ctx);
 			bufferevent_free(bev);
 		}
 	else

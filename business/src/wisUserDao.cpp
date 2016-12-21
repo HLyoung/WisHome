@@ -48,17 +48,16 @@ bool WisUserDao::checkUserAndPassword(const std::string &user,const std::string 
 bool WisUserDao::login(const std::string &user,const std::string& passwd)
 {
 	CNVDataAccess *access = (CNVDataAccess *)DbaModule_GetNVDataAccess();
+
+	bool ret = false;
 	if(NULL != access){
 		char sql[200] = {0};
 		snprintf(sql,sizeof(sql),"select * from wis_user_tbl where `name`='%s' and `password`='%s'",user.c_str(),passwd.c_str());
 		if(access->ExecuteNoThrow(sql) >= 1){
-			if(access->IsResultSet())
-				access->FreeResult();
+		    access->FreeResult();
 			snprintf(sql,sizeof(sql),"update wis_user_tbl set `login_time`=CURRENT_TIMESTAMP,`login_cnt`=`login_cnt`+1,`status`=1 where `name`='%s'",user.c_str());
-			if(-1 != access->ExecuteNonQuery(sql)){
-				DbaModule_ReleaseNVDataAccess(access);
-				return true;
-				}
+			if(-1 != access->ExecuteNonQuery(sql))
+				ret = true;
 			else
 				LOG_INFO("user(uuid = %s password = %s) loggin failed",user.c_str(),passwd.c_str());
 			}
@@ -66,7 +65,7 @@ bool WisUserDao::login(const std::string &user,const std::string& passwd)
 			LOG_INFO("user(uuid = %s password = %s) does`t exit!",user.c_str(),passwd.c_str());
 		DbaModule_ReleaseNVDataAccess(access);
 		}
-	return false;
+	return ret;
 }
 
 
@@ -136,27 +135,24 @@ bool WisUserDao::userGetDevice(BUS_ADDRESS_POINTER busAddress,const char *uuid)
 	SafeDeleteArray(deviceList);
 }
 
-void WisUserDao::handleUserRegist(BUS_ADDRESS_POINTER busAddress,const char * pdata)
+int WisUserDao::handleUserRegist(BUS_ADDRESS_POINTER busAddress,const char * pdata)
 {
 	WisUserRegistInfo *registInfo = (WisUserRegistInfo*)pdata;	
-    if(checkUser(getUuidFromBuffer(registInfo->uuid))){
-		LOG_INFO("%s is already registed",string(registInfo->uuid).c_str());
-		sendUserResponse(busAddress,WIS_CMD_USER_REGIST,-2);
-		return;
-		}
-	CNVDataAccess *access = (CNVDataAccess *)DbaModule_GetNVDataAccess();
-	if(NULL != access){
-		char sql[200] = {0};
-		snprintf(sql,sizeof(sql),"insert into wis_user_tbl(`name`,`password`,`type`,`permission`,\
-		`reg_time`,`login_cnt`) values('%s','%s', 0, 0, CURRENT_TIMESTAMP,0)",getUuidFromBuffer(registInfo->uuid).c_str(),getPasswordFromBuffer(registInfo->password).c_str());
-	    if(-1 != access->ExecuteNonQuery(sql)){
+	int ret = 0;
+    if(checkUser(getUuidFromBuffer(registInfo->uuid))) ret = -2	;
+	else{
+		CNVDataAccess *access = (CNVDataAccess *)DbaModule_GetNVDataAccess();
+		if(NULL != access){
+			char sql[200] = {0};
+			snprintf(sql,sizeof(sql),"insert into wis_user_tbl(`name`,`password`,`type`,`permission`,\
+			`reg_time`,`login_cnt`) values('%s','%s', 0, 0, CURRENT_TIMESTAMP,0)",getUuidFromBuffer(registInfo->uuid).c_str(),getPasswordFromBuffer(registInfo->password).c_str());
+		    if(-1 != access->ExecuteNonQuery(sql))  ret = 0; 
+			else ret = -1;
 			DbaModule_ReleaseNVDataAccess(access);
-			sendUserResponse(busAddress,WIS_CMD_USER_REGIST,0);
-			return;
-			}  
-		DbaModule_ReleaseNVDataAccess(access);
+			}
 		}
-    sendUserResponse(busAddress,WIS_CMD_USER_REGIST,-1);
+	sendUserResponse(busAddress,WIS_CMD_USER_REGIST,ret);
+	return ret;
 }
 
 void WisUserDao::handleUserModifyPassword(std::string &uuid,BUS_ADDRESS_POINTER busAddress,const char *pdata)

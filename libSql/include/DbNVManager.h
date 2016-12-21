@@ -36,13 +36,11 @@ public:
 public:
 	UINT64 GetKey();
 	bool IsLock();
-	void Activate();
 	CNVDataAccess *GetAdapter() const{return adapter_;};
 	bool IsLongConnection()const {return is_long_connection_;}
 	void DecreaseLife();
 	bool IsExpired();
 	string GetCreateTime()const{return create_time_;}
-	string GetLastActiveTime()const {return last_active_time_;}
 	UINT32 GetLifeCount()const {return life_count_;}
 	UINT32 GetReferenceCount()const {return reference_count_;}
 	void Lock();
@@ -53,7 +51,6 @@ private:
 	bool is_long_connection_;
 	UINT32 life_count_;
 	string create_time_;
-	string last_active_time_;
 	UINT32 reference_count_;
 	std::mutex reference_count_lock_;
 };

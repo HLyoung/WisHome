@@ -14,10 +14,13 @@ int WisIOSTokenDao::save(const std::string& uuid, const std::string& token )
 		if(-1 != access->ExecuteNonQuery(sql)){
 			memset(sql,0,sizeof(sql));
 			snprintf(sql,sizeof(sql),"insert into wis_ios_token_tbl2 values('%s','%s',CURRENT_TIMESTAMP)",uuid.c_str(),	token.c_str());
-			if(-1 != access->ExecuteNonQuery(sql))
+			if(-1 != access->ExecuteNonQuery(sql)){
+				DbaModule_ReleaseNVDataAccess(access);
 				return 0;	
-			}}
-	DbaModule_ReleaseNVDataAccess(access);
+				}
+			}
+		DbaModule_ReleaseNVDataAccess(access);
+		}
 	TRACE_OUT();
 	return -1;
 }

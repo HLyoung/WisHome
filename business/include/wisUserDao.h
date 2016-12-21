@@ -30,7 +30,7 @@ public:
 	static bool userGetDevice(BUS_ADDRESS_POINTER busAddress,const char *uuid);
 	static bool sendUserResponse(BUS_ADDRESS_POINTER  busAddress,int cmd,const int ret);
 
-	static void handleUserRegist(BUS_ADDRESS_POINTER busAddress,const char *pdata);
+	static int handleUserRegist(BUS_ADDRESS_POINTER busAddress,const char *pdata);
 	static void handleUserResetPassword(BUS_ADDRESS_POINTER  busAddress,const char *pdata);
 	static void handleUserModifyPassword(std::string &uuid,BUS_ADDRESS_POINTER busAddress,const char *pdata);
 	static bool sendResetPasswordMailTo(const std::string &emailAddress);

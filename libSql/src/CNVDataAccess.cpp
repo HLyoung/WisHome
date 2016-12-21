@@ -58,15 +58,10 @@ void CNVDataAccess::Disconnect()
 //执行没有结果集返回的语句，eg:update,insert,delete
 int CNVDataAccess::ExecuteNonQuery(const char *pcCmdText)
 {
-	if(!IsInited())
-	{
-		LOG_ERROR("sql is not inited");
-		return -1;
-	}
-	if(0 != mysql_real_query(&mysql,pcCmdText,strlen(pcCmdText)))
-		return -1;
-	return 0;
-
+	if(IsInited())
+		if(!mysql_real_query(&mysql,pcCmdText,strlen(pcCmdText)))
+			return 0;
+	return -1;
 }
 void CNVDataAccess::ExecuteDataSet(const char *pcCmdText)
 {
@@ -123,25 +118,18 @@ string &CNVDataAccess::SetOption(const char *pcOptionName)
 //执行有结果集返回的sql语句 eg:select
 int CNVDataAccess::ExecuteNoThrow(const char *pcCmdText)
 {
-	if(mysql_real_query(&mysql,pcCmdText,strlen(pcCmdText)))
-	{
-		return -1;
-	}
-	if(!IsResultSet())
-	{
-		return -1;
-	}
-	return mysql_affected_rows(&mysql);
+	if(!mysql_real_query(&mysql,pcCmdText,strlen(pcCmdText)))
+		if(IsResultSet())
+			return mysql_affected_rows(&mysql);
+	return -1;
 }
 
 bool CNVDataAccess::IsResultSet()
 {
 	pRes_ = mysql_store_result(&mysql);
-	if(NULL == pRes_)
-	{
-		return false;
-	}
-	return true;
+	if(NULL != pRes_)
+		return true;
+	return false;
 }
 
 long CNVDataAccess::RowsAffected()
@@ -285,8 +273,7 @@ int CNVDataAccess::GetInt(std::string lineName)
 	int nFields = mysql_num_fields(pRes_);
 	MYSQL_FIELD *fields = mysql_fetch_fields(pRes_);
 	
-	for(int i= 0;i<
-		nFields;i++)
+	for(int i= 0;i<nFields;i++)
 	{
 		if(lineName == std::string(fields[i].name))
 		{

@@ -125,10 +125,9 @@ void CDeviceManager::OnConnect( UINT32 size, void* data )
 	BUS_ADDRESS_POINTER bus_address = (BUS_ADDRESS_POINTER) data;
     string addresskey = GetAddressKey(bus_address);
     CDevice* pGatewayDevice = GetDeviceClient(bus_address);
-    if (!pGatewayDevice){
+    if (!pGatewayDevice)
 		pGatewayDevice = new CDevice(this,bus_address);
-		InsertDeviceClient(bus_address,pGatewayDevice);
-    	}
+	InsertDeviceClient(bus_address,pGatewayDevice);
 	CUniteDataModule::GetInstance()->ShowClientConnect(bus_address);
 	TRACE_OUT();
 }

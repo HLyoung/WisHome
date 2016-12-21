@@ -104,17 +104,17 @@ void CTCPServiceManage::SaveLinkAndCallBack(BUS_ADDRESS_POINTER pBus_address,CTC
 	TRACE_OUT();
 }
 
-void CTCPServiceManage::NotifyMessageDisconnect(CTCPService *pTcpService,void* handle,BUS_ADDRESS_POINTER pBus_address)
+void CTCPServiceManage::NotifyMessageDisconnect(CTCPService *pTcpService,BUS_ADDRESS_POINTER pBus_address)
 {
 	if(NULL == pTcpService)
 	{
 		return;
 	}
-	DeleteLinkAndCallBack(pBus_address,pTcpService,handle);
+	DeleteLinkAndCallBack(pBus_address,pTcpService);
 }
 
 //删除链路信息和向调用层回调通知消息
-void CTCPServiceManage::DeleteLinkAndCallBack(BUS_ADDRESS_POINTER pBus_address,CTCPService* pTcpService, void*handle)
+void CTCPServiceManage::DeleteLinkAndCallBack(BUS_ADDRESS_POINTER pBus_address,CTCPService* pTcpService)
 {
 	TRACE_IN();
 	if (pTcpService->message_callback_ != NULL)
@@ -145,9 +145,7 @@ void CTCPServiceManage::NotifyMessageReceiveData(CTCPService* pTcpService,void*h
 	recv_data->data.data = pData;
 
 	if (pTcpService->message_callback_ != NULL)
-	{
 		pTcpService->message_callback_ (pTcpService->GetOwnerHandle(), MESSAGE_Receive,nLen, recv_data);
-	}
 	SafeDelete(recv_data);
 	TRACE_OUT();
 }

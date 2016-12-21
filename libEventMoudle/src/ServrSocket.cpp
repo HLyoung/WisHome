@@ -188,7 +188,8 @@ void *ServrSocket::handle_signel_connct(void *p)
 	pSock->bufMapAddBuf(bev,pBus_address);
 	pSock->owner->OnAccept((void*)bev,pBus_address);			
 	event_base_dispatch(base);  
-	
+
+	pSock->owner->OnClose(pBus_address);     
     event_base_free(base);	
 	SafeDelete(pBus_address);
 	SafeDelete(param);
@@ -238,13 +239,11 @@ void ServrSocket::event_cb(struct bufferevent * bev,short events,void * ctx)
 		{				 
             int errorcode =  evutil_socket_geterror(fd);
             LOG_ERROR("error(event = %d) happens on socket(fd = %d), error message: %s",(int)events,(int)fd,evutil_socket_error_to_string(errorcode));
-            owner->OnClose((void*)bev,pBus_address);
 			pSock->bufMapDeleteBuf(bev);
 		}
 	else if(events & (BEV_EVENT_EOF))
 		{		
 			LOG_INFO("EOF readed on socket(fd = %d)",(int)fd);
-			owner->OnClose((void*)bev,pBus_address);
 			pSock->bufMapDeleteBuf(bev);
 		}
 	else
@@ -262,7 +261,6 @@ void ServrSocket::timer_cb(int fd,short event,void *ctx)
 
 		if(pSock->loseHeartBeatCount[param->bev] > 4){
 			LOG_ERROR("delete link by lose heart beat too many times!!");
-			owner->OnClose(param->bev,param->pAddress);
 			pSock->bufMapDeleteBuf(param->bev);
 			event_base_loopbreak(param->base);
 			return;

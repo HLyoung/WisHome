@@ -8,29 +8,15 @@ bool WisDeviceDao::check(const std::string& uuid )
 	char sql[200] = {0};
 	snprintf(sql,sizeof(sql),"SELECT * FROM wis_device_tbl WHERE uuid='%s'",uuid.c_str());
 
+	bool ret = false;
 	CNVDataAccess *access = (CNVDataAccess *)DbaModule_GetNVDataAccess();
-	if(NULL == access)
-	{
-		LOG_ERROR("get database access failed");
+	if(NULL != access){
+		if(access->ExecuteNoThrow(sql) >= 1)
+			ret = true;
 		DbaModule_ReleaseNVDataAccess(access);
-		return false;
-	}
-	if(access->ExecuteNoThrow(sql) < 1)
-	{
-		LOG_ERROR("execute sql(%s) query failed",sql);
-	    DbaModule_ReleaseNVDataAccess(access);
-		return false;
-	}
-
-	if(access->ResNumRows() >= 1)
-	{
-		DbaModule_ReleaseNVDataAccess(access);
-		return true;
-	}
-	DbaModule_ReleaseNVDataAccess(access);
-	
+		}
 	TRACE_OUT();
-	return false;
+	return ret;
 }
 
 bool WisDeviceDao::regist(const std::string& uuid, const std::string& name)

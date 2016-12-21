@@ -19,7 +19,7 @@ public:
 	virtual ~CTCPService();
 	
 	virtual int OnCmdCome( void *handle,const char *pData,int nLen,BUS_ADDRESS_POINTER pBus_address);
-	virtual int OnClose(void* handle,BUS_ADDRESS_POINTER pBus_address);
+	virtual int OnClose(BUS_ADDRESS_POINTER pBus_address);
 	virtual int OnConnect(void *handle,int ownertype,BUS_ADDRESS_POINTER pBus_address);
 	virtual int OnError(void *Handle,int &nErrorNo,BUS_ADDRESS_POINTER pBus_address);
 	virtual int OnTimeOut(void* dwHandle,BUS_ADDRESS_POINTER pBus_address);

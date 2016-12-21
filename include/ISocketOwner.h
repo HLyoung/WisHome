@@ -62,7 +62,7 @@ public:
 	* @return 0 成功
 	* @return <0 失败
 	*/
-	virtual int OnClose(void* dwHandle,BUS_ADDRESS_POINTER pBus_address) = 0;
+	virtual int OnClose(BUS_ADDRESS_POINTER pBus_address) = 0;
 	
 	/**
 	* @brief 连接成功(客户端)

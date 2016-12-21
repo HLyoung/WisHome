@@ -108,12 +108,12 @@ do{\
 
 #define TRACE_IN() \
 do{\
-	LOG_INFO("trace in %s",__func__);\
+	LOG_DEBUG("trace in %s",__func__);\
 }while(0)
 	
 #define TRACE_OUT()\
 do{\
-	LOG_INFO("trace out %s",__func__);\
+	LOG_DEBUG("trace out %s",__func__);\
 }while(0)
 #else   //DEBUG
 #define LOG_INFO(format,...)

@@ -55,9 +55,9 @@ int CTCPService::OnConnect(void* handle,int OwnerType,BUS_ADDRESS_POINTER pBus_a
 	return 0;
 }
 
-int CTCPService::OnClose(void*handle,BUS_ADDRESS_POINTER pBus_address)
+int CTCPService::OnClose(BUS_ADDRESS_POINTER pBus_address)
 {
-	CTCPServiceManage::GetInstance()->NotifyMessageDisconnect(this,handle,pBus_address);
+	CTCPServiceManage::GetInstance()->NotifyMessageDisconnect(this,pBus_address);
 	return 0;
 }
 

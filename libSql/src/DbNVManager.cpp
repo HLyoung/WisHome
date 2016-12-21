@@ -31,7 +31,6 @@ CDatabaseConnection::CDatabaseConnection( CNVDataAccess* adapter )
 	adapter_ = adapter;
 	is_long_connection_ = true;
 	create_time_ = CCurrentTime::GetCurrentTimeStringLocal();
-	last_active_time_ = create_time_;
 	life_count_ = LIFE_COUNT_Default;
 	reference_count_ = 0;
 	
@@ -45,7 +44,6 @@ CDatabaseConnection::CDatabaseConnection( CNVDataAccess* adapter, const UINT32 l
     adapter_ = adapter;
 	is_long_connection_ = false;
 	create_time_ = CCurrentTime::GetCurrentTimeStringLocal();
-	last_active_time_ = create_time_;
 	life_count_ = life_count;
 	reference_count_ = 0;
 	
@@ -65,9 +63,6 @@ UINT64 CDatabaseConnection::GetKey()
 void CDatabaseConnection::Lock()
 {
 	TRACE_IN();
-	
-	Activate();
-
 	std::lock_guard<std::mutex> lg(reference_count_lock_);	
 	reference_count_++;
 	
@@ -76,19 +71,11 @@ void CDatabaseConnection::Lock()
 
 void CDatabaseConnection::Unlock()
 {
-	TRACE_IN();
-	
+	TRACE_IN();	
 	std::lock_guard<std::mutex> lg(reference_count_lock_);
-	reference_count_--;
-	
+	reference_count_--;	
 	TRACE_OUT();
 }
-
-void CDatabaseConnection::Activate()
-{
-	last_active_time_ = CCurrentTime::GetCurrentTimeStringLocal();
-}
-
 
 void CDatabaseConnection::DecreaseLife()
 {	
@@ -123,11 +110,7 @@ bool CDatabaseConnection::IsLock()
 {
 	std::lock_guard<std::mutex> lg(reference_count_lock_);
 	if(reference_count_>0)
-	{
-		Activate();
 		return true;
-	}
-	
 	return false;
 }
 
@@ -157,9 +140,8 @@ int CDbNVManager::SetDNS(const char *pcHost,const char *pcDbname,const char *pcU
 {
 	
 	if(0 == pcDbname || 0 == pcUsername || 0 == pcPwd)
-	{
 		return -1;
-	}
+	
 	m_strHost = pcHost;
 	m_strDbname = pcDbname;
 	m_strUsername = pcUsername;
@@ -203,7 +185,6 @@ CNVDataAccess* CDbNVManager::GetNVDataAccess()
 		pos != m_mapConnection.end();pos++)
 		{
 			CDatabaseConnection *connectionInfo = pos->second;
-			assert(connectionInfo != NULL);
 			if(!connectionInfo->IsLock())
 			{
 				connectionInfo->Lock();
@@ -237,17 +218,14 @@ CNVDataAccess* CDbNVManager::GetNVDataAccess()
 void CDbNVManager::ReleaseNVDataAccess(CNVDataAccess* pNVDataAccess)
 {
 	TRACE_IN();
-	
 	UINT64 nKey = (UINT64)pNVDataAccess;
 	std::lock_guard<std::mutex> lg(m_pConnectLock);
 	std::map<UINT64,CDatabaseConnection*>::iterator pos = m_mapConnection.find(nKey);
-	if(pos != m_mapConnection.end())
-	{
+	if(pos != m_mapConnection.end()){
 		CDatabaseConnection *database_connection = pos->second;
-		assert(database_connection != NULL);
 		database_connection->Unlock();
 		pNVDataAccess->FreeResult();
-	}
+		}
 	TRACE_OUT();
 }
 

@@ -36,8 +36,7 @@ class Reporter : public IAutoReportToInterface
 		TRACE_OUT();
 	}
 	void ShowClientReceiveData(DEVICE_INFO& DeviceInfo,int nDataType,int nResultCode,int nDataLen,const char* pData){
-		TRACE_IN();
-		
+		TRACE_IN();		
 		switch(nDataType)
 		{
 			case WIS_CMD_LOGIN:

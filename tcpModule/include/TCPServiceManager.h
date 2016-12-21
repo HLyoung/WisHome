@@ -31,7 +31,7 @@ public:
 	void StopService(BUS_ADDRESS_POINTER pBusAddress);
 	
 	void NotifyMessageConnect(CTCPService *pTcpService,void* dwHandle,BUS_ADDRESS_POINTER pBus_address);
-	void NotifyMessageDisconnect(CTCPService *pTcpService,void *handle,BUS_ADDRESS_POINTER pBus_address);
+	void NotifyMessageDisconnect(CTCPService *pTcpService,BUS_ADDRESS_POINTER pBus_address);
 	void NotifyMessageReceiveData(CTCPService *pTcpService,void *handle,const char *pData,int nLen,BUS_ADDRESS_POINTER pBus_address);
 	
 	bool SendData(void * handle,UINT8 *pData,UINT32 length,BUS_ADDRESS_POINTER pBus_address);
@@ -42,7 +42,7 @@ public:
 private:
     void GetLinkAddressInfo(CTCPService *pTcpService,HOST_ADDRESS& address, BUS_ADDRESS_POINTER pBus_address);
 	void SaveLinkAndCallBack(BUS_ADDRESS_POINTER pBus_address,CTCPService *pTcpService,void *handle);
-	void DeleteLinkAndCallBack(BUS_ADDRESS_POINTER pBus_address,CTCPService* pTcpService, void*handle);
+	void DeleteLinkAndCallBack(BUS_ADDRESS_POINTER pBus_address,CTCPService* pTcpService);
 	void Release();
 	std::string tcpGetAddressKey(BUS_ADDRESS_POINTER pAddress);
 	

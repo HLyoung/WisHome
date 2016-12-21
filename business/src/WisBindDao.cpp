@@ -14,29 +14,22 @@ void WisBindDao::sendBindResponse(BUS_ADDRESS_POINTER bus_address,int nCmd, int 
 bool WisBindDao::addBind(BUS_ADDRESS_POINTER bus_address,const std::string& userUUID, const std::string& deviceUUID )
 {
 	TRACE_IN();
-	
     CNVDataAccess *access = (CNVDataAccess *)DbaModule_GetNVDataAccess();
 	assert(NULL != access);
   
 	char sql[200] = {0};
 	snprintf(sql,sizeof(sql),"SELECT * FROM wis_device_bind_tbl WHERE `dev_id`='%s' AND `user_id`='%s'",deviceUUID.c_str(),userUUID.c_str());
-	if(access->ExecuteNoThrow(sql) > 0)
-	{
-		LOG_INFO("device(uuid = %s) and usre(uuid = %s) is already binded.",deviceUUID.c_str(),userUUID.c_str());
-		DbaModule_ReleaseNVDataAccess((void*)access);
-		sendBindResponse(bus_address,WIS_CMD_USER_BIND,0);
-		return true;
-	}
-	memset(sql,0,sizeof(sql));
-	snprintf(sql,sizeof(sql),"INSERT INTO wis_device_bind_tbl(`dev_id`,`user_id`,`bind_time`) VALUES('%s','%s',CURRENT_TIMESTAMP)",\
-			deviceUUID.c_str(),userUUID.c_str());
-	if(-1 == access->ExecuteNonQuery(sql))
-	{
-		LOG_INFO("bind device(uuid = %s) and user(uuid = %s) faild. sql = %s",userUUID.c_str(),deviceUUID.c_str(),sql);
-		DbaModule_ReleaseNVDataAccess((void*)access);
-		sendBindResponse(bus_address,WIS_CMD_USER_BIND,1);
-		return false;
-	}
+	if(access->ExecuteNoThrow(sql) <= 0){
+		memset(sql,0,sizeof(sql));
+		snprintf(sql,sizeof(sql),"INSERT INTO wis_device_bind_tbl(`dev_id`,`user_id`,`bind_time`) VALUES('%s','%s',CURRENT_TIMESTAMP)",\
+				deviceUUID.c_str(),userUUID.c_str());
+		if(-1 == access->ExecuteNonQuery(sql)){
+			LOG_INFO("bind device(uuid = %s) and user(uuid = %s) faild. sql = %s",userUUID.c_str(),deviceUUID.c_str(),sql);
+			DbaModule_ReleaseNVDataAccess((void*)access);
+			sendBindResponse(bus_address,WIS_CMD_USER_BIND,1);
+			return false;
+			}
+		}
 	DbaModule_ReleaseNVDataAccess((void*)access);
 	sendBindResponse(bus_address,WIS_CMD_USER_BIND,0);
 	WisLogDao::saveUserBindLog(userUUID,deviceUUID.length(),deviceUUID.c_str());
@@ -49,9 +42,10 @@ bool WisBindDao::delBind(BUS_ADDRESS_POINTER bus_address,const std::string& user
 	TRACE_IN();
 	char sql[200] = {0};
 	snprintf(sql,sizeof(sql),"DELETE FROM wis_device_bind_tbl WHERE `dev_id`='%s' AND `user_id`='%s'",deviceUUID.c_str()\
-			,userUUID.c_str());
-	
+			,userUUID.c_str());	
 	CNVDataAccess *access = (CNVDataAccess *)DbaModule_GetNVDataAccess();
+	assert(NULL != access);
+	
 	if(-1 == access->ExecuteNonQuery(sql))
 	{
 		LOG_INFO("delete bind(userUUID = %s ,deviceUUID = %s) failed",userUUID.c_str(),deviceUUID.c_str());
