@@ -215,10 +215,7 @@ void ServrSocket::read_cb(struct bufferevent * bev,void * ctx)
 
 
 void ServrSocket::write_cb(struct bufferevent * bev,void * ctx)
-{
-
-
-	
+{	
 }
 
 void ServrSocket::accept_error_cb(struct evconnlistener * listener,void * ctx)

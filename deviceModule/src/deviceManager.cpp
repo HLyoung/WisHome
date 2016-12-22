@@ -175,8 +175,11 @@ void CDeviceManager::DeleteDeviceClient(BUS_ADDRESS_POINTER address)
 	string address_key = GetAddressKey(address);
 	std::lock_guard<std::mutex> lg(m_Device_mutex);
 	map<string,CDevice*>::iterator ite = m_mapDevice.find(address_key);
-	if(ite != m_mapDevice.end())
+	if(ite != m_mapDevice.end()){
+		SafeDelete(ite->second);
 		m_mapDevice.erase(ite);
+		}
+		
 }
 
 int  CDeviceManager::CountByUuid(const std::string & uuid)
@@ -201,8 +204,7 @@ void CDeviceManager::OnDisconnect(UINT32 size, void* data )
 		int count = CountByUuid(pDevice->GetUuid());
 		if(pDevice->IsLogined()  && count < 2)
 			CUniteDataModule::GetInstance()->ShowClientDisConnect(bus_address,pDevice->GetUuid(),pDevice->GetLoginType());
-		DeleteDeviceClient(bus_address);
-		SafeDelete(pDevice);			
+		DeleteDeviceClient(bus_address);			
 	}	
 	TRACE_OUT();
 }

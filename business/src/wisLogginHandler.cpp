@@ -212,8 +212,19 @@ void WisLoginHandler::mapAddUser(BUS_ADDRESS_POINTER bus_address,const std::stri
 
 void WisLoginHandler::mapAddDevice(BUS_ADDRESS_POINTER bus_address, const std::string & uuid)
 {
+	TRACE_IN();
 	std::lock_guard<std::mutex> lg(dMutex);
+	std::map<BUS_ADDRESS_POINTER,std::string>::iterator ite = mDevice.begin();
+	for(;ite != mDevice.end();){
+		if(ite->second == uuid && bus_address != ite->first){
+			std::map<BUS_ADDRESS_POINTER,std::string>::iterator ote = ite++;
+			mDevice.erase(ote);
+			continue;
+			}
+		ite++;
+		}
 	mDevice[bus_address] = uuid;
+	TRACE_OUT();
 }
 
 void WisLoginHandler::mapDeleteUser(BUS_ADDRESS_POINTER bus_address)

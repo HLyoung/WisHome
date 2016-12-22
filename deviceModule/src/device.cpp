@@ -42,7 +42,7 @@ bool CDevice::Send(INT32 nCmd, void* data, INT32 nDataSize)
 		logResult *result = (logResult *)data;
 		if(WIS_CMD_LOGIN == nCmd && result->result == 1)
 		{
-		    LOG_INFO("device(uuid = %s logined",result->uuid);
+		    LOG_INFO("device(uuid = %s) logined",result->uuid);
 			SetLogined(true);
 			SetLoginType(TYPE_DEVICE);
 			m_uuid = getUuidFromBuffer(result->uuid);
