@@ -66,7 +66,7 @@ public:
 		owner = serv_owner;
 	}
     void bufMapAddBuf(struct bufferevent *bev,BUS_ADDRESS_POINTER pBusAddress);
-	bool bufMapDeleteBuf(struct bufferevent *bev);
+	bool bufMapDeleteBuf(void *ctx);
 	
 	static void accept_conn_cb(struct evconnlistener *listener,evutil_socket_t fd,struct sockaddr *address, \
 		                int socklen, void *ctx);
@@ -79,8 +79,7 @@ public:
 	static void event_cb(struct bufferevent *bev,short events,void *ctx);
 
 	static void timer_cb(int fd,short event,void *ctx);
-	
-	void closeServer(struct bufferevent *bev);
+
 
 	std::map<struct bufferevent*,BUS_ADDRESS_POINTER> bufMap;
 	std::mutex bufMapMutex;

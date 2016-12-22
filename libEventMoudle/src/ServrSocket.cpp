@@ -88,7 +88,7 @@ void *ServrSocket::startServrThread(void *p)
         SafeDelete(pSock);
         pthread_exit(0);
     }
-    evthread_use_pthreads();  //this is very important,otherwise you can`t operator base in another thread......
+   // evthread_use_pthreads();  //this is very important,otherwise you can`t operator base in another thread......
     
 	struct event_base *base = event_base_new();
     struct evconnlistener* listener = evconnlistener_new(base,accept_conn_cb,pSock,LEV_OPT_CLOSE_ON_FREE | LEV_OPT_REUSEABLE,100,fd);
@@ -126,14 +126,10 @@ typedef struct{
 	evutil_socket_t fd;
 	void *address;
 	void *pSock;
+	void *event_timeout;
+	void *base;
+	void *bev;
 }Signel_connect_param,*pSignel_connect_param;
-
-typedef struct{
-	ServrSocket*pSock;
-	struct bufferevent  *bev;
-	BUS_ADDRESS_POINTER pAddress;
-	struct event_base * base;
-}Timer_cb_param,*pTimer_cb_param;
 
 void ServrSocket::accept_conn_cb(struct evconnlistener *listener,evutil_socket_t fd,struct sockaddr *address, \
 		                int socklen, void *ctx)
@@ -169,19 +165,17 @@ void *ServrSocket::handle_signel_connct(void *p)
 	pBus_address->host_address.port = ntohs(((sockaddr_in*)(param->address))->sin_port);
 	memcpy(pBus_address->host_address.ip,inet_ntoa(((sockaddr_in*)(param->address))->sin_addr),HOST_NAME_LENGTH);
 	param->address = pBus_address;
+	param->bev = bev;
+	param->base = base;
 
+	struct timeval tv = {HEARTBEAT_TIME,0};         //heartbeat timer.
+	struct event *timeout = event_new(base, -1, EV_PERSIST, timer_cb, param);
+	
+	param->event_timeout = timeout;
 	bufferevent_setwatermark(bev,EV_READ,0,0);
     bufferevent_setwatermark(bev,EV_WRITE,0,0);
 	bufferevent_setcb(bev,pSock->read_cb,pSock->write_cb,pSock->event_cb,param);
-	bufferevent_enable(bev,EV_READ|EV_WRITE);
-
-	pTimer_cb_param tParam = new Timer_cb_param;
-	tParam->pSock = (ServrSocket *)param->pSock;
-	tParam->bev = bev;
-	tParam->pAddress = pBus_address;
-	tParam->base = base;
-	struct timeval tv = {HEARTBEAT_TIME,0};         //heartbeat timer.
-	struct event *timeout = event_new(base, -1, EV_PERSIST, timer_cb, tParam);		
+	bufferevent_enable(bev,EV_READ|EV_WRITE);	
 	evtimer_add(timeout, &tv);
 
 	pSock->loseHeartBeatCount[bev] = 0;        //count lose heart beat times.
@@ -193,7 +187,6 @@ void *ServrSocket::handle_signel_connct(void *p)
     event_base_free(base);	
 	SafeDelete(pBus_address);
 	SafeDelete(param);
-	SafeDelete(tParam);
 	TRACE_OUT();
 	
 }
@@ -236,12 +229,12 @@ void ServrSocket::event_cb(struct bufferevent * bev,short events,void * ctx)
 		{				 
             int errorcode =  evutil_socket_geterror(fd);
             LOG_ERROR("error(event = %d) happens on socket(fd = %d), error message: %s",(int)events,(int)fd,evutil_socket_error_to_string(errorcode));
-			pSock->bufMapDeleteBuf(bev);
+			pSock->bufMapDeleteBuf(ctx);
 		}
 	else if(events & (BEV_EVENT_EOF))
 		{		
 			LOG_INFO("EOF readed on socket(fd = %d)",(int)fd);
-			pSock->bufMapDeleteBuf(bev);
+			pSock->bufMapDeleteBuf(ctx);
 		}
 	else
 		LOG_INFO("something unknow happens(event = %d ,fd = %d)",(int)events,(int)fd);	
@@ -251,15 +244,16 @@ void ServrSocket::event_cb(struct bufferevent * bev,short events,void * ctx)
 
 void ServrSocket::timer_cb(int fd,short event,void *ctx)
 {
-	pTimer_cb_param param = (pTimer_cb_param)ctx;
-	ServrSocket *pSock = param->pSock;
-	if(pSock->loseHeartBeatCount.find(param->bev) != pSock->loseHeartBeatCount.end()){
-		pSock->loseHeartBeatCount[param->bev] ++;
+	pSignel_connect_param  param = (pSignel_connect_param)ctx;
+	ServrSocket *pSock =(ServrSocket *)(param->pSock);
+	struct bufferevent * bev = (struct bufferevent *)(param->bev);
+	if(pSock->loseHeartBeatCount.find(bev) != pSock->loseHeartBeatCount.end()){
+		pSock->loseHeartBeatCount[bev] ++;
 
-		if(pSock->loseHeartBeatCount[param->bev] > 4){
+		if(pSock->loseHeartBeatCount[bev] > 4){
 			LOG_ERROR("delete link by lose heart beat too many times!!");
-			pSock->bufMapDeleteBuf(param->bev);
-			event_base_loopbreak(param->base);
+			pSock->bufMapDeleteBuf(ctx);
+			event_base_loopbreak((struct event_base*)(param->base));
 			return;
 			}
 
@@ -272,7 +266,9 @@ void ServrSocket::timer_cb(int fd,short event,void *ctx)
 		for(int i = 0;i<12;i++)
 			checkSum += *((unsigned char *)(buf + 4 + i));
 		*((unsigned int*)(buf)) = checkSum;
-		bufferevent_write(param->bev,buf,16);
+		
+		if(pSock->bufMap.find(bev) != pSock->bufMap.end())
+			bufferevent_write(bev,buf,16);
 		}
 	
 }
@@ -282,15 +278,19 @@ void ServrSocket::bufMapAddBuf(struct bufferevent *bev,BUS_ADDRESS_POINTER pBusA
 	bufMap.insert(pair<struct bufferevent*,BUS_ADDRESS_POINTER>(bev,pBusAddress));
 }
 
-bool ServrSocket::bufMapDeleteBuf(struct bufferevent * bev)
+bool ServrSocket::bufMapDeleteBuf(void *ctx)
 {
 	TRACE_IN();
+	pSignel_connect_param param = (pSignel_connect_param)ctx;
+	struct bufferevent *bev = (struct bufferevent*)(param->bev);
+	struct event* timeout = (struct event*)(param->event_timeout);
 	std::lock_guard<std::mutex> lg(bufMapMutex);
 	std::map<struct bufferevent*,BUS_ADDRESS_POINTER>::iterator ite = bufMap.find(bev);
 	if(ite != bufMap.end())
 	{
 		loseHeartBeatCount.erase(bev);
 		bufMap.erase(bev);
+		evtimer_del(timeout);
 		bufferevent_free(bev);
 		return true;
 	}
@@ -298,14 +298,5 @@ bool ServrSocket::bufMapDeleteBuf(struct bufferevent * bev)
 	TRACE_OUT();
 	return false;
 }
-void ServrSocket::closeServer(struct bufferevent*bev)
-{
-	TRACE_IN();
-	bufMapDeleteBuf(bev);
-	TRACE_OUT();
-}
-
-
-
 
 
