@@ -24,7 +24,7 @@ bool WisBindDao::addBind(BUS_ADDRESS_POINTER bus_address,const std::string& user
 		snprintf(sql,sizeof(sql),"INSERT INTO wis_device_bind_tbl(`dev_id`,`user_id`,`bind_time`) VALUES('%s','%s',CURRENT_TIMESTAMP)",\
 				deviceUUID.c_str(),userUUID.c_str());
 		if(-1 == access->ExecuteNonQuery(sql)){
-			LOG_INFO("bind device(uuid = %s) and user(uuid = %s) faild. sql = %s",userUUID.c_str(),deviceUUID.c_str(),sql);
+			LOG_INFO("ADD BIND FAILED: userId=%s,devId=%s",userUUID.c_str(),deviceUUID.c_str(),sql);
 			DbaModule_ReleaseNVDataAccess((void*)access);
 			sendBindResponse(bus_address,WIS_CMD_USER_BIND,1);
 			return false;
@@ -33,6 +33,7 @@ bool WisBindDao::addBind(BUS_ADDRESS_POINTER bus_address,const std::string& user
 	DbaModule_ReleaseNVDataAccess((void*)access);
 	sendBindResponse(bus_address,WIS_CMD_USER_BIND,0);
 	WisLogDao::saveUserBindLog(userUUID,deviceUUID.length(),deviceUUID.c_str());
+	LOG_INFO("ADD BIND SUCCESS: userId=%s, devId=%s",userUUID.c_str(),deviceUUID.c_str());
 	TRACE_OUT();
 	return true;
 }
@@ -48,7 +49,7 @@ bool WisBindDao::delBind(BUS_ADDRESS_POINTER bus_address,const std::string& user
 	
 	if(-1 == access->ExecuteNonQuery(sql))
 	{
-		LOG_INFO("delete bind(userUUID = %s ,deviceUUID = %s) failed",userUUID.c_str(),deviceUUID.c_str());
+		LOG_INFO("DELETE BIND FAILED: userId=%s,devId=%s",userUUID.c_str(),deviceUUID.c_str());
 		DbaModule_ReleaseNVDataAccess(access);
 		sendBindResponse(bus_address,WIS_CMD_USER_UNBIND,1);
 		return false;
@@ -56,6 +57,7 @@ bool WisBindDao::delBind(BUS_ADDRESS_POINTER bus_address,const std::string& user
 	sendBindResponse(bus_address,WIS_CMD_USER_UNBIND,0);
 	DbaModule_ReleaseNVDataAccess(access);
 	WisLogDao::saveUserUnBindLog(userUUID,deviceUUID.length(),deviceUUID.c_str());
+	LOG_INFO("DELETE BIND SUCCESS: userId=%s,devId=%s",userUUID.c_str(),deviceUUID.c_str());
 	TRACE_OUT();
 	return true;
 }
@@ -67,12 +69,10 @@ int  WisBindDao::getBindedDevices(const std::string& userUUID, std::map<std::str
 	snprintf(sql,sizeof(sql),"SELECT `uuid`,`name`,`bind_time`,`status` FROM wis_device_tbl,wis_device_bind_tbl WHERE \
 	`dev_id`=`uuid` AND `user_id`='%s'",userUUID.c_str());
     CNVDataAccess *access = (CNVDataAccess *)DbaModule_GetNVDataAccess();
-	if(access->ExecuteNoThrow(sql) < 1)
-	{
-		LOG_INFO("user(userUUID = %s) bind no device",userUUID.c_str());
+	if(access->ExecuteNoThrow(sql) < 1){
 		DbaModule_ReleaseNVDataAccess(access);
 		return 0;
-	}
+		}
 	while(access->FetchNewRow())
 	{
 		WisDeviceInfo buddy;

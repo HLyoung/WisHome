@@ -48,9 +48,11 @@ void WisLoginHandler::handleUserLogin(BUS_ADDRESS_POINTER busAddress,int datalen
 			std::transform(token.begin(),token.end(),token.begin(),(int(*)(int))toupper);
 			WisIOSTokenDao::save( loginInfo->uuid, token );
 	    	}
+		LOG_INFO("USER LOGIN SUCCESS: %s",getUuidFromBuffer(loginInfo->uuid).c_str());
 	    sendLoginResponse( busAddress, loginInfo->uuid,0,TYPE_USER );
 		return;
     	}
+	LOG_INFO("USER LOGIN FAILED: %s",getUuidFromBuffer(loginInfo->uuid).c_str());
 	sendLoginResponse( busAddress, loginInfo->uuid,-1,TYPE_USER );
 	TRACE_OUT();
 }
@@ -60,6 +62,7 @@ void WisLoginHandler::handleUserLogout(BUS_ADDRESS_POINTER busAddress,std::strin
    if(WisUserDao::logout(uuid, WisUserDao::defaultPassword)){
    		mapDeleteSameUser(uuid);
   		WisLogDao::saveUserLogoutLog(uuid, 0, "");
+		LOG_INFO("LOGOUT  SUCCESS: %s",uuid.c_str());
    	    }
   TRACE_OUT();
 }
@@ -87,7 +90,7 @@ void WisLoginHandler::handleDeviceLogin( BUS_ADDRESS_POINTER busAddress,int data
     if( !rc ) {
         rc = WisDeviceDao::regist(getUuidFromBuffer(loginInfo->uuid), std::string(loginInfo->name));
         if( !rc ) {
-            LOG_ERROR("device(uuid = %s,name = %s )regist failed.",getUuidFromBuffer(loginInfo->uuid).c_str(),
+            LOG_ERROR("DEVICE LOGIN FALIED: uuid = %s,name = %s.",getUuidFromBuffer(loginInfo->uuid).c_str(),
             std::string(loginInfo->name,NAME_LEN).c_str());
             sendLoginResponse( busAddress,loginInfo->uuid, -1,TYPE_DEVICE );
             return;
@@ -96,7 +99,7 @@ void WisLoginHandler::handleDeviceLogin( BUS_ADDRESS_POINTER busAddress,int data
     }
     rc = WisDeviceDao::login(loginInfo->uuid,loginInfo->name );
     if( !rc ) {
-        LOG_ERROR("devicee(uuid = %s,name = %s) login failed.",loginInfo->uuid,loginInfo->name);
+        LOG_ERROR("DEVICE LOGIN FAILED: uuid = %s,name = %s.",loginInfo->uuid,loginInfo->name);
         sendLoginResponse( busAddress, loginInfo->uuid,-1,TYPE_DEVICE );
         return;
     }
@@ -106,6 +109,7 @@ void WisLoginHandler::handleDeviceLogin( BUS_ADDRESS_POINTER busAddress,int data
         WisLogDao::saveDeviceLoginLog(loginInfo->uuid, strlen((char*)busAddress->host_address.ip),(const char*) busAddress->host_address.ip);
     } 
 	mapAddDevice(busAddress,getUuidFromBuffer(loginInfo->uuid));
+	LOG_INFO("DEVICE LOGIN SUCCESS: %s",getUuidFromBuffer(loginInfo->uuid).c_str());
     sendLoginResponse( busAddress,loginInfo->uuid, 1 ,TYPE_DEVICE);	
     
     std:map<std::string,WisUserInfo> mapUserIfno;
@@ -129,6 +133,7 @@ void WisLoginHandler::handleDeviceLogout(BUS_ADDRESS_POINTER busAddress,std::str
     if(WisDeviceDao::logout( uuid )){
 		mapDeleteDevice(busAddress);
     	WisLogDao::saveDeviceLogoutLog(uuid, 0, "");
+		LOG_INFO("DEVICE LOGOUT SUCCESS: %s",uuid.c_str());
 
 	    std:map<std::string,WisUserInfo> mapUserIfno;
 		if(0 < WisBindDao::getBindedUsers(uuid,mapUserIfno)){

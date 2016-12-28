@@ -176,7 +176,7 @@ void ServrSocket::read_cb(struct bufferevent * bev,void * ctx)
 	int len = evbuffer_get_length(readbuffer);
 	BUS_ADDRESS_POINTER pBus_address = (BUS_ADDRESS_POINTER)(((pSignel_connect_param)ctx)->address);
 
-	CJob *job = new jobRead(bev,pBus_address,pSocket->getOwner(),len,(char *)evbuffer_pullup(readbuffer,-1));
+	CJob *job = new jobRead(bev,pBus_address,pSocket->getOwner(),len,(char *)evbuffer_pullup(readbuffer,-1));	
 	pSocket->getManager()->AddJobToPool(job,bufferevent_getfd(bev));
 	evbuffer_drain(readbuffer,len);
 	TRACE_OUT();
@@ -206,15 +206,15 @@ void ServrSocket::event_cb(struct bufferevent * bev,short events,void * ctx)
 	
 	if(events & (BEV_EVENT_ERROR)){			 
             int errorcode =  evutil_socket_geterror(fd);
-            LOG_ERROR("ERROR HAPPENS(event = %d fd = %d), error message: %s",(int)events,(int)fd,evutil_socket_error_to_string(errorcode));
+            LOG_ERROR("ERROR HAPPENS: ip=%s,port=%u,event=%d,error message: %s",pBus_address->host_address.ip,pBus_address->host_address.port,(int)events,evutil_socket_error_to_string(errorcode));
 			pSock->bufMapDeleteBuf(ctx);
 		}
 	else if(events & (BEV_EVENT_EOF)){		
-			LOG_INFO("EOF READED(fd = %d)",(int)fd);
+			LOG_INFO("EOF READED: ip=%s,port=%u",pBus_address->host_address.ip,pBus_address->host_address.port);
 			pSock->bufMapDeleteBuf(ctx);
 		}
 	else
-		LOG_INFO("UNKNOW HAPPENS(event = %d ,fd = %d)",(int)events,(int)fd);	
+		LOG_INFO("UNKNOW HAPPENS: ip=%s,port=%u,event = %d)",pBus_address->host_address.ip,pBus_address->host_address.port,(int)events);	
 	TRACE_OUT();
 }
 
@@ -223,13 +223,14 @@ void ServrSocket::timer_cb(int fd,short event,void *ctx)
 {
 	pSignel_connect_param  param = (pSignel_connect_param)ctx;
 	ServrSocket *pSock =(ServrSocket *)(param->pSock);
+	BUS_ADDRESS_POINTER pBus_address = (BUS_ADDRESS_POINTER)(param->address);
 	struct bufferevent * bev = (struct bufferevent *)(param->bev);
 
 	std::map<struct bufferevent*,int>::iterator ite =pSock->mCounter.find(bev);
 	if(ite != pSock->mCounter.end()){
 		pSock->mCounter[bev] ++;
 		if(pSock->mCounter[bev] > 4){
-			LOG_INFO("LINK(fd=%d)  EXPRESS.",fd);
+			LOG_INFO("LINK EXPRESS: ip=%s,port=%u",pBus_address->host_address.ip,pBus_address->host_address.port);
 			pSock->bufMapDeleteBuf(ctx);
 			return;
 		}
@@ -281,12 +282,10 @@ bool ServrSocket::bufMapDeleteBuf(void *ctx)
 
 int ServrSocket::bufSend(struct bufferevent* bev,const char *data,int dataLen)
 {
-	TRACE_IN();
 	std::lock_guard<std::mutex> lb(bufMapMutex);
 	std::map<struct bufferevent*,struct event*>::iterator ite = bufMap.find(bev);
 	if(ite != bufMap.end())
 		return bufferevent_write(bev,data,dataLen);
-	TRACE_OUT();
 	return 0;
 }
 

@@ -16,7 +16,7 @@ using namespace std;
 class Reporter : public IAutoReportToInterface
 {
 	void ShowClientConnect(BUS_ADDRESS_POINTER DeviceAddress){
-		std::cout<<"somebody connected"<<std::endl;
+		LOG_INFO("LINK CONNECTED: ip=%s,port=%d",DeviceAddress->host_address.ip,DeviceAddress->host_address.port);
 	}
 	void ShowClientDisConnect(BUS_ADDRESS_POINTER busAddress,std::string uuid,int loginType){
  

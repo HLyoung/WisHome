@@ -33,6 +33,6 @@ void WisUserPrivateHandler::handleUserPrivate( BUS_ADDRESS_POINTER   busAddress,
 		else
 			sendUserPrivateResponse(busAddress,0);
 		}
-
+    LOG_INFO("USER PRIVATE: destUuid=%s,cmd=%d",userPrivate->uuid,userPrivate->cmdId);
 	TRACE_OUT();
 }

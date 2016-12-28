@@ -93,7 +93,6 @@ void CTCPServiceManage::SaveLinkAndCallBack(BUS_ADDRESS_POINTER pBus_address,CTC
 	
 	if(pTcpService->message_callback_ != NULL)
 	{
-		LOG_INFO("tcp service manager call the callback funciton to notify connection fd = %ld",(long)handle);
 		pTcpService->message_callback_(pTcpService->GetOwnerHandle(),MESSAGE_Connect,sizeof(BUS_ADDRESS),pBus_address);
 	}
 

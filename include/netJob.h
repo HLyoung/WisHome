@@ -10,6 +10,7 @@
 #include <event2/buffer.h>
 #include <event2/thread.h>
 
+#include "macro.h"
 #include "CJob.h"
 
 class jobAccept:public CJob
@@ -37,14 +38,12 @@ private:
 	char *_data;
 public:
 	jobRead(struct bufferevent *bev,BUS_ADDRESS_POINTER pBus_address,CISocketOwner *owner,int dataLen,char *data):_dataLen(dataLen),\
-	_bev(bev),_pBus_address(pBus_address),_owner(owner),_data(data){
-
+	_bev(bev),_pBus_address(pBus_address),_owner(owner){
+		_data = (char *)malloc(dataLen);
+		memcpy(_data,data,dataLen);
 	}
 	~jobRead(){
-		if(NULL != _data ){
-			free(_data);
-			_data = NULL;
-		}
+		free(_data);
 	}
 	
 	void Run(void){

@@ -73,7 +73,7 @@ void WisToUserHandler::handleSendToOne(BUS_ADDRESS_POINTER busAddress,const char
 	else{
 		LOG_INFO("send message to one(uuid = %s) failed,because the device not loggied",deviceUUID);
 		}
-
+    LOG_INFO("SEND TO ONE: sourId=%s,destId=%s",uuid,deviceUUID);
 	SafeDeleteArray(toUser);
 	TRACE_OUT();
 }
@@ -97,7 +97,7 @@ void WisToUserHandler::handleSendToAll(BUS_ADDRESS_POINTER  busAddress,const cha
 		if(NULL != bus_address)
 		    GetUniteDataModuleInstance()->SendData(bus_address,WIS_CMD_TO_USER,toUser, UUID_LEN + packet->len,TCP_SERVER_MODE);
 	}
-	
+	LOG_INFO("SEND TO ALL: userId=%s",uuid);
     sendToUserResponse(busAddress, WIS_CMD_TO_USER, 0);
     SafeDeleteArray(toUser);
 	TRACE_OUT();

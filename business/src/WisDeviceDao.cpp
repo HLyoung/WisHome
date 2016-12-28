@@ -88,7 +88,6 @@ bool WisDeviceDao::logout(const std::string& uuid )
     CNVDataAccess *access = (CNVDataAccess *)DbaModule_GetNVDataAccess();
 	if(NULL != access){
 		if(-1 != access->ExecuteNonQuery(updateSQL)){
-			LOG_INFO("DEVICE:%s logout",uuid.c_str());
 			DbaModule_ReleaseNVDataAccess(access);
 			return true;
 		   }
@@ -102,22 +101,14 @@ bool WisDeviceDao::logoutAll( )
 	TRACE_IN();
     static const std::string SQL = "UPDATE wis_device_tbl SET `status`=0";
     CNVDataAccess *access = (CNVDataAccess *)DbaModule_GetNVDataAccess();
-	if(NULL == access)
-	{
-		LOG_ERROR("get database access failed");
+	if(NULL != access){
+		if(-1 != access->ExecuteNonQuery(SQL.c_str())){
+			DbaModule_ReleaseNVDataAccess(access);
+			return true;
+		}
 		DbaModule_ReleaseNVDataAccess(access);
-		return false;
 	}
-	
-	if(-1 == access->ExecuteNonQuery(SQL.c_str()))
-	{
-		LOG_ERROR("execute sql(%s) query failed",SQL.c_str());
-		DbaModule_ReleaseNVDataAccess(access);
-		return false;
-	}
-	DbaModule_ReleaseNVDataAccess(access);
-	TRACE_OUT();
-    return true;
+    return false;
 }
 
 bool WisDeviceDao::getDevice( const std::string& uuid, WisDeviceInfo& info )

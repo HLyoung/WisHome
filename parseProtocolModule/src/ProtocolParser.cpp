@@ -21,7 +21,7 @@ bool CProtocolParser::ParseSocketProtocol(const char *recvbuf,UINT32 recvlen)
 #ifdef DEBUG	
 	char *strBuffer  = new char[recvlen*2+1];
 	HexToStr((UINT8*)strBuffer,(const UINT8*)recvbuf,recvlen);
-	LOG_INFO("receive data:datalen = %d\n	data = %s\n",recvlen,strBuffer);
+	LOG_DEBUG("receive data:datalen = %d\n	data = %s\n",recvlen,strBuffer);
 	delete[] strBuffer;
 #endif
 
@@ -34,7 +34,8 @@ bool CProtocolParser::ParseSocketProtocol(const char *recvbuf,UINT32 recvlen)
 		{
 			if(!CheckCheckSum(sBuffer.data(),packetDataLen + 12)){
 				sBuffer.empty();
-				LOG_ERROR("checksum error");
+				LOG_ERROR("CHECKSUM ERROR.");
+				break;
 				}
 			else
 			{
@@ -68,7 +69,7 @@ bool CProtocolParser::MakeProtocolForSocket(UINT32 command, const char* input,\
  #ifdef DEBUG
     char *strBuffer  = new char[(*outputlen)*2+1];
 	HexToStr((UINT8*)strBuffer,(const UINT8*)output,*outputlen);
-	LOG_INFO("after make portocol data for socket: %s",strBuffer);  //log中大于256字节就崩溃
+	LOG_DEBUG("after make portocol data for socket: %s",strBuffer);  //log中大于256字节就崩溃
 	SafeDeleteArray(strBuffer);
  #endif 
 

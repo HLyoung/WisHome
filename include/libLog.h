@@ -73,8 +73,7 @@ do{\
 #define LOG_INFO(format,...) \
 do{\
     char str[LOG_MAX_LEN] = {0};\
-	sprintf(str,"[%s@%s,%d]:" format"\n",\
-		__func__,__FILE__,(int )__LINE__,##__VA_ARGS__);\
+	sprintf(str, format"\n",__VA_ARGS__);\
 	CZxLogManager::getInstance()->LogTo(str,NULL,LEVEL_INFO,\
 										NULL);\
 }while(0)

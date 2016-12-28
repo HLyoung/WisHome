@@ -132,6 +132,7 @@ bool WisUserDao::userGetDevice(BUS_ADDRESS_POINTER busAddress,const char *uuid)
 			}
 		}
 	GetUniteDataModuleInstance()->SendData(busAddress,WIS_CMD_USER_GET_DEVICES,(char *)deviceList,size,TCP_SERVER_MODE);
+	LOG_INFO("GET DEVICE SUCCESS: %s",uuid);
 	SafeDeleteArray(deviceList);
 }
 
@@ -146,7 +147,10 @@ int WisUserDao::handleUserRegist(BUS_ADDRESS_POINTER busAddress,const char * pda
 			char sql[200] = {0};
 			snprintf(sql,sizeof(sql),"insert into wis_user_tbl(`name`,`password`,`type`,`permission`,\
 			`reg_time`,`login_cnt`) values('%s','%s', 0, 0, CURRENT_TIMESTAMP,0)",getUuidFromBuffer(registInfo->uuid).c_str(),getPasswordFromBuffer(registInfo->password).c_str());
-		    if(-1 != access->ExecuteNonQuery(sql))  ret = 0; 
+		    if(-1 != access->ExecuteNonQuery(sql)){
+				LOG_INFO("USER REGIST: %s",getUuidFromBuffer(registInfo->uuid).c_str());
+				ret = 0; 
+		    	}
 			else ret = -1;
 			DbaModule_ReleaseNVDataAccess(access);
 			}
@@ -165,6 +169,7 @@ void WisUserDao::handleUserModifyPassword(std::string &uuid,BUS_ADDRESS_POINTER 
 		if(-1 != access->ExecuteNonQuery(sql)){
 			sendUserResponse(busAddress,WIS_CMD_USER_MODIFY_PASSWORD,0);
 			DbaModule_ReleaseNVDataAccess(access);
+			LOG_INFO("USER MODIFY PASSWORD: %s ",uuid.c_str());
 			return ;
 			}
 		}
@@ -184,6 +189,8 @@ void WisUserDao::handleUserResetPassword(BUS_ADDRESS_POINTER busAddress,const ch
 		sendUserResponse(busAddress,WIS_CMD_USER_RESET_PASSWORD,0);
 	else
 		sendUserResponse(busAddress,WIS_CMD_USER_RESET_PASSWORD,-1);
+
+	LOG_INFO("USER RESET PASSWORD: %s",getUuidFromBuffer(resetInfo->uuid).c_str());
 }
 
 string WisUserDao::makeupURL(const std::string& uuid)
@@ -262,8 +269,9 @@ bool WisUserDao::handleUserQuit(BUS_ADDRESS_POINTER busAddress,const char *pdata
 		snprintf(sql,sizeof(sql),"delete from wis_ios_token_tbl2 where `token`='%s'",quitinfo->token);
 		if(-1 != access->ExecuteNonQuery(sql)){
 			sendUserResponse(busAddress,WIS_CMD_USER_QUIT,0);
-			WisLoginHandler::handleUserLogout(busAddress,quitinfo->uuid);
+			WisLoginHandler::handleUserLogout(busAddress,getUuidFromBuffer(quitinfo->uuid));
 			DbaModule_ReleaseNVDataAccess(access);
+			LOG_INFO("USER QUIT: %s",getUuidFromBuffer(quitinfo->uuid).c_str());
 			return  true;
 			}
 		DbaModule_ReleaseNVDataAccess(access);
