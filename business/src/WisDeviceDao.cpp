@@ -53,7 +53,7 @@ bool WisDeviceDao::login(const std::string& uuid ,const std::string &name )
     char updateSQL[1024] = {0};
 	int rows = 0;
     snprintf( updateSQL, sizeof(updateSQL),
-        "UPDATE wis_device_tbl SET `status`=1,`login_cnt`=`login_cnt`+1,`name`='%s'  WHERE `uuid`='%s'",name.c_str(),uuid.c_str()
+        "UPDATE wis_device_tbl SET `status`=1,`login_cnt`=`login_cnt`+1,`name`='%s',`login_time`=CURRENT_TIMESTAMP  WHERE `uuid`='%s'",name.c_str(),uuid.c_str()
     );
     
 	CNVDataAccess *access = (CNVDataAccess *)DbaModule_GetNVDataAccess();
@@ -88,6 +88,7 @@ bool WisDeviceDao::logout(const std::string& uuid )
     CNVDataAccess *access = (CNVDataAccess *)DbaModule_GetNVDataAccess();
 	if(NULL != access){
 		if(-1 != access->ExecuteNonQuery(updateSQL)){
+			LOG_INFO("DEVICE:%s logout",uuid.c_str());
 			DbaModule_ReleaseNVDataAccess(access);
 			return true;
 		   }

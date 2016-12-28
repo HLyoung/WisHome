@@ -9,6 +9,8 @@
 #include "ISocket.h"
 #include "macro.h"
 #include "wis.h"
+#include "CommonTCPManager.h"
+#include "netJob.h"
 #include <list>
 #include <map>
 
@@ -39,15 +41,13 @@
 
 using namespace std;
 
-
+class CommonTCPManager;
 class ServrSocket : public ISocket
 {
 public:
-    ServrSocket(const CADDRINFO &sveAddr,CISocketOwner* servr_owner);
+    ServrSocket(const CADDRINFO &sveAddr,CISocketOwner* servr_owner,CommonTCPManager *manager);
 	~ServrSocket();
 	static void* startServrThread(void *p);
-	static void* handle_signel_connct(void *p);
-
 	int startServr();
     CADDRINFO getLocalAddr() const
 	{
@@ -57,19 +57,22 @@ public:
 	{
 		m_LocalAddr = addr;
 	}
-	const CISocketOwner * getOwner() 
+	CISocketOwner * getOwner() 
 	{
 		return owner;
 	}
+
+	CommonTCPManager *getManager(){return manager;}
 	void setOwner(CISocketOwner *serv_owner)
 	{
 		owner = serv_owner;
 	}
-    void bufMapAddBuf(struct bufferevent *bev,BUS_ADDRESS_POINTER pBusAddress);
-	bool bufMapDeleteBuf(void *ctx);
+    void bufMapAddBuf(struct bufferevent *bev,struct event *timeout);
 	
-	static void accept_conn_cb(struct evconnlistener *listener,evutil_socket_t fd,struct sockaddr *address, \
-		                int socklen, void *ctx);
+	bool bufMapDeleteBuf(void *bev);
+
+	int  bufSend(struct bufferevent *bev,const char *data,int dataLen);
+	static void accept_conn_cb(struct evconnlistener *listener,evutil_socket_t fd,struct sockaddr *address, int socklen, void *ctx);
 
 	static void read_cb(struct bufferevent *bev,void *ctx);
 	static void write_cb(struct bufferevent *bev,void *ctx);
@@ -80,13 +83,18 @@ public:
 
 	static void timer_cb(int fd,short event,void *ctx);
 
+	
 
-	std::map<struct bufferevent*,BUS_ADDRESS_POINTER> bufMap;
-	std::mutex bufMapMutex;
+	
+	
 private:
-	CADDRINFO m_LocalAddr;
-	std::map<struct bufferevent*,int> loseHeartBeatCount;
+	std::map<struct bufferevent*,struct event *> bufMap;
+	std::map<struct bufferevent*,int> mCounter;    //count lose heart beat times.
+	std::mutex bufMapMutex;
+	
+	CADDRINFO  m_LocalAddr; 
 	static CISocketOwner *owner;
+	CommonTCPManager *manager;
 };
 
 

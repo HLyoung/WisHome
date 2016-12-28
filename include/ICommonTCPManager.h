@@ -43,50 +43,6 @@ public:
 	virtual int ConnectServer(const CADDRINFO &svrAddr,CISocketOwner *pSocketOwner,int bLongConnect = 0,int nTimeOut = 120)=0;
 	
 	/**
-	* @brief SetHeartBeatData
-	*
-	* 设置心跳数据(服务器/客户端)
-	* 不调用此接口,默认不发心跳
-	*
-	* @param[in] dwHandle 连接句柄
-	* @param[in] pData 心跳数据缓存区
-	* @param[in] nLen 心跳数据长度
-	*
-	* @return 0 成功
-	* @return <0 失败
-	*/
-	virtual int SetHeartBeatData(void* dwHandle,const char *pData,int nLen) = 0;
-	
-	/**
-	* @brief SetHeartBeatInterval
-	*
-	* 设置心跳周期(服务器/客户端)
-	*
-	* 不调用此端口，默认心跳周期为30秒
-	*
-	* @param[in] dwHandle 连接句柄
-	* @param[in] nInterval 心跳周期(秒)
-	*
-	* @return 0 成功
-	* @return <0 失败
-	*/
-	virtual int SetHeartBeatInterval(void* dwHandle,int nInterval) = 0;
-	
-	/**
-	* @brief SetConnectTimeOut
-	*
-	* 设置连接没有数据超时时间(服务器)
-	* 超时后服务器关闭连接	
-	*
-	* @param[in] dwHandle 连接句柄
-	* @param[in] nTime 连接没有数据的超时时间
-	*
-	* @return 0 成功
-	* @return <0 失败
-	*/
-	virtual int SetConnectTimeOut(void* dwHandle,int nTime) = 0;
-	
-	/**
 	*
 	* @brief CloseConnection
 	*

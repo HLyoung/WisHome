@@ -9,12 +9,17 @@
 #include "ServrSocket.h"
 #include "EventBase.h"
 #include "ISocket.h"
+#include "CThreadPool.h"
+#include "CJob.h"
+
 #include <event.h>
 #include <list>
 #include <pthread.h>
 
+
 using namespace std;
 class ClientSocket;
+class ServrSocket;
 class DLL_DEFINE CommonTCPManager : public CICommonTCPManager
 {
 public:
@@ -24,10 +29,8 @@ public:
 	
 	int BeginServer(const CADDRINFO &serAddr ,CISocketOwner *pSocketOwner);
 	int ConnectServer(const CADDRINFO &serAddr,CISocketOwner *pSocketOwner, int bLongConnect = 0,int nTimeOut = 120);
-	int SetHeartBeatData(void* dwHandle,const char *pData,int nlen){}
-	int SetHeartBeatInterval(void* dwHandle,int nInterval){}
-	int SetConnectTimeOut(void* dwHandle,int nTime){}
 	int CloseConnection(void* dwHandle);
+	void AddJobToPool(CJob *job,unsigned int index);
 	int Send(void*,const char * pData,int nProLen);	
 	
 	list<ClientSocket *> ClientSocketList;
@@ -40,6 +43,7 @@ private:
     CommonTCPManager();
 	static CICommonTCPManager* _instance;
 	static std::mutex _insMutex;
+	CThreadPool *tPool;
 
 };
 

@@ -32,14 +32,16 @@ bool CProtocolParser::ParseSocketProtocol(const char *recvbuf,UINT32 recvlen)
 		int packetDataLen = *((unsigned int *)(sBuffer.data() + 8));
 		if(packetDataLen <= sBuffer.length() - 12)
 		{
-			if(!CheckCheckSum(sBuffer.data(),packetDataLen + 12))
+			if(!CheckCheckSum(sBuffer.data(),packetDataLen + 12)){
+				sBuffer.empty();
 				LOG_ERROR("checksum error");
+				}
 			else
 			{
 				UINT32 wEvent = *((UINT32 *)(sBuffer.data() + 4));
 				m_tParserCallBack.pParserCallback(wEvent,0,packetDataLen,sBuffer.data() + 12,m_tParserCallBack.pOwner);
+				sBuffer.truncate(packetDataLen + 12);			
 			}
-			sBuffer.truncate(packetDataLen + 12);			
 		}
 		else
 			break;

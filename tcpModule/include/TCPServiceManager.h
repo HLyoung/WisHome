@@ -12,7 +12,6 @@
 #include <map>
 #include <list>
 
-#include "Thread.h"
 
 using namespace std;
 

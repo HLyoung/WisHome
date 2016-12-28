@@ -8,6 +8,7 @@ std::mutex CommonTCPManager::_insMutex;
 
 CommonTCPManager::CommonTCPManager()
 {	
+	tPool = new CThreadPool(20);
 }
 
 CICommonTCPManager * CommonTCPManager::getInstance()
@@ -24,7 +25,7 @@ CICommonTCPManager * CommonTCPManager::getInstance()
 int CommonTCPManager::BeginServer(const CADDRINFO &serAddr,CISocketOwner *pSocketOwner)
 {
 	TRACE_IN();
-   	ServrSocket *pServ = new ServrSocket(serAddr,pSocketOwner);
+   	ServrSocket *pServ = new ServrSocket(serAddr,pSocketOwner,this);
 	pServ->startServr();
 
 	servrMutex.lock();
@@ -49,37 +50,14 @@ int CommonTCPManager::Send(void * handle,const char * pData,int nProLen)
 	std::lock_guard<std::mutex> lg(servrMutex);
 	std::list<ServrSocket *>::iterator ite = ServrSocketList.begin();
 	for(; ite != ServrSocketList.end(); ite++)
-		if((*ite)->bufMap.find((struct bufferevent *)handle) != (*ite)->bufMap.end())
-			return bufferevent_write((struct bufferevent*)handle,pData,nProLen);
-
-	std::lock_guard<std::mutex> cg(clientMutex);
-	std::list<ClientSocket*>::iterator ote = ClientSocketList.begin();
-	for(; ote != ClientSocketList.end(); ote++)
-		if((*ote)->_bev == (struct bufferevent*)handle)
-			return bufferevent_write((struct bufferevent*)handle,pData,nProLen);
-
+		if((*ite)->bufSend((struct bufferevent *)handle,pData,nProLen) > 0)
+			return 0;
 	return -1;
 
 }
 
 int CommonTCPManager::CloseConnection(void * dwHandle)
 {
-	TRACE_IN();
-	std::list<ClientSocket*>::iterator ite = ClientSocketList.begin();
-	for(; ite != ClientSocketList.end();ite++){
-		if((*ite)->_bev == (struct bufferevent *)dwHandle){
-			(*ite)->closeClient();
-			return 0;
-		}
-	}
-	std::list<ServrSocket*>::iterator sIte = ServrSocketList.begin();
-	for(; sIte != ServrSocketList.end();sIte++){
-		if((*sIte)->bufMap.find((struct bufferevent *)dwHandle) != (*sIte)->bufMap.end()){
-		//	(*sIte)->closeServer((struct bufferevent *)dwHandle);
-			return 0;
-		}
-	}
-   TRACE_OUT();
    return -1;
 }
 
@@ -87,6 +65,12 @@ int CommonTCPManager::CloseConnection(void * dwHandle)
 CICommonTCPManager *GetCommonTCPManager()
 {
 	return CommonTCPManager::getInstance();
+}
+
+
+void CommonTCPManager::AddJobToPool(CJob * job,unsigned int index)
+{
+	tPool->Run(job,index);
 }
 
 
