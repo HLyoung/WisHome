@@ -45,14 +45,14 @@ int CommonTCPManager::ConnectServer(const CADDRINFO & serAddr,CISocketOwner * pS
     return 1;
 }
 
-int CommonTCPManager::Send(void * handle,const char * pData,int nProLen)
+bool CommonTCPManager::Send(void * handle,const char * pData,int nProLen)
 {
 	std::lock_guard<std::mutex> lg(servrMutex);
 	std::list<ServrSocket *>::iterator ite = ServrSocketList.begin();
 	for(; ite != ServrSocketList.end(); ite++)
 		if((*ite)->bufSend((struct bufferevent *)handle,pData,nProLen) > 0)
-			return 0;
-	return -1;
+			return true;
+	return false;
 
 }
 

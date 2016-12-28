@@ -173,7 +173,7 @@ void CTCPServiceManage::RemoveTcpService(BUS_ADDRESS_POINTER pBus_address)
 	std::lock_guard<std::mutex> lg(m_tcpLinkMutex);
 	std::map<std::string,CTCPService *>::iterator ite = m_mapTcpLink.find(key);
 	if(ite == m_mapTcpLink.end()){
-		LOG_ERROR("the link(ip = %s,port = %d about to delete not found",pBus_address->host_address.ip,pBus_address->host_address.port);
+		LOG_INFO("the link(ip = %s,port = %d about to delete not found",pBus_address->host_address.ip,pBus_address->host_address.port);
 		return;
 	}
 	SafeDelete(ite->second);

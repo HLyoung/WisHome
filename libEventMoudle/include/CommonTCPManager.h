@@ -31,7 +31,7 @@ public:
 	int ConnectServer(const CADDRINFO &serAddr,CISocketOwner *pSocketOwner, int bLongConnect = 0,int nTimeOut = 120);
 	int CloseConnection(void* dwHandle);
 	void AddJobToPool(CJob *job,unsigned int index);
-	int Send(void*,const char * pData,int nProLen);	
+	bool Send(void*,const char * pData,int nProLen);	
 	
 	list<ClientSocket *> ClientSocketList;
 	list<ServrSocket *> ServrSocketList;

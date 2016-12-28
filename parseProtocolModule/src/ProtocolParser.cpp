@@ -69,7 +69,7 @@ bool CProtocolParser::MakeProtocolForSocket(UINT32 command, const char* input,\
  #ifdef DEBUG
     char *strBuffer  = new char[(*outputlen)*2+1];
 	HexToStr((UINT8*)strBuffer,(const UINT8*)output,*outputlen);
-	LOG_DEBUG("after make portocol data for socket: %s",strBuffer);  //log中大于256字节就崩溃
+	LOG_DEBUG("after make portocol data for socket: %s",strBuffer);  
 	SafeDeleteArray(strBuffer);
  #endif 
 

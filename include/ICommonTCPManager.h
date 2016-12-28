@@ -67,7 +67,7 @@ public:
 	* @return 0 成功
 	* @return <0 失败
 	*/
-	virtual int Send(void *handle,const char *pData,int nProLen) = 0;
+	virtual bool Send(void *handle,const char *pData,int nProLen) = 0;
 };
 
 DLL_DEFINE CICommonTCPManager *GetCommonTCPManager();
