@@ -2361,7 +2361,7 @@ void CSmartBuffer::truncate( size_t length )
 	}
 
 	size_t left = m_Data.data_size - length;
-	memmove( m_Data.buffer, m_Data.buffer + length, left );
+	memmove(m_Data.buffer, m_Data.buffer + length, left );
 	m_Data.data_size = left;
 }
 

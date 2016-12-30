@@ -5,13 +5,20 @@
 
 CProtocolParser::CProtocolParser()
 {
-	
+	sBuffer = new CSmartBuffer(0,1024);
 }
 CProtocolParser::CProtocolParser(TParserCallBack &tParserCallBack)
 {
 	m_tParserCallBack.pOwner = tParserCallBack.pOwner;
 	m_tParserCallBack.pParserCallback = tParserCallBack.pParserCallback;
+	sBuffer = new CSmartBuffer(0,1024);
 }
+
+CProtocolParser::~CProtocolParser()
+{
+	SafeDelete(sBuffer);
+}
+
 
 bool CProtocolParser::ParseSocketProtocol(const char *recvbuf,UINT32 recvlen)
 {
@@ -25,23 +32,23 @@ bool CProtocolParser::ParseSocketProtocol(const char *recvbuf,UINT32 recvlen)
 	delete[] strBuffer;
 #endif
 
-	sBuffer.append(recvbuf,recvlen);
+	sBuffer->append(recvbuf,recvlen);
 	
-	while(sBuffer.length() >= 12)
+	while(sBuffer->length() >= 12)
 	{
-		int packetDataLen = *((unsigned int *)(sBuffer.data() + 8));
-		if(packetDataLen <= sBuffer.length() - 12)
+		int packetDataLen = *((unsigned int *)(sBuffer->data() + 8));
+		if(packetDataLen <= sBuffer->length() - 12)
 		{
-			if(!CheckCheckSum(sBuffer.data(),packetDataLen + 12)){
-				sBuffer.empty();
+			if(!CheckCheckSum(sBuffer->data(),packetDataLen + 12)){
+				sBuffer->empty();
 				LOG_ERROR("CHECKSUM ERROR.");
 				break;
 				}
 			else
 			{
-				UINT32 wEvent = *((UINT32 *)(sBuffer.data() + 4));
-				m_tParserCallBack.pParserCallback(wEvent,0,packetDataLen,sBuffer.data() + 12,m_tParserCallBack.pOwner);
-				sBuffer.truncate(packetDataLen + 12);			
+				UINT32 wEvent = *((UINT32 *)(sBuffer->data() + 4));
+				m_tParserCallBack.pParserCallback(wEvent,0,packetDataLen,sBuffer->data() + 12,m_tParserCallBack.pOwner);
+				sBuffer->truncate(packetDataLen + 12);			
 			}
 		}
 		else

@@ -50,7 +50,7 @@ bool CommonTCPManager::Send(void * handle,const char * pData,int nProLen)
 	std::lock_guard<std::mutex> lg(servrMutex);
 	std::list<ServrSocket *>::iterator ite = ServrSocketList.begin();
 	for(; ite != ServrSocketList.end(); ite++)
-		if((*ite)->bufSend((struct bufferevent *)handle,pData,nProLen) > 0)
+		if(0 == (*ite)->bufSend((struct bufferevent *)handle,pData,nProLen))
 			return true;
 	return false;
 
@@ -70,7 +70,9 @@ CICommonTCPManager *GetCommonTCPManager()
 
 void CommonTCPManager::AddJobToPool(CJob * job,unsigned int index)
 {
+	TRACE_IN();
 	tPool->Run(job,index);
+	TRACE_OUT();
 }
 
 

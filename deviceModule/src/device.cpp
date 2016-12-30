@@ -37,25 +37,21 @@ bool CDevice::Send(INT32 nCmd, void* data, INT32 nDataSize)
 {
 	TRACE_IN();
 //如果是注册命令，则将设备注册状态置为已经注册。
-	if(WIS_CMD_LOGIN == nCmd  || WIS_CMD_USER_AUTO_LOGIN == nCmd)
-	{	
+	if(WIS_CMD_LOGIN == nCmd  || WIS_CMD_USER_AUTO_LOGIN == nCmd){
 		logResult *result = (logResult *)data;
-		if(WIS_CMD_LOGIN == nCmd && result->result == 1)
-		{
+		if(WIS_CMD_LOGIN == nCmd && result->result == 1){
 			SetLogined(true);
 			SetLoginType(TYPE_DEVICE);
 			m_uuid = getUuidFromBuffer(result->uuid);
 			nDataSize = sizeof(int);
-			
-		}
-		else if(WIS_CMD_USER_AUTO_LOGIN == nCmd && result->result == 0)
-		{
+			}
+		else if(WIS_CMD_USER_AUTO_LOGIN == nCmd && result->result == 0){
 			SetLogined(true);
 			SetLoginType(TYPE_USER);	
 			m_uuid = getUuidFromBuffer(result->uuid);
 			nDataSize = sizeof(int);
+			}
 		}
-	}
 	if(WIS_CMD_SERVICE_KICKOUT_USER == nCmd)   //如果用户被踢出，直接将其置为未注册状态。
 		this->SetLogined(false);
 	

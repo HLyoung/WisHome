@@ -156,10 +156,8 @@ bool CTCPServiceManage::SendData(void* hHandle, UINT8* data, UINT32 length, BUS_
 
 	string key_string = CHostAddress::GetKey((const char*) bus_address->host_address.ip, bus_address->host_address.port );
 	const void* handle = CHostAddressMap::GetHostAddress( key_string );
-	if (NULL != handle ){
-		if(GetCommonTCPManager()->Send((void*)handle, (const char *)data, length))
-			return true;
-		}
+	if (NULL != handle )
+		return GetCommonTCPManager()->Send((void*)handle, (const char *)data, length);
 	return false;
 }
 

@@ -285,7 +285,7 @@ int ServrSocket::bufSend(struct bufferevent* bev,const char *data,int dataLen)
 	std::map<struct bufferevent*,struct event*>::iterator ite = bufMap.find(bev);
 	if(ite != bufMap.end())
 		return bufferevent_write(bev,data,dataLen);
-	return 0;
+	return -1;
 }
 
 

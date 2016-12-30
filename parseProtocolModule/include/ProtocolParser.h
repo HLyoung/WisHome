@@ -19,6 +19,7 @@ class CProtocolParser
 {
 public:
 	CProtocolParser();
+	~CProtocolParser();
 	CProtocolParser(TParserCallBack &tParserCallBack);
 	
 	bool ParseSocketProtocol(const char *recvbuf,UINT32 recvlen);
@@ -31,7 +32,7 @@ private:
 
 private:
 	TParserCallBack m_tParserCallBack;
-	CSmartBuffer sBuffer;
+	CSmartBuffer* sBuffer;
 	
 };
 
