@@ -21,6 +21,7 @@ public:
 private:
 	CURL *handle_;
 	CURLcode errorno_;
+	struct curl_slist*  plist;
 };
 
 
