@@ -16,26 +16,38 @@ bool WisBindDao::addBind(BUS_ADDRESS_POINTER bus_address,const std::string& user
 	TRACE_IN();
     CNVDataAccess *access = (CNVDataAccess *)DbaModule_GetNVDataAccess();
 	assert(NULL != access);
-  
+
+  	int  res = 0;
+	bool ret = true;
 	char sql[200] = {0};
 	snprintf(sql,sizeof(sql),"SELECT * FROM wis_device_bind_tbl WHERE `dev_id`='%s' AND `user_id`='%s'",deviceUUID.c_str(),userUUID.c_str());
-	if(access->ExecuteNoThrow(sql) <= 0){
+	int tmp = access->ExecuteNoThrow(sql);
+	if(0 == tmp){
 		memset(sql,0,sizeof(sql));
-		snprintf(sql,sizeof(sql),"INSERT INTO wis_device_bind_tbl(`dev_id`,`user_id`,`bind_time`) VALUES('%s','%s',CURRENT_TIMESTAMP)",\
-				deviceUUID.c_str(),userUUID.c_str());
-		if(-1 == access->ExecuteNonQuery(sql)){
-			LOG_INFO("ADD BIND FAILED: userId=%s,devId=%s",userUUID.c_str(),deviceUUID.c_str(),sql);
-			DbaModule_ReleaseNVDataAccess((void*)access);
-			sendBindResponse(bus_address,WIS_CMD_USER_BIND,1);
-			return false;
-			}
+		snprintf(sql,sizeof(sql),"INSERT INTO wis_device_bind_tbl(`dev_id`,`user_id`,`bind_time`) VALUES('%s','%s',CURRENT_TIMESTAMP)",deviceUUID.c_str(),userUUID.c_str());
+		if(-1 != access->ExecuteNonQuery(sql)){
+			res = 0;
+			ret = true;
 		}
+		else{
+			res = 1;
+			ret = false;
+		}
+	}
+	else if(0 < tmp){
+		res = 2; 
+		ret = true;
+	}
+	else {
+		res = 1;
+		ret = false;
+	}
 	DbaModule_ReleaseNVDataAccess((void*)access);
-	sendBindResponse(bus_address,WIS_CMD_USER_BIND,0);
+	sendBindResponse(bus_address,WIS_CMD_USER_BIND,res);
 	WisLogDao::saveUserBindLog(userUUID,deviceUUID.length(),deviceUUID.c_str());
-	LOG_INFO("ADD BIND SUCCESS: userId=%s, devId=%s",userUUID.c_str(),deviceUUID.c_str());
+	LOG_INFO("ADD BIND :ret = %d, userId=%s, devId=%s",ret,userUUID.c_str(),deviceUUID.c_str());
 	TRACE_OUT();
-	return true;
+	return ret;
 }
 
 bool WisBindDao::delBind(BUS_ADDRESS_POINTER bus_address,const std::string& userUUID, const std::string& deviceUUID )

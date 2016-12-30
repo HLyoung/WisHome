@@ -15,6 +15,7 @@
 #define MAX_WIS_DATA_LEN (1048576)
 #define UUID_LEN 32
 #define TOKEN_LEN 72
+#define JIGUANG_TOKEN_LEN 19
 #define PASSWORD_LEN 24
 #define DEVICE_NAME_LEN 32
 
@@ -168,6 +169,7 @@ typedef struct{
 
 #define getUuidFromBuffer(buffer) (strlen(buffer)>=UUID_LEN?std::string(buffer,UUID_LEN):std::string(buffer))
 #define getPasswordFromBuffer(buffer)  (strlen(buffer)>=PASSWORD_LEN?std::string(buffer,PASSWORD_LEN):std::string(buffer))
+#define getTokenFromBuffer(buffer) (strlen(buffer)>=TOKEN_LEN?std::string(buffer,TOKEN_LEN):std::string(buffer))
 	
 enum {TYPE_DEVICE=1,TYPE_USER=2};
 

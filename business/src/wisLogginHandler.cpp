@@ -39,20 +39,23 @@ void WisLoginHandler::handleUserLogin(BUS_ADDRESS_POINTER busAddress,int datalen
     WisUserLoginInfo* loginInfo = (WisUserLoginInfo*)(pdata);
 	std::string uuid = getUuidFromBuffer(loginInfo->uuid);
 	std::string password = getPasswordFromBuffer(loginInfo->password);
+	std::string token = getTokenFromBuffer(loginInfo->token);
 	
     if(WisUserDao::login(uuid, password)){
 		mapAddUser(busAddress,uuid);
 	    WisLogDao::saveUserLoginLog(uuid, strlen((char *)busAddress->host_address.ip),(const char*)busAddress->host_address.ip);
 	    if ( datalen >= TOKEN_LEN + UUID_LEN + PASSWORD_LEN) {
-	        std::string token(loginInfo->token);
 			std::transform(token.begin(),token.end(),token.begin(),(int(*)(int))toupper);
-			WisIOSTokenDao::save( loginInfo->uuid, token );
+			if(JIGUANG_TOKEN_LEN == token.length())
+				WisIOSTokenDao::save(uuid, token );
+			else
+				LOG_INFO("ILLEGAL TOKEN: useID=%s,token=%s"uuid.c_str(),token.c_str());
 	    	}
-		LOG_INFO("USER LOGIN SUCCESS: %s",getUuidFromBuffer(loginInfo->uuid).c_str());
+		LOG_INFO("USER LOGIN SUCCESS: %s",uuid.c_str());
 	    sendLoginResponse( busAddress, loginInfo->uuid,0,TYPE_USER );
 		return;
     	}
-	LOG_INFO("USER LOGIN FAILED: %s",getUuidFromBuffer(loginInfo->uuid).c_str());
+	LOG_INFO("USER LOGIN FAILED: %s",uuid.c_str());
 	sendLoginResponse( busAddress, loginInfo->uuid,-1,TYPE_USER );
 	TRACE_OUT();
 }

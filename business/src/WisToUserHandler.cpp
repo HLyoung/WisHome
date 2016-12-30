@@ -32,9 +32,7 @@ void WisToUserHandler::handlePushMessage(BUS_ADDRESS_POINTER busAddress,const ch
 	std::vector<std::string> deviceUUIDs;
 	std::map<std::string ,WisUserInfo>::iterator mapuserIter = mapUser.begin();	
 	for(;mapuserIter != mapUser.end();mapuserIter++)
-	{
 		deviceUUIDs.push_back(mapuserIter->second.uuid);
-	}
 	
 	std::set<std::string> tokens;
 	WisIOSTokenDao::getTokens(deviceUUIDs,tokens);
@@ -97,7 +95,7 @@ void WisToUserHandler::handleSendToAll(BUS_ADDRESS_POINTER  busAddress,const cha
 		if(NULL != bus_address)
 		    GetUniteDataModuleInstance()->SendData(bus_address,WIS_CMD_TO_USER,toUser, UUID_LEN + packet->len,TCP_SERVER_MODE);
 	}
-	LOG_INFO("SEND TO ALL: userId=%s",uuid);
+	LOG_INFO("SEND TO ALL: devId=%s",uuid);
     sendToUserResponse(busAddress, WIS_CMD_TO_USER, 0);
     SafeDeleteArray(toUser);
 	TRACE_OUT();

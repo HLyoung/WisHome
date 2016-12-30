@@ -21,6 +21,10 @@ void CWorkerThread::Run()
 		CJob *job = this->getJob();
 		if(NULL != job)
 			job->Run();
+		if(NULL != job){
+			delete job;
+			job = NULL;
+		}
 	}
 }
 

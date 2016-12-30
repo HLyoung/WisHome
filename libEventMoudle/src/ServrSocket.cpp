@@ -132,7 +132,6 @@ void ServrSocket::accept_conn_cb(struct evconnlistener *listener,evutil_socket_t
 		                int socklen, void *ctx)
 {
 	TRACE_IN();  	
-
 	ServrSocket *pSock = (ServrSocket *)ctx;
 	BUS_ADDRESS_POINTER pBus_address = new BUS_ADDRESS;
 	pBus_address->size = sizeof(BUS_ADDRESS);
@@ -155,7 +154,7 @@ void ServrSocket::accept_conn_cb(struct evconnlistener *listener,evutil_socket_t
 	pSock->mCounter[bev] = 0;  
 	struct timeval tv = {HEARTBEAT_TIME,0};         //heartbeat timer.
 	struct event *timeout = event_new(base, -1, EV_PERSIST, timer_cb, param);
-	evtimer_add(timeout, &tv);
+//	evtimer_add(timeout, &tv);
 	pSock->bufMapAddBuf(bev,timeout);
 
 	jobAccept *job = new jobAccept(bev,pBus_address,pSock->getOwner());
@@ -270,7 +269,7 @@ bool ServrSocket::bufMapDeleteBuf(void *ctx)
 		if(ote != mCounter.end())
 			mCounter.erase(bev);
 
-		evtimer_del((struct event*)(ite->second));
+	//	evtimer_del((struct event*)(ite->second));
 		bufMap.erase(bev);
 		bufferevent_free(bev);
 		return true;

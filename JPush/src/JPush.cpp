@@ -196,7 +196,7 @@ CURLcode JPush::push_SpecifiedIDs(std::string alert,std::string title,int build_
 	
 	Json::Value test;
 	Cplatform platform(all);
-	Coptions options(false);
+	Coptions options(true);
 	Caudience audience(REGISTRATION_ID,ids);	
 	Cnotification notification(alert,title,build_id,test);
 	
@@ -208,6 +208,7 @@ CURLcode JPush::push_SpecifiedIDs(std::string alert,std::string title,int build_
 	CcurlHandle *curlHandle  = CcurlModule::curlGetHandle();
 	Json::FastWriter writer;
 	std::string tmp3 = writer.write(payload.toJson());
+	LOG_DEBUG("PUSH MESSAGE:%s",tmp3.c_str());
 	
 	std::string targetFileds = std::string(tmp3.c_str(),tmp3.length()-1);  //json对象转成字符串之后最后总有一个换行，-1删掉它
 	curlHandle->setOption(CURLOPT_POSTFIELDS,targetFileds.c_str());
