@@ -22,7 +22,7 @@ public:
 
     static void handleDeviceLogin( BUS_ADDRESS_POINTER  busAddress,int datalen,char *pdata);
     static void handleDeviceLogout(BUS_ADDRESS_POINTER busAddress,std::string uuid);
-    static void sendLoginResponse(BUS_ADDRESS_POINTER busAddress, char *uuid,int done,int type );
+    static void sendLoginResponse(BUS_ADDRESS_POINTER busAddress,const  char *uuid,int done,int type );
 
 	static bool isUserLogin(const std::string& uuid);
 	static bool isDeviceLogin(const std::string &uuid);

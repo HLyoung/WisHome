@@ -7,7 +7,7 @@ std::mutex WisLoginHandler::dMutex;
 std::map<BUS_ADDRESS_POINTER,std::string> WisLoginHandler::mUser;
 std::map<BUS_ADDRESS_POINTER,std::string> WisLoginHandler::mDevice;
 
-void WisLoginHandler::sendLoginResponse(BUS_ADDRESS_POINTER busAddress,char *m_uuid,int done,int type )
+void WisLoginHandler::sendLoginResponse(BUS_ADDRESS_POINTER busAddress,const char *m_uuid,int done,int type )
 {
   TRACE_IN();
 
@@ -49,7 +49,7 @@ void WisLoginHandler::handleUserLogin(BUS_ADDRESS_POINTER busAddress,int datalen
 			if(JIGUANG_TOKEN_LEN == token.length())
 				WisIOSTokenDao::save(uuid, token );
 			else
-				LOG_INFO("ILLEGAL TOKEN: useID=%s,token=%s"uuid.c_str(),token.c_str());
+				LOG_INFO("ILLEGAL TOKEN: useID=%s,token=%s",uuid.c_str(),token.c_str());
 	    	}
 		LOG_INFO("USER LOGIN SUCCESS: %s",uuid.c_str());
 	    sendLoginResponse( busAddress, loginInfo->uuid,0,TYPE_USER );
@@ -87,44 +87,45 @@ void WisLoginHandler::handleDeviceLogin( BUS_ADDRESS_POINTER busAddress,int data
 {
 	TRACE_IN();
     WisDeviceLoginInfo* loginInfo = (WisDeviceLoginInfo*)pdata;
+	string sUuid = getUuidFromBuffer(loginInfo->uuid);
+	string sName = std::string(loginInfo->name);
 	
     bool firstLogin = false;
-    bool rc = WisDeviceDao::check(getUuidFromBuffer(loginInfo->uuid));
+    bool rc = WisDeviceDao::check(sUuid.c_str());
     if( !rc ) {
-        rc = WisDeviceDao::regist(getUuidFromBuffer(loginInfo->uuid), std::string(loginInfo->name));
+        rc = WisDeviceDao::regist(sUuid.c_str(), sName);
         if( !rc ) {
-            LOG_ERROR("DEVICE LOGIN FALIED: uuid = %s,name = %s.",getUuidFromBuffer(loginInfo->uuid).c_str(),
-            std::string(loginInfo->name,NAME_LEN).c_str());
-            sendLoginResponse( busAddress,loginInfo->uuid, -1,TYPE_DEVICE );
+            LOG_ERROR("DEVICE LOGIN FALIED: uuid = %s,name = %s.",sUuid.c_str(),
+            sName.c_str());
+            sendLoginResponse( busAddress,sUuid.c_str(), -1,TYPE_DEVICE );
             return;
         }
         firstLogin = true;
     }
-    rc = WisDeviceDao::login(loginInfo->uuid,loginInfo->name );
+    rc = WisDeviceDao::login(sUuid.c_str(),sName.c_str());
     if( !rc ) {
-        LOG_ERROR("DEVICE LOGIN FAILED: uuid = %s,name = %s.",loginInfo->uuid,loginInfo->name);
-        sendLoginResponse( busAddress, loginInfo->uuid,-1,TYPE_DEVICE );
+        LOG_ERROR("DEVICE LOGIN FAILED: uuid = %s,name = %s.",sUuid.c_str(),sName.c_str());
+        sendLoginResponse( busAddress,sUuid.c_str(),-1,TYPE_DEVICE );
         return;
     }
     if( firstLogin ) {
-        WisLogDao::saveDeviceRegLog(loginInfo->uuid, strlen((char *)busAddress->host_address.ip), (const char *)busAddress->host_address.ip);
+        WisLogDao::saveDeviceRegLog(sUuid.c_str(), strlen((char *)busAddress->host_address.ip), (const char *)busAddress->host_address.ip);
     } else {
-        WisLogDao::saveDeviceLoginLog(loginInfo->uuid, strlen((char*)busAddress->host_address.ip),(const char*) busAddress->host_address.ip);
+        WisLogDao::saveDeviceLoginLog(sUuid.c_str(), strlen((char*)busAddress->host_address.ip),(const char*) busAddress->host_address.ip);
     } 
-	mapAddDevice(busAddress,getUuidFromBuffer(loginInfo->uuid));
-	LOG_INFO("DEVICE LOGIN SUCCESS: %s",getUuidFromBuffer(loginInfo->uuid).c_str());
-    sendLoginResponse( busAddress,loginInfo->uuid, 1 ,TYPE_DEVICE);	
+	mapAddDevice(busAddress,sUuid);
+	LOG_INFO("DEVICE LOGIN SUCCESS: %s",sUuid.c_str());
+    sendLoginResponse( busAddress,sUuid.c_str(), 1 ,TYPE_DEVICE);	
     
     std:map<std::string,WisUserInfo> mapUserIfno;
-	if(0 < WisBindDao::getBindedUsers(loginInfo->uuid,mapUserIfno))
+	if(0 < WisBindDao::getBindedUsers(sUuid.c_str(),mapUserIfno))
 	{
 		for(std::map<std::string,WisUserInfo>::iterator ite = mapUserIfno.begin();\
 			ite != mapUserIfno.end();ite++)
 			{
-			    BUS_ADDRESS_POINTER pBus_address = getUserAddress(getUuidFromBuffer(ite->second.uuid));
+			    BUS_ADDRESS_POINTER pBus_address = getUserAddress(sUuid);
 				if(pBus_address != NULL)
-					GetUniteDataModuleInstance()->SendData(pBus_address,WIS_CMD_USER_DEV_LOGIN,loginInfo->uuid,\
-					strlen(loginInfo->uuid),TCP_SERVER_MODE);
+					GetUniteDataModuleInstance()->SendData(pBus_address,WIS_CMD_USER_DEV_LOGIN,(char *)(sUuid.c_str()),sUuid.length(),TCP_SERVER_MODE);
 			}				
 	}	
 	TRACE_OUT();
