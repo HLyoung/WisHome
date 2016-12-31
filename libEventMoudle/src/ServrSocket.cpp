@@ -25,7 +25,6 @@ void *ServrSocket::startServrThread(void *p)
 	if(0 == tmp)
 	{
 		LOG_ERROR("address convert failed. ip = %s,port = %d",pSock->getLocalAddr().GetIP(),pSock->getLocalAddr().GetPort());
-        SafeDelete(pSock);
 		pthread_exit(0);
 	}
 
@@ -33,28 +32,24 @@ void *ServrSocket::startServrThread(void *p)
     if(fd == -1)
     {
         LOG_ERROR("create socket failed");
-        SafeDelete(pSock);
         pthread_exit(0);
     }
 
     if(evutil_make_socket_nonblocking(fd) < 0){
         evutil_closesocket(fd);
         LOG_ERROR("make socket no block failed");
-        SafeDelete(pSock);
         pthread_exit(0);
     }
 
     if(evutil_make_socket_closeonexec(fd) < 0 ){
         evutil_closesocket(fd);
         LOG_ERROR("make socket close on exec failed");
-        SafeDelete(pSock);
         pthread_exit(0);
     }
 
     if(evutil_make_listen_socket_reuseable(fd) < 0){
         evutil_closesocket(fd);
         LOG_ERROR("make socket reuseable failed");
-        SafeDelete(pSock);
         pthread_exit(0);
     }
 
@@ -62,14 +57,12 @@ void *ServrSocket::startServrThread(void *p)
     if(setsockopt(fd,SOL_SOCKET,SO_KEEPALIVE,(void*)&on,sizeof(on)) < 0){
         evutil_closesocket(fd);
         LOG_ERROR("make socket keep alieve failed");
-        SafeDelete(pSock);
         pthread_exit(0);
     }
     int nodelay_on = 1;
     if(setsockopt(fd,IPPROTO_TCP,TCP_NODELAY,(void*)&nodelay_on,sizeof(nodelay_on)) < 0){
         evutil_closesocket(fd);
         LOG_ERROR("make socket no delay failed");
-        SafeDelete(pSock);
         pthread_exit(0);
     }
    
@@ -78,14 +71,12 @@ void *ServrSocket::startServrThread(void *p)
     {
         evutil_closesocket(fd);
         LOG_ERROR("make socket send buf 0 failed");
-        SafeDelete(pSock);
         pthread_exit(0);
     }
 
     if(bind(fd,(struct sockaddr*)&sin,sizeof(sin)) < 0)
     {
         LOG_ERROR("bind sock failed");
-        SafeDelete(pSock);
         pthread_exit(0);
     }
    // evthread_use_pthreads();  //this is very important,otherwise you can`t operator base in another thread......
@@ -95,7 +86,6 @@ void *ServrSocket::startServrThread(void *p)
 		LEV_OPT_THREADSAFE|LEV_OPT_CLOSE_ON_FREE | LEV_OPT_REUSEABLE|LEV_OPT_LEAVE_SOCKETS_BLOCKING,100,fd);
 	if(!listener){
 		LOG_ERROR("SERVER STARTED FAILED");
-		SafeDelete(pSock);
 		event_base_free(base);
 		pthread_exit(0);
 		}
@@ -176,7 +166,7 @@ void ServrSocket::read_cb(struct bufferevent * bev,void * ctx)
 	BUS_ADDRESS_POINTER pBus_address = (BUS_ADDRESS_POINTER)(((pSignel_connect_param)ctx)->address);
 
 	CJob *job = new jobRead(bev,pBus_address,pSocket->getOwner(),len,(char *)evbuffer_pullup(readbuffer,-1));	
-	pSocket->getManager()->AddJobToPool(job,bufferevent_getfd(bev));
+	pSocket->getManager()->AddJobToPool(job,(unsigned int )bufferevent_getfd(bev));
 	evbuffer_drain(readbuffer,len);
 	TRACE_OUT();
 }

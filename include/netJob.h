@@ -39,15 +39,29 @@ private:
 public:
 	jobRead(struct bufferevent *bev,BUS_ADDRESS_POINTER pBus_address,CISocketOwner *owner,int dataLen,char *data):_dataLen(dataLen),\
 	_bev(bev),_pBus_address(pBus_address),_owner(owner){
-		_data = (char *)malloc(dataLen);
-		memcpy(_data,data,dataLen);
+		_data = new char[dataLen];
+		if(NULL != _data)
+			memcpy(_data,data,dataLen);
 	}
 	~jobRead(){
-		free(_data);
+		if(NULL != _data){
+			delete[] _data;
+			}
 	}
 	
 	void Run(void){
-		_owner->OnCmdCome(_bev,_data,_dataLen,_pBus_address);
+		if(NULL == _owner){
+			LOG_ERROR("_owner is null");
+			}
+		if(NULL == _bev){
+			LOG_ERROR("_bev is null");
+			}
+		else if(NULL == _data){
+			LOG_ERROR("_data is null");
+			}
+
+		//if(NULL != _owner && NULL != _bev && NULL != _data)
+			_owner->OnCmdCome(_bev,_data,_dataLen,_pBus_address);
 	}
 };
 

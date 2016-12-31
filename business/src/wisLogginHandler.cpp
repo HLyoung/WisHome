@@ -88,7 +88,7 @@ void WisLoginHandler::handleDeviceLogin( BUS_ADDRESS_POINTER busAddress,int data
 	TRACE_IN();
     WisDeviceLoginInfo* loginInfo = (WisDeviceLoginInfo*)pdata;
 	string sUuid = getUuidFromBuffer(loginInfo->uuid);
-	string sName = std::string(loginInfo->name);
+	string sName = std::string(loginInfo->name,NAME_LEN);
 	
     bool firstLogin = false;
     bool rc = WisDeviceDao::check(sUuid.c_str());

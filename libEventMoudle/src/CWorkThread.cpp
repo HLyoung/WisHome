@@ -19,12 +19,10 @@ void CWorkerThread::Run()
 {
 	for(; ;){
 		CJob *job = this->getJob();
-		if(NULL != job)
-			job->Run();
 		if(NULL != job){
-			delete job;
-			job = NULL;
-		}
+			job->Run();
+			delete(job);
+			}
 	}
 }
 
