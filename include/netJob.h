@@ -50,18 +50,7 @@ public:
 	}
 	
 	void Run(void){
-		if(NULL == _owner){
-			LOG_ERROR("_owner is null");
-			}
-		if(NULL == _bev){
-			LOG_ERROR("_bev is null");
-			}
-		else if(NULL == _data){
-			LOG_ERROR("_data is null");
-			}
-
-		//if(NULL != _owner && NULL != _bev && NULL != _data)
-			_owner->OnCmdCome(_bev,_data,_dataLen,_pBus_address);
+		_owner->OnCmdCome(_bev,_data,_dataLen,_pBus_address);
 	}
 };
 
