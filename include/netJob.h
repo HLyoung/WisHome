@@ -12,6 +12,7 @@
 
 #include "macro.h"
 #include "CJob.h"
+#include "libLog.h"
 
 class jobAccept:public CJob
 {
