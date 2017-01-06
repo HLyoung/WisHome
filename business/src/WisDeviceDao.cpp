@@ -27,12 +27,10 @@ bool WisDeviceDao::regist(const std::string& uuid, const std::string& name)
 	CNVDataAccess *access = (CNVDataAccess *)DbaModule_GetNVDataAccess();
 	if(NULL != access){
 		if( -1 !=  access->ExecuteNonQuery(insertSQL)){
-			LOG_INFO("DEVICE REGIST SUCCESS: devID=%s,name=%s",uuid.c_str(),name.c_str());
 			return true;
 			}
 		 DbaModule_ReleaseNVDataAccess(access);
 		}
-	LOG_INFO("DEVICE REGIST FAILED: devID=%s,name=%s",uuid.c_str(),name.c_str());
 	return false;
 }
 bool WisDeviceDao::login(const std::string& uuid ,const std::string &name )
@@ -44,12 +42,10 @@ bool WisDeviceDao::login(const std::string& uuid ,const std::string &name )
 	if(NULL != access){
 		if(-1 != access->ExecuteNonQuery(updateSQL)){
 		 	DbaModule_ReleaseNVDataAccess(access);
-			LOG_INFO("DEVICE LOGIN SUCCESS: devID=%s,name=%s",uuid.c_str(),name.c_str());
 			return true;
 		}
 		DbaModule_ReleaseNVDataAccess(access);
 		}
-	LOG_INFO("DEVICE LOGIN FAILED: devID=%s,name=%s",uuid.c_str(),name.c_str());
     return false;
 }
 
@@ -61,12 +57,10 @@ bool WisDeviceDao::logout(const std::string& uuid )
 	if(NULL != access){
 		if(-1 != access->ExecuteNonQuery(updateSQL)){
 			DbaModule_ReleaseNVDataAccess(access);
-			LOG_INFO("DEVICE LOGOUT SUCCESS: devID=%s",uuid.c_str());
 			return true;
 		   }
 		DbaModule_ReleaseNVDataAccess(access);
 		}
-	LOG_INFO("DEVICE LOGOUT FAILED: devID=%s",uuid.c_str());
     return false;
 }
 
@@ -77,11 +71,9 @@ bool WisDeviceDao::logoutAll( )
 	if(NULL != access){
 		if(-1 != access->ExecuteNonQuery(SQL.c_str())){
 			DbaModule_ReleaseNVDataAccess(access);
-			LOG_INFO("ALL DEVICE LOGOUT SUCCESS");
 			return true;
 		}
 		DbaModule_ReleaseNVDataAccess(access);
 	}
-    LOG_INFO("ALL DEVICE LOGOUT FAILED");
     return false;
 }

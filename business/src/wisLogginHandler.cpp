@@ -61,13 +61,13 @@ void WisLoginHandler::handleUserLogin(BUS_ADDRESS_POINTER busAddress,int datalen
 }
 void WisLoginHandler::handleUserLogout(BUS_ADDRESS_POINTER busAddress,std::string uuid)
 {
-   TRACE_IN();
    if(WisUserDao::logout(uuid, WisUserDao::defaultPassword)){
    		mapDeleteSameUser(uuid);
   		WisLogDao::saveUserLogoutLog(uuid, 0, "");
-		LOG_INFO("LOGOUT  SUCCESS: %s",uuid.c_str());
+		LOG_INFO("USER LOGOUT SUCCESS: %s",uuid.c_str());
    	    }
-  TRACE_OUT();
+   else
+   	   LOG_INFO("USER LOGOUT FAILED: %s",uuid.c_str());
 }
 
 void WisLoginHandler::handleKickoutUser(std::string uuid)
