@@ -21,8 +21,6 @@ public:
     static bool login( const std::string& uuid,const std::string &name  );
     static bool logout( const std::string& uuid );
     static bool logoutAll( );
-
-    static bool getDevice( const std::string& uuid, WisDeviceInfo& info );
 private:
 };
 

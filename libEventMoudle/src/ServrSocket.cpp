@@ -79,7 +79,7 @@ void *ServrSocket::startServrThread(void *p)
         LOG_ERROR("bind sock failed");
         pthread_exit(0);
     }
-   // evthread_use_pthreads();  //this is very important,otherwise you can`t operator base in another thread......
+    evthread_use_pthreads();  //this is very important,otherwise you can`t operator base in another thread......
     
 	struct event_base *base = event_base_new();
     struct evconnlistener* listener = evconnlistener_new(base,accept_conn_cb,pSock,\
