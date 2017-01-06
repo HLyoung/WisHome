@@ -141,7 +141,7 @@ int WisUserDao::handleUserRegist(BUS_ADDRESS_POINTER busAddress,const char * pda
     if(checkUser(getUuidFromBuffer(registInfo->uuid))){
 		sendUserResponse(busAddress,WIS_CMD_USER_REGIST,-2);
 		LOG_INFO("USER REGIST REPEAT: %s",sUuid.c_str());
-		return;
+		return -2;
     	}
 	else{
 		CNVDataAccess *access = (CNVDataAccess *)DbaModule_GetNVDataAccess();
@@ -192,11 +192,11 @@ void WisUserDao::handleUserResetPassword(BUS_ADDRESS_POINTER busAddress,const ch
 		return;
     	}
 	if(sendResetPasswordMailTo(sUuid)){
-		LOG_INFO("USER RESET PASSWORD FAILED: useID=%s",sUuid.c_str());
+		LOG_INFO("USER RESET PASSWORD SUCCESS: useID=%s",sUuid.c_str());
 		sendUserResponse(busAddress,WIS_CMD_USER_RESET_PASSWORD,0);
 		}
 	else{
-		LOG_INFO("USER RESET PASSWORD SUCCESS: useID=%s",sUuid.c_str());
+		LOG_INFO("USER RESET PASSWORD FAILED: useID=%s",sUuid.c_str());
 		sendUserResponse(busAddress,WIS_CMD_USER_RESET_PASSWORD,-1);
 		}
 }
