@@ -152,12 +152,11 @@ bool CNVDataAccess::FetchNewRow()
 {
 	if(pRes_ != NULL){
 		row_ = mysql_fetch_row(pRes_);
-		if(NULL != row_){
-			mysql_free_result(pRes_);		
-			pRes_ = NULL;
+		if(NULL != row_)
 			return true;
-			}
 		}
+	mysql_free_result(pRes_);	
+	pRes_ = NULL;
 	return false;
 }
 
