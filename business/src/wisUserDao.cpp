@@ -141,6 +141,7 @@ int WisUserDao::handleUserRegist(BUS_ADDRESS_POINTER busAddress,const char * pda
     if(checkUser(getUuidFromBuffer(registInfo->uuid))){
 		sendUserResponse(busAddress,WIS_CMD_USER_REGIST,-2);
 		LOG_INFO("USER REGIST REPEAT: %s",sUuid.c_str());
+		return;
     	}
 	else{
 		CNVDataAccess *access = (CNVDataAccess *)DbaModule_GetNVDataAccess();
