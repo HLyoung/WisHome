@@ -49,13 +49,13 @@ void WisLoginHandler::handleUserLogin(BUS_ADDRESS_POINTER busAddress,int datalen
 			if(JIGUANG_TOKEN_LEN == token.length())
 				WisIOSTokenDao::save(uuid, token );
 			else
-				LOG_INFO("ILLEGAL TOKEN: useID=%s,token=%s,ip=%s,port=%d",uuid.c_str(),token.c_str(),busAddress.host_address.ip,busAddress.host_address.port);
+				LOG_INFO("ILLEGAL TOKEN: useID=%s,token=%s,ip=%s,port=%d",uuid.c_str(),token.c_str(),busAddress->host_address.ip,busAddress->host_address.port);
 	    	}
-		LOG_INFO("USER LOGIN SUCCESS: useID = %s,ip=%s,port=%d",uuid.c_str(),busAddress.host_address.ip,busAddress.host_address.port);
+		LOG_INFO("USER LOGIN SUCCESS: useID = %s,ip=%s,port=%d",uuid.c_str(),busAddress->host_address.ip,busAddress->host_address.port);
 	    sendLoginResponse( busAddress, loginInfo->uuid,0,TYPE_USER );
 		return;
     	}
-	LOG_INFO("USER LOGIN FAILED: useID = %s,ip=%s,port=%d",uuid.c_str(),busAddress.host_address.ip,busAddress.host_address.port);
+	LOG_INFO("USER LOGIN FAILED: useID = %s,ip=%s,port=%d",uuid.c_str(),busAddress->host_address.ip,busAddress->host_address.port);
 	sendLoginResponse( busAddress, loginInfo->uuid,-1,TYPE_USER );
 	TRACE_OUT();
 }
@@ -211,7 +211,7 @@ void WisLoginHandler::mapAddUser(BUS_ADDRESS_POINTER bus_address,const std::stri
 			GetUniteDataModuleInstance()->SendData(ite->first,WIS_CMD_SERVICE_KICKOUT_USER,NULL,0,TCP_SERVER_MODE);	
 			std::map<BUS_ADDRESS_POINTER,std::string>::iterator ote = ite++;
 			mUser.erase(ote);
-			LOG_INFO("KICKOUT USER: useID=%s,ip=%s,port=%d",uuid.c_str(),bus_address.host_address.ip,bus_address.host_address.port);
+			LOG_INFO("KICKOUT USER: useID=%s,ip=%s,port=%d",uuid.c_str(),bus_address->host_address.ip,bus_address->host_address.port);
 			continue;
 			}
 		ite++;
@@ -228,7 +228,7 @@ void WisLoginHandler::mapAddDevice(BUS_ADDRESS_POINTER bus_address, const std::s
 	for(;ite != mDevice.end();){
 		if(ite->second == uuid && bus_address != ite->first){
 			std::map<BUS_ADDRESS_POINTER,std::string>::iterator ote = ite++;
-			LOG_INFO("KICKOUT DEVICE: useID=%s,ip=%s,port=%d",uuid.c_str(),bus_address.host_address.ip,bus_address.host_address.port);
+			LOG_INFO("KICKOUT DEVICE: useID=%s,ip=%s,port=%d",uuid.c_str(),bus_address->host_address.ip,bus_address->host_address.port);
 			mDevice.erase(ote);
 			continue;
 			}
