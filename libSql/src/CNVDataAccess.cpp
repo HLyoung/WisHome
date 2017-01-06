@@ -185,15 +185,12 @@ MYSQL_FIELD * CNVDataAccess::Field(int nField)
 MYSQL_FIELD *CNVDataAccess::Field(const char *pcField)
 {
 	MYSQL_FIELD *field;
-	int pos = 0;
-	for(pos = 0;pos < mysql_num_fields(pRes_)-1;pos++){
+	for(int pos = 0;pos < mysql_num_fields(pRes_)-1;pos++){
 		field = mysql_fetch_field_direct(pRes_,pos);
 		if(!strncmp(pcField,field->name,strlen(pcField)))
-			break;
-		if(pos == mysql_num_fields(pRes_))
-			return NULL;
+			return field;
 		}
-	return field;
+	return NULL;
 }
 
 string & CNVDataAccess::Param(const char *pcParamByName)
