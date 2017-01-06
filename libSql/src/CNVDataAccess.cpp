@@ -24,9 +24,7 @@ void CNVDataAccess::Connect(const char *host,const char *pcDbname,const char *pc
 	TRACE_IN();
 	
 	if(!IsInited())
-	{
 		LOG_ERROR("sql ist not inited");
-	}
 	if(NULL == mysql_real_connect(&mysql,
 								  host,						  
 								  pcUsername,
@@ -48,11 +46,7 @@ void CNVDataAccess::Connect(const char *host,const char *pcDbname,const char *pc
 }
 void CNVDataAccess::Disconnect()
 {
-	TRACE_IN();
-	
 	mysql_close(&mysql);
-	
-	TRACE_OUT();
 }
 
 //执行没有结果集返回的语句，eg:update,insert,delete
@@ -61,20 +55,16 @@ int CNVDataAccess::ExecuteNonQuery(const char *pcCmdText)
 	if(IsInited())
 		if(!mysql_real_query(&mysql,pcCmdText,strlen(pcCmdText)))
 			return 0;
+	LOG_INFO("EXECUTE NON QUERY FAILED: %s",pcCmdText);
 	return -1;
 }
 void CNVDataAccess::ExecuteDataSet(const char *pcCmdText)
 {
 	
 	if(!IsInited())
-	{
 		LOG_ERROR("sql is not inited");
-	}
 	if(0 != mysql_real_query(&mysql,pcCmdText,strlen(pcCmdText)))
-	{
 		LOG_ERROR("query cmd failed cmd=%s",pcCmdText);
-	}
-	
 }
 
 
@@ -121,6 +111,7 @@ int CNVDataAccess::ExecuteNoThrow(const char *pcCmdText)
 	if(!mysql_real_query(&mysql,pcCmdText,strlen(pcCmdText)))
 		if(IsResultSet())
 			return mysql_affected_rows(&mysql);
+	LOG_INFO("EXECUTE NON THROW FAILED: %s",pcCmdText);
 	return -1;
 }
 
@@ -139,44 +130,35 @@ long CNVDataAccess::RowsAffected()
 
 bool CNVDataAccess::FetchFirst()
 {
-	if(NULL == this->pRes_)
-	{
-		return false;
-	}
-
-	row_ = mysql_fetch_row(pRes_);
-	if(NULL == row_)
-	{
-		return false;
-	}
-	return true;
+	if(NULL != this->pRes_){
+		row_ = mysql_fetch_row(pRes_);
+		if(NULL != row_)
+			return true;
+		}
+	return false;
 }
 
 bool CNVDataAccess::FetchNext()
 {
 	row_ = mysql_fetch_row(pRes_);
-	if(NULL == row_)
-	{
+	if(NULL == row_){
 		mysql_free_result(pRes_);
 		return false;
-	}
+		}
 	return true;
 }
 
 bool CNVDataAccess::FetchNewRow()
 {
-	if(pRes_ == NULL)
-	{
-		return false;
-	}
-	row_ = mysql_fetch_row(pRes_);
-	if(NULL == row_)
-	{
-		mysql_free_result(pRes_);		
-		pRes_ = NULL;
-		return false;
-	}
-	return true;
+	if(pRes_ != NULL){
+		row_ = mysql_fetch_row(pRes_);
+		if(NULL != row_){
+			mysql_free_result(pRes_);		
+			pRes_ = NULL;
+			return true;
+			}
+		}
+	return false;
 }
 
 bool CNVDataAccess::NextResultSet()
@@ -193,15 +175,10 @@ MYSQL_FIELD * CNVDataAccess::Field(int nField)
 {
 	MYSQL_FIELD *filed;	
 	if(nField > mysql_field_count(&mysql)-1)
-	{
 		return NULL;
-	}
 	filed =  mysql_fetch_field_direct(pRes_,nField);
 	if(NULL == filed)
-	{
 		return NULL;
-	}
-	
 	return filed;
 }
 
@@ -209,18 +186,13 @@ MYSQL_FIELD *CNVDataAccess::Field(const char *pcField)
 {
 	MYSQL_FIELD *field;
 	int pos = 0;
-	for(pos = 0;pos < mysql_num_fields(pRes_)-1;pos++)
-	{
+	for(pos = 0;pos < mysql_num_fields(pRes_)-1;pos++){
 		field = mysql_fetch_field_direct(pRes_,pos);
 		if(!strncmp(pcField,field->name,strlen(pcField)))
-		{
 			break;
+		if(pos == mysql_num_fields(pRes_))
+			return NULL;
 		}
-	}
-	if(pos == mysql_num_fields(pRes_))
-	{
-		return NULL;
-	}
 	return field;
 }
 
@@ -257,14 +229,12 @@ std::string CNVDataAccess::GetString(std::string lineName)
 	int nFields = mysql_num_fields(pRes_);
 	MYSQL_FIELD *fields = mysql_fetch_fields(pRes_);
 	
-	for(int i=0;i<nFields;i++)
-	{
-		if(lineName == std::string(fields[i].name))
-		{
+	for(int i=0;i<nFields;i++){
+		if(lineName == std::string(fields[i].name)){
 			strRes = row_[i];
 			break;
+			}
 		}
-	}
 	return strRes;
 }
 
@@ -274,22 +244,16 @@ int CNVDataAccess::GetInt(std::string lineName)
 	MYSQL_FIELD *fields = mysql_fetch_fields(pRes_);
 	
 	for(int i= 0;i<nFields;i++)
-	{
 		if(lineName == std::string(fields[i].name))
-		{
 			return atoi(row_[i]);
-		}
-	}
-	
 }
 
 void CNVDataAccess::FreeResult(void)
 {
-	if(NULL != pRes_)
-	{
+	if(NULL != pRes_){
 		mysql_free_result(pRes_);
 		pRes_ = NULL;
-	}
+		}
 }
 
 long  CNVDataAccess::ResNumRows()
