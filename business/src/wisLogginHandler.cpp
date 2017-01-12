@@ -210,7 +210,7 @@ void WisLoginHandler::mapAddUser(BUS_ADDRESS_POINTER bus_address,const std::stri
 		if(ite->second == uuid  && bus_address != ite->first){		//kick out other user with the same id.	
 			GetUniteDataModuleInstance()->SendData(ite->first,WIS_CMD_SERVICE_KICKOUT_USER,NULL,0,TCP_SERVER_MODE);	
 			std::map<BUS_ADDRESS_POINTER,std::string>::iterator ote = ite++;
-			LOG_INFO("KICKOUT USER: useID=%s,ip=%s,port=%d",ite->second.c_str(),ote->first->host_address.ip,ote->first->host_address.port);
+			LOG_INFO("KICKOUT USER: useID=%s,ip=%s,port=%d",uuid.c_str(),ote->first->host_address.ip,ote->first->host_address.port);
 			mUser.erase(ote);
 			continue;
 			}
