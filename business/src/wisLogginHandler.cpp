@@ -211,7 +211,7 @@ void WisLoginHandler::mapAddUser(BUS_ADDRESS_POINTER bus_address,const std::stri
 			GetUniteDataModuleInstance()->SendData(ite->first,WIS_CMD_SERVICE_KICKOUT_USER,NULL,0,TCP_SERVER_MODE);	
 			std::map<BUS_ADDRESS_POINTER,std::string>::iterator ote = ite++;
 			mUser.erase(ote);
-			LOG_INFO("KICKOUT USER: useID=%s,ip=%s,port=%d",uuid.c_str(),bus_address->host_address.ip,bus_address->host_address.port);
+			LOG_INFO("KICKOUT USER: useID=%s,ip=%s,port=%d",ite->second.c_str(),ite->first->host_address.ip,ite->first->host_address.port);
 			continue;
 			}
 		ite++;

@@ -342,6 +342,7 @@ extern "C" int DbaModule_Initialize(
 		DbaModule_ReleaseNVDataAccess(access);
 		return -1;
 	}
+	access->FreeResult(void);
 	const char *sql2 = "update wis_device_tbl set `status`=0";
 	if(0 != access->ExecuteNonQuery(sql2))
 	{
