@@ -11,8 +11,7 @@ int WisIOSTokenDao::save(const std::string& uuid, const std::string& token )
 	
 	CNVDataAccess *access = (CNVDataAccess *)DbaModule_GetNVDataAccess();
 	if(NULL != access){
-		if(-1 != access->ExecuteNonQuery(sql)){
-			access->FreeResult();       //free result before reuse the handle
+		if(-1 == access->ExecuteNonQuery(sql)){
 			memset(sql,0,sizeof(sql));
 			snprintf(sql,sizeof(sql),"insert into wis_ios_token_tbl2 values('%s','%s',CURRENT_TIMESTAMP)",uuid.c_str(),	token.c_str());
 			if(-1 != access->ExecuteNonQuery(sql)){
