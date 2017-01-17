@@ -29,6 +29,7 @@ void CcurlHandle::configHandleForJPush()
 	curl_easy_setopt(handle_,CURLOPT_USERPWD,auth.c_str());
 	curl_easy_setopt(handle_,CURLOPT_URL,"https://api.jpush.cn/v3/push");
 	curl_easy_setopt(handle_,CURLOPT_POST,1);
+	curl_easy_setopt(handle_,CURLOPT_NOSIGNAL,1);
 	
 	curl_slist_append(plist,"Content-Type:application/json");  
     curl_easy_setopt(handle_,CURLOPT_HTTPHEADER, plist); 
