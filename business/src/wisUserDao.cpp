@@ -173,12 +173,12 @@ void WisUserDao::handleUserModifyPassword(std::string &uuid,BUS_ADDRESS_POINTER 
 		if(-1 != access->ExecuteNonQuery(sql)){
 			sendUserResponse(busAddress,WIS_CMD_USER_MODIFY_PASSWORD,0);
 			DbaModule_ReleaseNVDataAccess(access);
-			LOG_INFO("USER MODIFY PASSWORD SUCCESS: %s ",uuid.c_str());
+			LOG_INFO("USER MODIFY PASSWORD SUCCESS:uuid = %s,password = %s ",uuid.c_str(),password.c_str());
 			return ;
 			}
 		DbaModule_ReleaseNVDataAccess(access);
 		}
-	LOG_INFO("USER MODIFY PASSWORD FAILED: %s ",uuid.c_str());
+	LOG_INFO("USER MODIFY PASSWORD FAILED: uuid = %s,password = %s ",uuid.c_str(),password.c_str());
 	sendUserResponse(busAddress,WIS_CMD_USER_MODIFY_PASSWORD,-1);
 }
 

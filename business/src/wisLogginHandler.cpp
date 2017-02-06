@@ -55,7 +55,7 @@ void WisLoginHandler::handleUserLogin(BUS_ADDRESS_POINTER busAddress,int datalen
 	    sendLoginResponse( busAddress, loginInfo->uuid,0,TYPE_USER );
 		return;
     	}
-	LOG_INFO("USER LOGIN FAILED: useID = %s,ip=%s,port=%d",uuid.c_str(),busAddress->host_address.ip,busAddress->host_address.port);
+	LOG_INFO("USER LOGIN FAILED: useID = %s,password = %s,ip=%s,port=%d",uuid.c_str(),password.c_str(),busAddress->host_address.ip,busAddress->host_address.port);
 	sendLoginResponse( busAddress, loginInfo->uuid,-1,TYPE_USER );
 	TRACE_OUT();
 }
