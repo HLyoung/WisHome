@@ -23,18 +23,20 @@ void WisUserPrivateHandler::handleUserPrivate( BUS_ADDRESS_POINTER  busAddress,c
 {
 	TRACE_IN();
     const WisUserPrivatePacket* userPrivate = reinterpret_cast<const WisUserPrivatePacket*>( pdata ); 
-	string srcId = getUuidFromBuffer(userPrivate->uuid);
-	string dstId = getUuidFromBuffer(userPrivate->sender);
-	BUS_ADDRESS_POINTER pbusAddress = WisLoginHandler::getDeviceAddress(srcId);
+	string devID = getUuidFromBuffer(userPrivate->uuid);
+	string userID = getUuidFromBuffer(userPrivate->sender);
+	BUS_ADDRESS_POINTER pbusAddress = WisLoginHandler::getDeviceAddress(devID);
 	if(pbusAddress != NULL){
 		if(!GetUniteDataModuleInstance()->SendData(pbusAddress,userPrivate->cmdId,(char *)userPrivate + 40,userPrivate->argLen,TCP_SERVER_MODE)){
-			LOG_ERROR("handle user private failed(srcUuid=%s,dstUuid = %s,cmd = %d,datalen = %d)",srcId.c_str(),dstId.c_str(),userPrivate->cmdId,userPrivate->argLen);
-     		WisDeviceCommandDao::save(uuid, dstId, userPrivate->cmdId, userPrivate->argLen, userPrivate->arg);
+     		WisDeviceCommandDao::save(uuid, userID, userPrivate->cmdId, userPrivate->argLen, userPrivate->arg);
 			sendUserPrivateResponse(busAddress,-1);
+			LOG_INFO("USER PRIVATE FAILED: devID=%s,userID=%s,cmd=%d",devID.c_str(),userID.c_str(),userPrivate->cmdId);
 			}
-		else
+		else{
 			sendUserPrivateResponse(busAddress,0);
+			LOG_INFO("USER PRIVATE SUCCESS: devID=%s,userID=%s,cmd=%d",devID.c_str(),userID.c_str(),userPrivate->cmdId);
+			}
 		}
-    LOG_INFO("USER PRIVATE: srcId=%s,destUuid=%s,cmd=%d",srcId.c_str(),dstId.c_str(),userPrivate->cmdId);
+    LOG_INFO("USER PRIVATE FAILED: devID=%s,userID=%s,cmd=%d",devID.c_str(),userID.c_str(),userPrivate->cmdId);
 	TRACE_OUT();
 }

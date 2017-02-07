@@ -167,9 +167,9 @@ typedef struct{
 }logResult,*plogResult;
 
 
-#define getUuidFromBuffer(buffer) (buffer[UUID_LEN - 1] != 0?std::string(buffer,UUID_LEN):std::string(buffer))
-#define getPasswordFromBuffer(buffer)  (buffer[PASSWORD_LEN - 1] != 0?std::string(buffer,PASSWORD_LEN):std::string(buffer))
-#define getTokenFromBuffer(buffer) (buffer[JIGUANG_TOKEN_LEN - 1] != 0?std::string(buffer,JIGUANG_TOKEN_LEN):std::string(buffer))
+#define getUuidFromBuffer(buffer) (strlen(buffer)>=UUID_LEN?std::string(buffer,UUID_LEN):std::string(buffer))
+#define getPasswordFromBuffer(buffer)  (strlen(buffer)>=PASSWORD_LEN?std::string(buffer,PASSWORD_LEN):std::string(buffer))
+#define getTokenFromBuffer(buffer) (strlen(buffer)>=JIGUANG_TOKEN_LEN?std::string(buffer,JIGUANG_TOKEN_LEN):std::string(buffer))
 	
 enum {TYPE_DEVICE=1,TYPE_USER=2};
 
