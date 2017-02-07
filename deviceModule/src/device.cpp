@@ -80,7 +80,7 @@ void CDevice::ParserCallback(UINT32 wEvent, UINT32 wResultCode, UINT32 wDataLen,
 	CDevice* pDevice = (CDevice*)pOwner;
 	if(WIS_CMD_LOGIN != wEvent && WIS_CMD_USER_AUTO_LOGIN != wEvent && WIS_CMD_HEART_BEAT != wEvent 
 	   && WIS_CMD_USER_REGIST != wEvent && WIS_CMD_USER_RESET_PASSWORD != wEvent && !pDevice->IsLogined()){
-		LOG_INFO("received something(event=%X) from a unloggined device and it`s not heart beat   --will drop it.  ",wEvent);
+		LOG_INFO("received something(event = %X) from a unloggined device(uuid = %s ) and it`s not heart beat   --will drop it.  ",wEvent,pDevice->GetUuid().c_str());
 		return;
 		}
 

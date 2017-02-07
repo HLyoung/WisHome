@@ -114,7 +114,7 @@ void WisLoginHandler::handleDeviceLogin( BUS_ADDRESS_POINTER busAddress,int data
         WisLogDao::saveDeviceLoginLog(sUuid.c_str(), strlen((char*)busAddress->host_address.ip),(const char*) busAddress->host_address.ip);
     } 
 	mapAddDevice(busAddress,sUuid);
-	LOG_INFO("DEVICE LOGIN SUCCESS: %s",sUuid.c_str());
+	LOG_INFO("DEVICE LOGIN SUCCESS: uuid = %s ip = %s port = %d",sUuid.c_str(),busAddress->host_address.ip,busAddress->host_address.port);
     sendLoginResponse( busAddress,sUuid.c_str(), 1 ,TYPE_DEVICE);	
     
     std:map<std::string,WisUserInfo> mapUserIfno;
@@ -228,7 +228,6 @@ void WisLoginHandler::mapAddDevice(BUS_ADDRESS_POINTER bus_address, const std::s
 	for(;ite != mDevice.end();){
 		if(ite->second == uuid && bus_address != ite->first){
 			std::map<BUS_ADDRESS_POINTER,std::string>::iterator ote = ite++;
-			LOG_INFO("KICKOUT DEVICE: useID=%s,ip=%s,port=%d",uuid.c_str(),bus_address->host_address.ip,bus_address->host_address.port);
 			mDevice.erase(ote);
 			continue;
 			}
