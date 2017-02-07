@@ -48,24 +48,22 @@ void WisToUserHandler::handleSendToOne(BUS_ADDRESS_POINTER busAddress,const char
 {
 	TRACE_IN();
 
-    char deviceUUID[UUID_LEN + 1] = {0};
-	memcpy(deviceUUID, packet->uuid, UUID_LEN);
-
+    string toUuid = getUuidFromBuffer(packet->uuid);  
 	char *toUser =  new char[UUID_LEN + packet->len];
-	memcpy((char *)toUser,uuid,UUID_LEN);
+	memcpy((char *)toUser,uuid,UUID_LEN);     //uuid means device where message froms
 	memcpy((char *)toUser + UUID_LEN,packet->data,packet->len);
 
-	BUS_ADDRESS_POINTER bus_address = WisLoginHandler::getUserAddress(getUuidFromBuffer(deviceUUID));
+	BUS_ADDRESS_POINTER bus_address = WisLoginHandler::getUserAddress(toUuid);
 	if(NULL != bus_address){
 		if(GetUniteDataModuleInstance()->SendData(bus_address,WIS_CMD_TO_USER,toUser,UUID_LEN + packet->len,TCP_SERVER_MODE)){
 			sendToUserResponse(busAddress, WIS_CMD_TO_USER, 0);
-		    LOG_INFO("SEND TO ONE SUCCESS: sourId=%s,destId=%s",uuid,deviceUUID);
+		    LOG_INFO("SEND TO ONE SUCCESS: sourId=%s,destId=%s",uuid,toUuid.c_str());
 			SafeDeleteArray(toUser);
 			return;
 			}
 		}
 	sendToUserResponse(busAddress, WIS_CMD_TO_USER, -1);
-    LOG_INFO("SEND TO ONE FAILED: sourId=%s,destId=%s",uuid,deviceUUID);
+    LOG_INFO("SEND TO ONE FAILED: sourId=%s,destId=%s",uuid,toUuid.c_str());
 	SafeDeleteArray(toUser);
 	TRACE_OUT();
 }
