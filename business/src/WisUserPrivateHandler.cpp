@@ -31,10 +31,12 @@ void WisUserPrivateHandler::handleUserPrivate( BUS_ADDRESS_POINTER  busAddress,c
      		WisDeviceCommandDao::save(uuid, userID, userPrivate->cmdId, userPrivate->argLen, userPrivate->arg);
 			sendUserPrivateResponse(busAddress,-1);
 			LOG_INFO("USER PRIVATE FAILED: devID=%s,userID=%s,cmd=%d",devID.c_str(),userID.c_str(),userPrivate->cmdId);
+			return;
 			}
 		else{
 			sendUserPrivateResponse(busAddress,0);
 			LOG_INFO("USER PRIVATE SUCCESS: devID=%s,userID=%s,cmd=%d",devID.c_str(),userID.c_str(),userPrivate->cmdId);
+			return;
 			}
 		}
     LOG_INFO("USER PRIVATE FAILED: devID=%s,userID=%s,cmd=%d",devID.c_str(),userID.c_str(),userPrivate->cmdId);
