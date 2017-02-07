@@ -137,7 +137,7 @@ void WisLoginHandler::handleDeviceLogout(BUS_ADDRESS_POINTER busAddress,std::str
     if(WisDeviceDao::logout( uuid )){
 		mapDeleteDevice(busAddress);
     	WisLogDao::saveDeviceLogoutLog(uuid, 0, "");
-		LOG_INFO("DEVICE LOGOUT SUCCESS: %s",uuid.c_str());
+		LOG_INFO("DEVICE LOGOUT SUCCESS: uuid = %s,ip = %s,port = %d",uuid.c_str(),busAddress->host_address.ip,busAddress->host_address.port);
 
 	    std:map<std::string,WisUserInfo> mapUserIfno;
 		if(0 < WisBindDao::getBindedUsers(uuid,mapUserIfno)){
