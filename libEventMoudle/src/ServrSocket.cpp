@@ -271,11 +271,11 @@ bool ServrSocket::bufMapDeleteBuf(void *ctx)
 
 int ServrSocket::bufSend(struct bufferevent* bev,const char *data,int dataLen)
 {
-	std::lock_guard<std::mutex> lb(bufMapMutex);
-	std::map<struct bufferevent*,struct event*>::iterator ite = bufMap.find(bev);
-	if(ite != bufMap.end())
+	//std::lock_guard<std::mutex> lb(bufMapMutex);
+	//std::map<struct bufferevent*,struct event*>::iterator ite = bufMap.find(bev);
+	//if(ite != bufMap.end())
 		return bufferevent_write(bev,data,dataLen);
-	return -1;
+	//return -1;
 }
 
 
