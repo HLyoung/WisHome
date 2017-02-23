@@ -224,7 +224,7 @@ void ServrSocket::timer_cb(int fd,short event,void *ctx)
 			return;
 		}
 		//time_t seconds = time((time_t*)NULL);
-		char buf[16] = {80,00,00,00,00,80,00,00,00,00,00,00,00,00,00,00};
+		char buf[16] = {0x80,0x00,0x00,0x00,0x00,0x80,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
 		//*((unsigned int*)(buf + 4)) = WIS_CMD_HEART_BEAT;
 		//*((unsigned int*)(buf + 8)) = 4;
 		//*((unsigned int*)(buf + 12)) = (unsigned int)seconds;
