@@ -223,15 +223,15 @@ void ServrSocket::timer_cb(int fd,short event,void *ctx)
 			pSock->bufMapDeleteBuf(ctx);
 			return;
 		}
-		time_t seconds = time((time_t*)NULL);
-		char buf[16] = {0};
-		*((unsigned int*)(buf + 4)) = WIS_CMD_HEART_BEAT;
-		*((unsigned int*)(buf + 8)) = 4;
-		*((unsigned int*)(buf + 12)) = (unsigned int)seconds;
-		unsigned checkSum = 0;
-		for(int i = 0;i<12;i++)
-		checkSum += *((unsigned char *)(buf + 4 + i));
-	    *((unsigned int*)(buf)) = checkSum;
+		//time_t seconds = time((time_t*)NULL);
+		char buf[16] = {80,00,00,00,00,80,00,00,04,00,00,00,00,00,00,00};
+		//*((unsigned int*)(buf + 4)) = WIS_CMD_HEART_BEAT;
+		//*((unsigned int*)(buf + 8)) = 4;
+		//*((unsigned int*)(buf + 12)) = (unsigned int)seconds;
+		//unsigned checkSum = 0;
+		//for(int i = 0;i<12;i++)
+		//checkSum += *((unsigned char *)(buf + 4 + i));
+	    //*((unsigned int*)(buf)) = checkSum;
 	    pSock->bufSend(bev,buf,16);
 	}
 }
