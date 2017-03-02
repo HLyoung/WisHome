@@ -63,7 +63,7 @@ void WisToUserHandler::handleSendToOne(BUS_ADDRESS_POINTER busAddress,const char
 			}
 		}
 	sendToUserResponse(busAddress, WIS_CMD_TO_USER, -1);
-    LOG_INFO("SEND TO ONE FAILED: sourId=%s,destId=%s,destPort=%d",uuid,toUuid.c_str(),bus_address->host_address.port);
+    LOG_INFO("SEND TO ONE FAILED: sourId=%s,destId=%s",uuid,toUuid.c_str());
 	SafeDeleteArray(toUser);
 	TRACE_OUT();
 }
@@ -98,9 +98,6 @@ void WisToUserHandler::handleToUser(BUS_ADDRESS_POINTER busAddress,const char *u
 	TRACE_IN();
 	
 	const WisToUserData *userData = (const WisToUserData*)(pData);
-
-    char dstuuid[UUID_LEN + 1] = {0};
-    memcpy(dstuuid,userData->uuid,UUID_LEN);
 
     if( nDataLen < sizeof(WisToUserData) ) {
         sendToUserResponse(busAddress, WIS_CMD_TO_USER, -1);
