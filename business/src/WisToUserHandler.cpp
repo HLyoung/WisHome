@@ -57,13 +57,13 @@ void WisToUserHandler::handleSendToOne(BUS_ADDRESS_POINTER busAddress,const char
 	if(NULL != bus_address){
 		if(GetUniteDataModuleInstance()->SendData(bus_address,WIS_CMD_TO_USER,toUser,UUID_LEN + packet->len,TCP_SERVER_MODE)){
 			sendToUserResponse(busAddress, WIS_CMD_TO_USER, 0);
-		    LOG_INFO("SEND TO ONE SUCCESS: sourId=%s,destId=%s,destPort=%d",uuid,toUuid.c_str(),bus_address.host_address.port);
+		    LOG_INFO("SEND TO ONE SUCCESS: sourId=%s,destId=%s,destPort=%d",uuid,toUuid.c_str(),bus_address->host_address.port);
 			SafeDeleteArray(toUser);
 			return;
 			}
 		}
 	sendToUserResponse(busAddress, WIS_CMD_TO_USER, -1);
-    LOG_INFO("SEND TO ONE FAILED: sourId=%s,destId=%s,destPort=%d",uuid,toUuid.c_str(),bus_address.host_address.port);
+    LOG_INFO("SEND TO ONE FAILED: sourId=%s,destId=%s,destPort=%d",uuid,toUuid.c_str(),bus_address->host_address.port);
 	SafeDeleteArray(toUser);
 	TRACE_OUT();
 }
