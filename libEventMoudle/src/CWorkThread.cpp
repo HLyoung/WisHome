@@ -46,7 +46,7 @@ CJob *CWorkerThread::getJob(void)
 	if(jobList.size() > 0){
 		CJob *job = *(jobList.begin());
 		jobList.pop_front();          //this will destroy the iterator who point to jobList.front();
-		LOG_INFO("thread(id = %ld) has %ld jobs",pthread_self(),jobList.size());
+		LOG_DEBUG("thread(id = %ld) has %ld jobs",pthread_self(),jobList.size());
 		return job;
 		}
 	TRACE_OUT();

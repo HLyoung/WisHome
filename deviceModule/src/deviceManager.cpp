@@ -229,6 +229,7 @@ bool CDeviceManager::SendData(BUS_ADDRESS_POINTER busAddress, int nRole, int nDa
 	CDevice* pGatewayDevice = GetDeviceClient(busAddress);
 	if (NULL != pGatewayDevice  )
 		return pGatewayDevice->Send(nDataType, pData, nDataSize);
+	LOG_INFO("device(ip=%s,port=%d) have not found",busAddress->host_address.ip,busAddress->host_address.port);
 	return false;	
 }
 
