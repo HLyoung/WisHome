@@ -215,7 +215,7 @@ string & WisUserDao::makeupURL()
 			string hostName = pMailElement->Attribute("hostName");
 			string port = pMailElement->Attribute("port");
 			string resetApi = pMailElement->Attribute("api");
-			string URL = hostName + ":" + port + resetApi;
+			string URL = string("http://") + hostName + ":" + port + resetApi;
 			return URL;
 			}
 		}
