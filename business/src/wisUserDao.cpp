@@ -206,6 +206,7 @@ void WisUserDao::handleUserResetPassword(BUS_ADDRESS_POINTER busAddress,const ch
 
 string & WisUserDao::makeupURL()
 {
+	TRACE_IN();
 	CXmlDocument xmlDocument;
 	CUniteDataModule::GetInstance()->GetConfigXml(xmlDocument);
 	CXmlElement *pRootElement = xmlDocument.RootElement();
@@ -216,9 +217,11 @@ string & WisUserDao::makeupURL()
 			string port = pMailElement->Attribute("port");
 			string resetApi = pMailElement->Attribute("api");
 			string URL = string("http://") + hostName + ":" + port + resetApi;
+			LOG_DEBUG("reset password url=%s",URL.c_str());
 			return URL;
 			}
 		}
+	TRACE_OUT();
 }
 
 bool WisUserDao::sendUserResponse(BUS_ADDRESS_POINTER  busAddress,int cmd,const int ret)
@@ -230,6 +233,7 @@ bool WisUserDao::sendUserResponse(BUS_ADDRESS_POINTER  busAddress,int cmd,const 
 bool WisUserDao::sendResetPasswordMailTo(const std::string & uuid)
 {
 	string url = makeupURL();
+	LOG_DEBUG("after return url=%s",url.c_str());
 	string content = string("dear sir:<br/> &nbsp &nbsp &nbsp &nbsp &nbsp  please click this link <a href=\"") + url + string("\">") + string("reset password") + string(" </a>to reset your password"); 	
 
 	Mail mail;
