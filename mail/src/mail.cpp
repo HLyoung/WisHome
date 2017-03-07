@@ -6,11 +6,11 @@
 
 std::mutex Mail::gMutex;
 bool Mail::isQuickMail_inited = false;
-string Mail::_from = NULL;
-string Mail::_user = NULL;
-string Mail::_password = NULL;
-string Mail::_subject = NULL;
-string Mail::_smtpServer = NULL;
+string Mail::_from = "";
+string Mail::_user = "";
+string Mail::_password = "";
+string Mail::_subject = "";
+string Mail::_smtpServer = "";
 short Mail::_port = 25;
 
 Mail::Mail()
