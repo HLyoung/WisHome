@@ -204,7 +204,7 @@ void WisUserDao::handleUserResetPassword(BUS_ADDRESS_POINTER busAddress,const ch
 		}
 }
 
-string WisUserDao::makeupURL()
+string & WisUserDao::makeupURL()
 {
 	CXmlDocument xmlDocument;
 	CUniteDataModule::GetInstance()->GetConfigXml(xmlDocument);
@@ -230,7 +230,7 @@ bool WisUserDao::sendUserResponse(BUS_ADDRESS_POINTER  busAddress,int cmd,const 
 bool WisUserDao::sendResetPasswordMailTo(const std::string & uuid)
 {
 	string url = makeupURL();
-	string content = string("dear sir:<br/> &nbsp &nbsp &nbsp &nbsp &nbsp  please click this link <a href=\"") + url + string ("\">") + string("reset password") + string(" </a>to reset your password"); 	
+	string content = string("dear sir:<br/> &nbsp &nbsp &nbsp &nbsp &nbsp  please click this link <a href=\"") + url + string("\">") + string("reset password") + string(" </a>to reset your password"); 	
 
 	Mail mail;
 	mail.addTo(uuid);
