@@ -218,9 +218,7 @@ bool WisUserDao::sendResetPasswordMailTo(const std::string & uuid)
 	string content = string("dear sir:<br/> &nbsp &nbsp &nbsp &nbsp &nbsp  please click this link <a href=\"http://192.168.2.70/test.php\">") + url + string(" </a>to reset your password"); 	
 
 	Mail mail;
-	std::set<std::string> to,cc,bcc,file;
-	to.insert(uuid);
-	mail.setTargetAndFile(to,cc,bcc,file);
+	mail.addTo(uuid);
 	if(!mail.sendMail(content))
 		return false;
 	else
@@ -230,10 +228,9 @@ bool WisUserDao::sendResetPasswordMailTo(const std::string & uuid)
 bool WisUserDao::sendGreetMailTo(const std::string & uuid)
 {
 	string content = string("Dear sir:<br/> &nbsp &nbsp &nbsp &nbsp &nbsp  thanks for register wishome. ");	
-    std::set<std::string> to,cc,bcc,file;
-	to.insert(uuid);
+    
 	Mail mail;
-    mail.setTargetAndFile(to,cc,bcc,file);
+   	mail.addTo(uuid);
     if(!mail.sendMail(content))
 		return false;
 	else

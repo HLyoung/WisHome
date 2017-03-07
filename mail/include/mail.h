@@ -10,32 +10,29 @@
 #include <set>
 
 using namespace std;
-const std::string content = "Dear sir: 	you verification code is 110";
-
 class Mail{
 public:
 	Mail();
-	~Mail(){}
-	void init(string from, string user,string password,string subject,short port);
-	bool sendMail(const string& content = content);
-	bool setTargetAndFile(std::set<string> &to,std::set<string> &cc,std::set<string> &bcc,std::set<string> &file);
+	~Mail(){if(NULL != mailObj) quickmail_destroy(mailObj);}
+	bool sendMail(const string& content) const;
+	bool getInitParam();
+	bool addTo(const string &uuid);
+	bool addCc(const string &uuid);
+	bool addBcc(const string &uuid);
+	bool addAttachment(const string &file);
 	
 	
 private:
-	string _from;
-	string _user;
-	string _password;
-	string _subject;
-	string _smtpServer;
-	short _port;
-	bool _isObjInited;
+	static string _from;
+	static string _user;
+	static string _password;
+	static string _subject;
+	static string _smtpServer;
+	static short _port;
 	
 	static std::mutex gMutex;
 	static bool isQuickMail_inited;
-	
-	std::set<std::string> _setTo;
-	std::set<std::string> _setCc;
-	std::set<std::string> _setBcc;
-	std::set<std::string> _setAttachmentFile;	
+
+	quickmail mailObj;
 };
 #endif

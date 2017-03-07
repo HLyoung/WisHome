@@ -99,6 +99,7 @@ int main()
 	if(!iModuel->StartModule())
 	{
 		std::cout<<"some module start failed"<<std::endl;
+		return 0;
 	}
 
 	Reporter report;

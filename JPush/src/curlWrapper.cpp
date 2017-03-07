@@ -19,20 +19,22 @@ void CcurlHandle::configHandleForJPush()
 	CUniteDataModule::GetInstance()->GetConfigXml(DBconfigXml);
 
 	CXmlElement *pDocElement = DBconfigXml.RootElement();
-	CXmlElement *pDBAccessElement = pDocElement->FirstChildElement("JPush");
-	if(pDBAccessElement == NULL ) return;
-	
-	std::string appkey = pDBAccessElement->Attribute("appKey");
-	std::string masterSecret = pDBAccessElement->Attribute("masterSecret");
-	std::string auth = appkey + ":" + masterSecret;
+	if(0 != pDocElement) {
+		CXmlElement *pDBAccessElement = pDocElement->FirstChildElement("JPush");
+		if(0 != pDBAccessElement){
+			std::string appkey = pDBAccessElement->Attribute("appKey");
+			std::string masterSecret = pDBAccessElement->Attribute("masterSecret");
+			std::string auth = appkey + ":" + masterSecret;
 
-	curl_easy_setopt(handle_,CURLOPT_USERPWD,auth.c_str());
-	curl_easy_setopt(handle_,CURLOPT_URL,"https://api.jpush.cn/v3/push");
-	curl_easy_setopt(handle_,CURLOPT_POST,1);
-	curl_easy_setopt(handle_,CURLOPT_NOSIGNAL,1);
-	
-	curl_slist_append(plist,"Content-Type:application/json");  
-    curl_easy_setopt(handle_,CURLOPT_HTTPHEADER, plist); 
+			curl_easy_setopt(handle_,CURLOPT_USERPWD,auth.c_str());
+			curl_easy_setopt(handle_,CURLOPT_URL,"https://api.jpush.cn/v3/push");
+			curl_easy_setopt(handle_,CURLOPT_POST,1);
+			curl_easy_setopt(handle_,CURLOPT_NOSIGNAL,1);
+			
+			curl_slist_append(plist,"Content-Type:application/json");  
+		    curl_easy_setopt(handle_,CURLOPT_HTTPHEADER, plist); 
+			}
+		}
 	
 }
 CcurlHandle::~CcurlHandle()

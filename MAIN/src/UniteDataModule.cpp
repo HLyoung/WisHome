@@ -158,14 +158,17 @@ bool CUniteDataModule::LogModuleInit()
 	GetConfigXml(DBconfigXml);
 	
 	CXmlElement *pDocElement = DBconfigXml.RootElement();
-	CXmlElement *pDBAccessElement = pDocElement->FirstChildElement("LogConfig");
-	string configfile = pDBAccessElement->Attribute("configfile");
-	string logger = pDBAccessElement->Attribute("logger");
-	
-	CZxLogManager *manager = CZxLogManager::getInstance();
-	manager->Init(configfile.c_str(),logger.c_str());
-	
-	return true;
+	if(0 != pDocElement){
+		CXmlElement *pDBAccessElement = pDocElement->FirstChildElement("LogConfig");
+		if(0 != pDBAccessElement){
+			string configfile = pDBAccessElement->Attribute("configfile");
+			string logger = pDBAccessElement->Attribute("logger");
+			CZxLogManager *manager = CZxLogManager::getInstance();
+			manager->Init(configfile.c_str(),logger.c_str());
+			return true;
+			}
+		}
+	return false;
 }
 
 bool CUniteDataModule::DatabaseModuleInit()
@@ -174,19 +177,18 @@ bool CUniteDataModule::DatabaseModuleInit()
 	GetConfigXml(DBconfigXml);
 	
 	CXmlElement *pDocElement = DBconfigXml.RootElement();
-	CXmlElement *pDBAccessElement = pDocElement->FirstChildElement("DBAccess");
-	
-	string dbHostName = pDBAccessElement->Attribute("HostName");
-	string dbName = pDBAccessElement->Attribute("dbName");
-	string username = pDBAccessElement->Attribute("username");
-	string pwd = pDBAccessElement->Attribute("pwd");
-	
-	if(-1 == DbaModule_Initialize(dbHostName.c_str(),dbName.c_str(),username.c_str(),pwd.c_str()))
-	{
-		LOG_ERROR("Init database failed.");
-		return false;
-	}
-	return true;
+	if(0 != pDocElement){
+		CXmlElement *pDBAccessElement = pDocElement->FirstChildElement("DBAccess");
+		if(0 != pDBAccessElement){ 
+			string dbHostName = pDBAccessElement->Attribute("HostName");
+			string dbName = pDBAccessElement->Attribute("dbName");
+			string username = pDBAccessElement->Attribute("username");
+			string pwd = pDBAccessElement->Attribute("pwd");
+			if(-1 != DbaModule_Initialize(dbHostName.c_str(),dbName.c_str(),username.c_str(),pwd.c_str()))
+				return true;
+			}
+		}
+	return false;
 }
 
 bool CUniteDataModule::LoadConfigFile()
@@ -194,21 +196,18 @@ bool CUniteDataModule::LoadConfigFile()
 	TRACE_IN();
 	int nLen = 256;
 	char cPath[256] = {0};
-	if(!getcwd(cPath,nLen))
-	{
+	if(!getcwd(cPath,nLen)){
 		std::cout<<"load config file failed."<<std::endl;
 		return false;
 	}
 	string strPath(cPath);
 	strPath += "/config/config.xml";
 	
-	if(0 != access(strPath.c_str(),F_OK))
-	{
+	if(0 != access(strPath.c_str(),F_OK)){
 		std::cout<<"confige file doen`t exist!"<<std::endl;
 		return false;
 	}
 	TRACE_OUT();
-	
 	return m_ConfigXmlFile.LoadFile(strPath.c_str());
 }
 
