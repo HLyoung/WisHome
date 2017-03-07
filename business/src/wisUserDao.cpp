@@ -215,7 +215,10 @@ void WisUserDao::makeupURL(std::string &url)
 			string hostName = pMailElement->Attribute("hostName");
 			string port = pMailElement->Attribute("port");
 			string resetApi = pMailElement->Attribute("api");
-			url = string("http://") + hostName + ":" + port + resetApi;
+			time_t mailTime = time(NULL);
+			stringstream strStream;
+			strStream << mailTime;
+			url = string("http://") + hostName + ":" + port + resetApi + "?" + "mailTime=" + strStream.str() ;
 			}
 		}
 }
