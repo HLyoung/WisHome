@@ -1,3 +1,4 @@
+
 #include <string>
 #include <netdb.h>
 #include <sys/types.h>
@@ -13,6 +14,8 @@
 #include "CNVDataAccess.h"
 #include "WisBindDao.h"
 #include "wisLogginHandler.h"
+#include "UniteDataModule.h"
+#include "tinyxml.h"
 
 std::string WisUserDao::defaultPassword = "R800JL.Ke8MBo";
 
@@ -226,7 +229,7 @@ bool WisUserDao::sendUserResponse(BUS_ADDRESS_POINTER  busAddress,int cmd,const 
 
 bool WisUserDao::sendResetPasswordMailTo(const std::string & uuid)
 {
-	string url = makeupURL(string(uuid));
+	string url = makeupURL();
 	string content = string("dear sir:<br/> &nbsp &nbsp &nbsp &nbsp &nbsp  please click this link <a href=\"") + url + string ("\">") + string("reset password") + string(" </a>to reset your password"); 	
 
 	Mail mail;
