@@ -35,7 +35,7 @@ public:
 	static void handleUserModifyPassword(std::string &uuid,BUS_ADDRESS_POINTER busAddress,const char *pdata);
 	static bool sendResetPasswordMailTo(const std::string &emailAddress);
 	static bool sendGreetMailTo(const std::string &uuid);
-	static string makeupURL(const std::string &uuid);
+	static string makeupURL();
 	static bool checkMail(const std::string &mail);
 	static bool handleUserQuit(BUS_ADDRESS_POINTER busAddress,const char *pdata);
 public:
